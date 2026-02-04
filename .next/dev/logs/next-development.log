@@ -1,0 +1,581 @@
+[00:00:02.247] Server  WARN    ⚠ Turbopack's filesystem cache has been deleted because we previously detected an internal error in Turbopack. Builds or page loads may be slower as a result.
+[00:00:02.709] Server  LOG     ✓ Ready in 1882ms
+[00:00:08.570] Server  LOG     ○ Compiling / ...
+[00:00:12.379] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:13.050] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Documents...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
+                            className="bg-[#0a192f]"
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[00:00:13.050] Browser WARN    Image with src "/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:11:43.621] Server  LOG     ✓ Compiled in 1614ms
+[00:11:48.101] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:11:48.451] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Documents...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
+                            className="bg-[#0a192f]"
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[00:12:13.360] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./Documents/GitHub/bloomryde_inter_state/src/components/intertravel-landing.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:12:13.374] Server  LOG     ✓ Compiled in 475ms
+[00:12:15.536] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:20.702] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:39.724] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:41.978] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:43.525] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:01:23.474] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:01:23.475] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Documents...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
+                            className="bg-[#0a192f]"
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[01:46:09.121] Server  LOG     ✓ Compiled in 3.5s
+[01:46:22.055] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:46:23.559] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Documents...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
+                            className="bg-[#0a192f]"
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[01:49:42.181] Server  LOG     ✓ Compiled in 5.4s
+[04:43:47.971] Browser LOG     [ChromeTransport] chromePort disconnected
+[05:06:50.511] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:06:52.282] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Documents...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
+                            className="bg-[#0a192f]"
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[06:32:35.994] Browser LOG     [ChromeTransport] chromePort disconnected
+[25:31:12.176] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[25:40:19.640] Server  LOG     ✓ Compiled in 2.9s
+[25:40:19.890] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./Documents/GitHub/bloomryde_inter_state/src/components/intertravel-landing.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[25:40:32.342] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[25:44:49.841] Server  LOG     ✓ Compiled in 1424ms
+[25:45:07.093] Server  LOG     ✓ Compiled in 323ms
+[25:45:09.785] Server  LOG     ✓ Compiled in 414ms
+[25:45:10.132] Server  LOG     ✓ Compiled in 209ms
+[25:47:08.590] Server  LOG     ✓ Compiled in 208ms
+[25:47:16.845] Server  LOG     ✓ Compiled in 443ms
+[25:55:01.290] Browser ERROR   ./Documents/GitHub/bloomryde_inter_state/src/components/experience-section.tsx:103:17
+Parsing ecmascript source code failed
+  101 |               Why InterTravel
+  102 |             </span>
+> 103 |           </div>
+      |                 ^
+> 104 |           <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 leading-tight mb-6">
+      | ^^^^^^^^^^^
+  105 |             Travel should be{" "}
+  106 |             <span className="relative">
+  107 |               <span className="relative z-10">effortless</span>
+
+Expected '</', got 'jsx text (
+          )'
+
+Import trace:
+  Server Component:
+    ./Documents/GitHub/bloomryde_inter_state/src/components/experience-section.tsx
+    ./Documents/GitHub/bloomryde_inter_state/src/app/page.tsx
+[26:00:06.829] Server  LOG     ✓ Compiled in 1065ms
+[26:00:07.281] Browser ERROR   ./Documents/GitHub/bloomryde_inter_state/src/components/experience-section.tsx:103:17
+Parsing ecmascript source code failed
+  101 |               Why InterTravel
+  102 |             </span>
+> 103 |           </div>
+      |                 ^
+> 104 |           <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 leading-tight mb-6">
+      | ^^^^^^^^^^^
+  105 |             Travel should be{" "}
+  106 |             <span className="relative">
+  107 |               <span className="relative z-10">effortless</span>
+
+Expected '</', got 'jsx text (
+          )'
+
+Import trace:
+  Server Component:
+    ./Documents/GitHub/bloomryde_inter_state/src/components/experience-section.tsx
+    ./Documents/GitHub/bloomryde_inter_state/src/app/page.tsx
+[26:00:16.556] Server  LOG     ✓ Compiled in 1851ms
+[26:00:16.953] Browser ERROR   ./Documents/GitHub/bloomryde_inter_state/src/components/experience-section.tsx:103:17
+Parsing ecmascript source code failed
+  101 |               Why InterTravel
+  102 |             </span>
+> 103 |           </div>
+      |                 ^
+> 104 |           <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 leading-tight mb-6">
+      | ^^^^^^^^^^^
+  105 |             Travel should be{" "}
+  106 |             <span className="relative">
+  107 |               <span className="relative z-10">effortless</span>
+
+Expected '</', got 'jsx text (
+          )'
+
+Import trace:
+  Server Component:
+    ./Documents/GitHub/bloomryde_inter_state/src/components/experience-section.tsx
+    ./Documents/GitHub/bloomryde_inter_state/src/app/page.tsx
+[26:00:23.293] Server  LOG     ✓ Compiled in 946ms
+[26:00:25.550] Browser ERROR   ./Documents/GitHub/bloomryde_inter_state/src/components/experience-section.tsx:103:17
+Parsing ecmascript source code failed
+  101 |               Why InterTravel
+  102 |             </span>
+> 103 |           </div>
+      |                 ^
+> 104 |           <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 leading-tight mb-6">
+      | ^^^^^^^^^^^
+  105 |             Travel should be{" "}
+  106 |             <span className="relative">
+  107 |               <span className="relative z-10">effortless</span>
+
+Expected '</', got 'jsx text (
+          )'
+
+Import trace:
+  Server Component:
+    ./Documents/GitHub/bloomryde_inter_state/src/components/experience-section.tsx
+    ./Documents/GitHub/bloomryde_inter_state/src/app/page.tsx
+[26:13:37.076] Server  LOG     ✓ Compiled in 3.6s
+[26:13:38.077] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./Documents/GitHub/bloomryde_inter_state/src/components/intertravel-landing.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[26:13:45.564] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[26:13:46.015] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Documents...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
+                            className="bg-[#0a192f]"
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[26:14:39.142] Server  LOG     ✓ Compiled in 747ms
+[26:15:38.828] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Documents...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
+                            className="bg-[#0a192f]"
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[26:15:42.276] Server  LOG     ✓ Finished writing to filesystem cache in 12.4s
+[26:23:04.011] Server  LOG     ✓ Compiled in 707ms
+[26:23:38.173] Server  LOG     ✓ Compiled in 694ms
+[26:23:50.859] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[26:23:51.192] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Documents...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
+                            className="bg-[#0a192f]"
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[26:32:55.282] Browser ERROR   ./Documents/GitHub/bloomryde_inter_state/src/components/intertravel-landing.tsx:24:76
+Parsing ecmascript source code failed
+  22 |       description:
+  23 |         "Luxury travel and airlines offer unparalleled comfort and exclusivity for discerning travelers.",
+> 24 |         "Travel between states in comfort and style with verified drivers.",
+     |                                                                            ^
+  25 |       image:
+  26 |         "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&h=400&fit=crop",
+  27 |       type: "travel",
+
+Unexpected token `,`. Expected identifier
+
+Import trace:
+  Server Component:
+    ./Documents/GitHub/bloomryde_inter_state/src/components/intertravel-landing.tsx
+    ./Documents/GitHub/bloomryde_inter_state/src/app/page.tsx
+[26:33:01.268] Server  LOG     ✓ Compiled in 316ms
+[29:07:52.162] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[29:07:52.519] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Documents...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
+                            className="bg-[#0a192f]"
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[29:07:58.827] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[29:08:18.170] Server  LOG     ✓ Compiled in 2.1s
+[29:08:18.226] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./Documents/GitHub/bloomryde_inter_state/src/components/intertravel-landing.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[29:08:22.719] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[29:09:01.177] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./Documents/GitHub/bloomryde_inter_state/src/components/intertravel-landing.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[29:09:01.184] Server  LOG     ✓ Compiled in 554ms
+[29:09:03.789] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[29:09:03.931] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Documents...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
+                            className="bg-[#0a192f]"
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[29:10:01.929] Browser ERROR   ./Documents/GitHub/bloomryde_inter_state/src/app/page.tsx:4:1
+Parsing ecmascript source code failed
+  2 | import ExperienceSection from "../components/experience-section";
+  3 | import 
+> 4 | export default function Home() {
+    | ^^^^^^
+  5 |   return (
+  6 |     <main>
+  7 |       <InterTravelLanding />
+
+Expected 'from', got 'export'
+[29:10:05.928] Browser ERROR   ./Documents/GitHub/bloomryde_inter_state/src/app/page.tsx:4:1
+Parsing ecmascript source code failed
+  2 | import ExperienceSection from "../components/experience-section";
+  3 | import hero from 
+> 4 | export default function Home() {
+    | ^^^^^^
+  5 |   return (
+  6 |     <main>
+  7 |       <InterTravelLanding />
+
+Unexpected token `export`. Expected a string literal
+[29:10:10.623] Server  LOG     ✓ Compiled in 153ms
+[29:10:24.794] Browser ERROR   The tag <%s> is unrecognized in this browser. If you meant to render a React component, start its name with an uppercase letter. hero
+[29:10:46.016] Browser ERROR   ./Documents/GitHub/bloomryde_inter_state/src/app/page.tsx:10:5
+Parsing ecmascript source code failed
+   8 |       <ExperienceSection />
+   9 |       <
+> 10 |     </main>
+     |     ^
+  11 |   );
+  12 | }
+  13 |
+
+Expression expected
+[29:10:46.016] Browser ERROR   ./Documents/GitHub/bloomryde_inter_state/src/app/page.tsx:10:6
+Parsing ecmascript source code failed
+   8 |       <ExperienceSection />
+   9 |       <
+> 10 |     </main>
+     |      ^^^^^^
+  11 |   );
+  12 | }
+  13 |
+
+Unterminated regexp literal
+[29:10:48.983] Browser ERROR   ./Documents/GitHub/bloomryde_inter_state/src/app/page.tsx:10:5
+Parsing ecmascript source code failed
+   8 |       <ExperienceSection />
+   9 |       <Hero
+> 10 |     </main>
+     |     ^
+  11 |   );
+  12 | }
+  13 |
+
+Expression expected
+[29:10:48.983] Browser ERROR   ./Documents/GitHub/bloomryde_inter_state/src/app/page.tsx:10:6
+Parsing ecmascript source code failed
+   8 |       <ExperienceSection />
+   9 |       <Hero
+> 10 |     </main>
+     |      ^^^^^^
+  11 |   );
+  12 | }
+  13 |
+
+Unterminated regexp literal
+[29:10:51.380] Server  LOG     ✓ Compiled in 553ms
+[29:11:23.695] Server  LOG     ✓ Compiled in 824ms
+[29:11:23.730] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./Documents/GitHub/bloomryde_inter_state/src/components/intertravel-landing.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[29:11:27.601] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[29:12:15.441] Server  LOG     ✓ Compiled in 374ms
+[29:12:34.353] Server  LOG     ✓ Compiled in 300ms
+[29:13:37.302] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[29:13:59.479] Server  LOG     ✓ Compiled in 1192ms
+[29:14:03.860] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[29:14:04.932] Browser WARN    Image with src "/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[29:14:07.157] Server  LOG     ✓ Compiled in 647ms
+[29:14:09.546] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[29:14:40.242] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
