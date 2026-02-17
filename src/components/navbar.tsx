@@ -100,8 +100,7 @@ const Navbar = () => {
             </Link>
           ))}
           <Link
-            href="/auth/login
-            "
+            href="/auth/login"
             className="w-full py-4 text-center font-bold text-white bg-blue-600 rounded-2xl"
           >
             Get Started
