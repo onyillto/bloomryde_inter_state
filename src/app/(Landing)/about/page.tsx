@@ -57,7 +57,7 @@ const AboutPage = () => {
             className="relative rounded-[3rem] overflow-hidden shadow-2xl"
           >
             <Image
-              src="https://images.unsplash.com/photo-1650692212199-f7290e50ca35?q=80&w=3072&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              src="/car.jpg"
               alt="Lagos Highway"
               fill
               className="object-cover"
@@ -68,7 +68,7 @@ const AboutPage = () => {
             className="relative rounded-[3rem] overflow-hidden shadow-2xl translate-y-20"
           >
             <Image
-              src="https://images.unsplash.com/photo-1636935529049-2078e9ee3e6c?q=80&w=3024&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              src="/car-bo.jpg"
               alt="Tech and Travel"
               fill
               className="object-cover"
