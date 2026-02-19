@@ -3,9 +3,11 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { FiTwitter, FiInstagram, FiLinkedin, FiArrowUp } from "react-icons/fi";
 
 const Footer = () => {
+  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
 
   const navLinks = [
@@ -18,6 +20,8 @@ const Footer = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  if (pathname?.startsWith("/onboarding")) return null;
 
   return (
     <footer className="bg-white py-12 border-t border-slate-100">

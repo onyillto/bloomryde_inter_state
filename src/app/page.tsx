@@ -7,7 +7,7 @@ import ExperienceSection from "../components/experience-section";
 import Coreeauture from "../components/corefeautures";
 import TestimonialsSection from "@/components/Testimonial";
 import Navbar from "../components/navbar";
-import Footer from "../components/footer";
+
 
 export default function Home() {
   const { scrollY } = useScroll();
@@ -76,7 +76,7 @@ export default function Home() {
         </motion.div>
       </main>
 
-      <Footer />
+     
     </div>
   );
 }
