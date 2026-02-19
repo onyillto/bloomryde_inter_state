@@ -139,7 +139,7 @@ export default function AuthForm({ onForgotPassword, onRegister }) {
       // Demo: "123456" passes — replace with real API call
       if (code === "123456") {
         setOtpStatus("success");
-        setTimeout(() => router.push("/onboarding/choose-type"), 700);
+        setTimeout(() => router.push("/onboarding"), 700);
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
