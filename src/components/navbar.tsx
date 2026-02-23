@@ -20,7 +20,7 @@ const Navbar = () => {
   }, []);
 
   if (pathname?.startsWith("/onboarding")) return null;
-
+  if (pathname?.startsWith("/dashboard")) return null;
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Safety", href: "/safety" },
@@ -89,7 +89,9 @@ const Navbar = () => {
       {/* Mobile Menu */}
       <div
         className={`fixed inset-0 z-[-1] md:hidden transition-all duration-500 ${
-          isMobileMenuOpen ? "translate-y-0" : "-translate-y-full"
+          isMobileMenuOpen
+            ? "translate-y-0 opacity-100 visible"
+            : "-translate-y-full opacity-0 invisible"
         }`}
       >
         <div className="bg-white h-screen pt-24 px-8 flex flex-col gap-8">

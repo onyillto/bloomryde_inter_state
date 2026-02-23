@@ -22,6 +22,7 @@ const Footer = () => {
   };
 
   if (pathname?.startsWith("/onboarding")) return null;
+  if (pathname?.startsWith("/dashboard")) return null;
 
   return (
     <footer className="bg-white py-12 border-t border-slate-100">
