@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import DashboardContent from "./DashboardContent";
 import PlaceholderContent from "./PlaceholderContent";
+import FindRide from "./FindRide";
 
 export default function PassengerDashboardPage() {
   const [activeNav, setActiveNav] = useState("Dashboard");
@@ -15,7 +16,7 @@ export default function PassengerDashboardPage() {
       case "Dashboard":
         return <DashboardContent />;
       case "Find a Ride":
-        return <PlaceholderContent title="Find a Ride" />;
+        return <FindRide />;
       case "My Bookings":
         return <PlaceholderContent title="My Bookings" />;
       case "Trip History":
@@ -72,9 +73,7 @@ export default function PassengerDashboardPage() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto bg-slate-950 w-full">
         <Header setIsSidebarOpen={setIsSidebarOpen} />
-        <div className="p-4 md:p-8">
-          {renderContent()}
-        </div>
+        <div className="p-4 md:p-8">{renderContent()}</div>
       </main>
     </div>
   );
