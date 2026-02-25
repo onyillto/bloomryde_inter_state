@@ -168,7 +168,7 @@ function TripCard({
         transition-all duration-200 ease-out
         ${
           selected
-            ? "border-blue-500/60 bg-blue-500/[0.04] shadow-lg shadow-blue-500/5"
+            ? "border-blue-500/60 bg-slate-900/60 shadow-lg shadow-blue-500/5"
             : "border-zinc-800 bg-zinc-900 hover:border-zinc-700 hover:bg-zinc-800/60"
         }
       `}
@@ -687,7 +687,7 @@ export default function FindRide() {
 
         .find-ride-root {
           font-family: 'DM Sans', sans-serif;
-          background: #0b0f0e;
+          background: #0f172a;
           color: #e8f0ec;
           min-height: 100vh;
         }

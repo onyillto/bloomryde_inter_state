@@ -6,7 +6,11 @@ import Header from "./Header";
 import DashboardContent from "./DashboardContent";
 import PlaceholderContent from "./PlaceholderContent";
 import FindRide from "./FindRide";
-
+import MyBookings from "./Mybookings";
+import TripHistory from "./TripHistory";
+import MyProfile from "./MyProfile";
+ import EmergencyContacts from "./EmergencyContacts";
+import Settings from "./Settings";
 export default function PassengerDashboardPage() {
   const [activeNav, setActiveNav] = useState("Dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -18,15 +22,15 @@ export default function PassengerDashboardPage() {
       case "Find a Ride":
         return <FindRide />;
       case "My Bookings":
-        return <PlaceholderContent title="My Bookings" />;
+        return <MyBookings/>;
       case "Trip History":
-        return <PlaceholderContent title="Trip History" />;
+        return <TripHistory />;
       case "My Profile":
-        return <PlaceholderContent title="My Profile" />;
+        return <MyProfile />;
       case "Emergency Contacts":
-        return <PlaceholderContent title="Emergency Contacts" />;
+        return <EmergencyContacts />;
       case "Settings":
-        return <PlaceholderContent title="Settings" />;
+        return <Settings />;
       default:
         return <DashboardContent />;
     }
