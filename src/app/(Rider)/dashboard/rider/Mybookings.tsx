@@ -2,27 +2,30 @@
 
 import { useState } from "react";
 import {
-  Bookmark,
-  Clock,
-  MapPin,
-  ChevronDown,
-  Phone,
-  Share2,
-  XCircle,
-  CheckCircle2,
-  Car,
-  Calendar,
-  Users,
-  Banknote,
-  Copy,
-  MessageCircle,
-  Mail,
-  Smartphone,
-  RotateCcw,
-  Search,
-  AlertCircle,
-  Shield,
-} from "lucide-react";
+  FiBookmark,
+  FiClock,
+  FiMapPin,
+  FiChevronDown,
+  FiPhone,
+  FiShare2,
+  FiCheckCircle,
+  FiXCircle,
+  FiSearch,
+  FiAlertCircle,
+  FiArrowRight,
+  FiCalendar,
+  FiUsers,
+  FiMessageCircle,
+  FiMail,
+  FiRotateCcw,
+  FiShield,
+  FiCopy,
+} from "react-icons/fi";
+import { BsWhatsapp, BsPhoneFill } from "react-icons/bs";
+import { MdOutlineDirectionsCar } from "react-icons/md";
+import { PiCurrencyNgnBold } from "react-icons/pi";
+import { TbCreditCard } from "react-icons/tb";
+import { RiSmartphoneLine } from "react-icons/ri";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -64,7 +67,7 @@ const MOCK_BOOKINGS: Booking[] = [
     driverName: "Emeka Okonkwo",
     driverRating: 5,
     driverTrips: 48,
-    avatarBg: "from-blue-800 to-blue-950",
+    avatarBg: "from-blue-600/30 to-blue-900/60",
     from: "Lagos (Jibowu)",
     to: "Abuja (Utako Park)",
     date: "28 Feb 2026",
@@ -87,7 +90,7 @@ const MOCK_BOOKINGS: Booking[] = [
     driverName: "Chidi Anyanwu",
     driverRating: 4,
     driverTrips: 31,
-    avatarBg: "from-sky-800 to-sky-950",
+    avatarBg: "from-indigo-600/30 to-indigo-900/60",
     from: "Abuja (Utako Park)",
     to: "Port Harcourt (Waterlines)",
     date: "12 Mar 2026",
@@ -111,7 +114,7 @@ const MOCK_BOOKINGS: Booking[] = [
     driverName: "Biodun Fashola",
     driverRating: 5,
     driverTrips: 67,
-    avatarBg: "from-amber-800 to-amber-950",
+    avatarBg: "from-amber-600/30 to-amber-900/60",
     from: "Lagos (Jibowu)",
     to: "Enugu (Nike Lake Rd)",
     date: "5 Jan 2026",
@@ -130,12 +133,12 @@ const MOCK_BOOKINGS: Booking[] = [
   },
 ];
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── StarRating ───────────────────────────────────────────────────────────────
 
-function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
+function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex items-center gap-0.5">
-      {Array.from({ length: max }).map((_, i) => (
+      {Array.from({ length: 5 }).map((_, i) => (
         <svg
           key={i}
           className={`w-3 h-3 ${
@@ -151,6 +154,8 @@ function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
   );
 }
 
+// ─── StatusBadge ──────────────────────────────────────────────────────────────
+
 function StatusBadge({ status }: { status: BookingStatus }) {
   const map: Record<
     BookingStatus,
@@ -158,17 +163,17 @@ function StatusBadge({ status }: { status: BookingStatus }) {
   > = {
     confirmed: {
       cls: "bg-blue-500/15 text-blue-400 border-blue-500/20",
-      icon: <CheckCircle2 className="w-3 h-3" />,
+      icon: <FiCheckCircle size={11} />,
       label: "Confirmed",
     },
     pending: {
       cls: "bg-amber-500/15 text-amber-400 border-amber-500/20",
-      icon: <Clock className="w-3 h-3" />,
+      icon: <FiClock size={11} />,
       label: "Pending",
     },
     cancelled: {
       cls: "bg-red-500/15 text-red-400 border-red-500/20",
-      icon: <XCircle className="w-3 h-3" />,
+      icon: <FiXCircle size={11} />,
       label: "Cancelled",
     },
   };
@@ -177,13 +182,12 @@ function StatusBadge({ status }: { status: BookingStatus }) {
     <span
       className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border ${cls}`}
     >
-      {icon}
-      {label}
+      {icon} {label}
     </span>
   );
 }
 
-// ─── Booking Card ─────────────────────────────────────────────────────────────
+// ─── BookingCard ──────────────────────────────────────────────────────────────
 
 function BookingCard({
   booking,
@@ -211,31 +215,29 @@ function BookingCard({
         relative rounded-2xl border transition-all duration-200 overflow-hidden
         ${
           expanded
-            ? "border-blue-500/40 bg-blue-500/[0.03] shadow-lg shadow-blue-500/5"
-            : "border-slate-800 bg-slate-900 hover:border-slate-700 hover:bg-slate-800/60"
+            ? "border-blue-500/40 bg-slate-900/60 shadow-lg shadow-blue-500/5"
+            : "border-white/5 bg-slate-900/60 hover:border-white/10 hover:bg-slate-800/50"
         }
       `}
     >
-      {/* Top accent line when expanded */}
+      {/* Top accent */}
       {expanded && (
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
       )}
 
-      {/* ── Card Header (always visible) ─────────────── */}
+      {/* ── Header ─────────────────────────────────── */}
       <div
         className="flex items-start gap-4 p-5 cursor-pointer select-none"
         onClick={onToggle}
       >
         {/* Date block */}
         <div
-          className={`
-            flex-shrink-0 w-14 rounded-xl text-center py-2.5 border
+          className={`flex-shrink-0 w-14 rounded-xl text-center py-2.5 border transition-all
             ${
               expanded
-                ? "bg-blue-500/15 border-blue-500/30"
-                : "bg-slate-800 border-slate-700"
-            }
-          `}
+                ? "bg-blue-600/20 border-blue-500/20"
+                : "bg-white/5 border-white/5"
+            }`}
         >
           <div
             className="font-black text-[22px] leading-none text-white"
@@ -248,16 +250,18 @@ function BookingCard({
           </div>
         </div>
 
-        {/* Driver + Route */}
+        {/* Driver + route + meta */}
         <div className="flex-1 min-w-0">
+          {/* Driver row */}
           <div className="flex items-center gap-2 mb-1">
-            {/* Inline avatar */}
             <div
-              className={`w-7 h-7 rounded-full bg-gradient-to-br ${booking.avatarBg} flex items-center justify-center text-[10px] font-bold text-blue-300 border border-slate-700 flex-shrink-0`}
+              className={`w-7 h-7 rounded-full bg-gradient-to-br ${booking.avatarBg}
+                flex items-center justify-center text-[10px] font-bold text-blue-300
+                border border-white/10 flex-shrink-0`}
             >
               {booking.driverInitials}
             </div>
-            <span className="font-semibold text-[15px] text-white tracking-tight truncate">
+            <span className="font-semibold text-[14px] text-white tracking-tight truncate">
               {booking.driverName}
             </span>
             <StarRating rating={booking.driverRating} />
@@ -271,19 +275,7 @@ function BookingCard({
             <span className="text-slate-300 font-medium truncate">
               {booking.from}
             </span>
-            <svg
-              className="w-3.5 h-3.5 text-blue-500 flex-shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M5 12h14M13 6l6 6-6 6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <FiArrowRight size={13} className="text-blue-400 flex-shrink-0" />
             <span className="text-blue-400 font-medium truncate">
               {booking.to}
             </span>
@@ -292,21 +284,21 @@ function BookingCard({
           {/* Meta chips */}
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
-              <Clock className="w-3.5 h-3.5 text-slate-600" />
+              <FiClock size={11} className="text-slate-600" />
               {booking.time} · {booking.duration}
             </span>
             <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
-              <Car className="w-3.5 h-3.5 text-slate-600" />
+              <MdOutlineDirectionsCar size={13} className="text-slate-600" />
               {booking.vehicle} · {booking.vehicleColor}
             </span>
             <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
-              <Users className="w-3.5 h-3.5 text-slate-600" />
+              <FiUsers size={11} className="text-slate-600" />
               {booking.seats} seat{booking.seats > 1 ? "s" : ""}
             </span>
           </div>
         </div>
 
-        {/* Right: Status + Price + Chevron */}
+        {/* Right: status + price + chevron */}
         <div className="flex flex-col items-end gap-2 flex-shrink-0">
           <StatusBadge status={booking.status} />
           <div className="text-right">
@@ -318,47 +310,48 @@ function BookingCard({
             </div>
             <div className="text-[11px] text-slate-600 mt-0.5">cash</div>
           </div>
-          <ChevronDown
-            className={`w-4 h-4 text-slate-600 transition-transform duration-200 ${
+          <FiChevronDown
+            size={16}
+            className={`text-slate-600 transition-transform duration-200 ${
               expanded ? "rotate-180" : ""
             }`}
           />
         </div>
       </div>
 
-      {/* ── Expanded Panel ────────────────────────────── */}
+      {/* ── Expanded Panel ────────────────────────── */}
       {expanded && (
-        <div className="border-t border-slate-800 px-5 pb-5 pt-4 space-y-4">
-          {/* Trip details grid */}
-          <div className="grid grid-cols-3 gap-3">
+        <div className="border-t border-white/5 px-5 pb-5 pt-4 space-y-4">
+          {/* Details grid */}
+          <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
             {[
               {
-                icon: <MapPin className="w-3.5 h-3.5" />,
+                icon: <FiMapPin size={12} />,
                 label: "Pickup",
                 value: booking.from,
               },
               {
-                icon: <MapPin className="w-3.5 h-3.5" />,
+                icon: <FiMapPin size={12} />,
                 label: "Drop-off",
                 value: booking.to,
               },
               {
-                icon: <Calendar className="w-3.5 h-3.5" />,
+                icon: <FiCalendar size={12} />,
                 label: "Departure",
                 value: `${booking.date}, ${booking.time}`,
               },
               {
-                icon: <Car className="w-3.5 h-3.5" />,
+                icon: <MdOutlineDirectionsCar size={13} />,
                 label: "Vehicle",
                 value: `${booking.vehicle} · ${booking.vehicleColor}`,
               },
               {
-                icon: <Shield className="w-3.5 h-3.5" />,
+                icon: <FiShield size={12} />,
                 label: "Plate No.",
                 value: booking.plate,
               },
               {
-                icon: <Banknote className="w-3.5 h-3.5" />,
+                icon: <PiCurrencyNgnBold size={13} />,
                 label: "Total (Cash)",
                 value: `₦${total.toLocaleString()}`,
                 highlight: true,
@@ -368,20 +361,19 @@ function BookingCard({
                 key={label}
                 className={`rounded-xl p-3 border ${
                   highlight
-                    ? "bg-blue-500/8 border-blue-500/20"
-                    : "bg-slate-800/60 border-slate-800"
+                    ? "bg-blue-600/10 border-blue-500/20"
+                    : "bg-white/5 border-white/5"
                 }`}
               >
                 <div
                   className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-1.5 ${
-                    highlight ? "text-blue-500" : "text-slate-600"
+                    highlight ? "text-blue-400" : "text-slate-600"
                   }`}
                 >
-                  {icon}
-                  {label}
+                  {icon} {label}
                 </div>
                 <div
-                  className={`text-[13px] font-semibold ${
+                  className={`text-[13px] font-semibold leading-snug ${
                     highlight
                       ? "text-blue-400 text-[16px] font-black"
                       : "text-slate-300"
@@ -394,14 +386,14 @@ function BookingCard({
             ))}
           </div>
 
-          {/* Reference number */}
-          <div className="flex items-center gap-3 rounded-xl bg-slate-800/50 border border-slate-800 px-4 py-3">
+          {/* Reference */}
+          <div className="flex items-center gap-3 rounded-xl bg-white/5 border border-white/5 px-4 py-3">
             <div className="flex-1">
               <div className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest mb-0.5">
                 Booking Reference
               </div>
               <div
-                className="font-mono text-[14px] font-bold text-slate-200 tracking-widest"
+                className="font-mono text-[13px] font-bold text-slate-300 tracking-widest"
                 style={{ fontFamily: "'Syne', sans-serif" }}
               >
                 {booking.ref}
@@ -412,94 +404,78 @@ function BookingCard({
               className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg border transition-all
                 ${
                   copied
-                    ? "bg-blue-500/15 border-blue-500/30 text-blue-400"
-                    : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200"
+                    ? "bg-blue-600/15 border-blue-500/30 text-blue-400"
+                    : "bg-white/5 border-white/5 text-slate-400 hover:border-white/10 hover:text-slate-200"
                 }`}
             >
-              {copied ? (
-                <CheckCircle2 className="w-3.5 h-3.5" />
-              ) : (
-                <Copy className="w-3.5 h-3.5" />
-              )}
+              {copied ? <FiCheckCircle size={13} /> : <FiCopy size={13} />}
               {copied ? "Copied!" : "Copy"}
             </button>
           </div>
 
-          {/* Driver contact — only for active bookings */}
+          {/* Driver contact card — active bookings only */}
           {booking.status !== "cancelled" && (
-            <div className="rounded-2xl border border-blue-500/25 bg-gradient-to-br from-blue-500/8 to-blue-500/3 p-4">
-              {/* Header */}
+            <div className="rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-600/10 to-blue-600/5 p-4">
               <div className="flex items-center gap-1.5 mb-4">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                <span className="text-[11px] font-bold text-blue-500 uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse inline-block" />
+                <span className="text-[11px] font-bold text-blue-400 uppercase tracking-widest">
                   Driver Contact
                 </span>
               </div>
 
-              {/* Driver info row */}
               <div className="flex items-center gap-3 mb-4">
                 <div className="relative flex-shrink-0">
                   <div
-                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${booking.avatarBg} flex items-center justify-center font-bold text-sm text-blue-300 border-2 border-blue-500/30`}
+                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${booking.avatarBg}
+                      flex items-center justify-center font-bold text-sm text-blue-300
+                      border-2 border-blue-500/30`}
                   >
                     {booking.driverInitials}
                   </div>
-                  {/* Verified dot */}
-                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center border-2 border-slate-900">
-                    <svg
-                      className="w-2 h-2 text-slate-900"
-                      fill="none"
-                      viewBox="0 0 12 12"
-                    >
-                      <path
-                        d="M2 6l3 3 5-5"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center border-2 border-[#0f172a]">
+                    <FiCheckCircle
+                      size={8}
+                      className="text-white"
+                      strokeWidth={3}
+                    />
                   </div>
                 </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-[15px] text-white">
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-[14px] text-white">
                     {booking.driverName}
                   </div>
                   <div className="flex items-center gap-1.5 text-[12px] text-slate-500 mt-0.5">
-                    <CheckCircle2 className="w-3 h-3 text-blue-500" />
+                    <FiCheckCircle size={11} className="text-blue-400" />
                     Verified · {booking.driverTrips} trips
                   </div>
                 </div>
                 <div
-                  className="font-black text-[18px] text-white tracking-wide"
+                  className="font-black text-[15px] text-white tracking-wide flex-shrink-0"
                   style={{ fontFamily: "'Syne', sans-serif" }}
                 >
                   {booking.phone}
                 </div>
               </div>
 
-              {/* CTA buttons */}
               <div className="grid grid-cols-2 gap-2">
-                <button className="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold text-[13px] py-2.5 rounded-xl hover:bg-blue-500 transition-all hover:-translate-y-0.5 shadow-lg shadow-blue-600/20">
-                  <Phone className="w-4 h-4" />
-                  Call Driver
+                <button className="flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold text-[13px] py-2.5 rounded-xl hover:bg-blue-500 transition-all hover:-translate-y-0.5 shadow-md shadow-blue-600/20">
+                  <BsPhoneFill size={13} /> Call Driver
                 </button>
-                <button className="flex items-center justify-center gap-2 bg-slate-800 text-slate-200 font-semibold text-[13px] py-2.5 rounded-xl border border-slate-700 hover:border-slate-600 hover:bg-slate-700 transition-all">
-                  <MessageCircle className="w-4 h-4" />
-                  WhatsApp
+                <button className="flex items-center justify-center gap-2 bg-white/5 text-slate-300 font-medium text-[13px] py-2.5 rounded-xl border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all">
+                  <BsWhatsapp size={14} /> WhatsApp
                 </button>
               </div>
             </div>
           )}
 
-          {/* Share trip / cancelled state */}
+          {/* Share trip OR cancelled banner */}
           {booking.status !== "cancelled" ? (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+            <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
               <div
-                className="flex items-center gap-2 text-[13px] font-bold text-white mb-1"
+                className="text-[13px] font-semibold text-white mb-1 flex items-center gap-2"
                 style={{ fontFamily: "'Syne', sans-serif" }}
               >
-                <Shield className="w-4 h-4 text-blue-500" />
+                <FiShield size={14} className="text-blue-400" />
                 Share Trip Details
               </div>
               <div className="text-[12px] text-slate-500 mb-3">
@@ -507,38 +483,33 @@ function BookingCard({
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  {
-                    icon: <MessageCircle className="w-4 h-4" />,
-                    label: "WhatsApp",
-                  },
-                  { icon: <Smartphone className="w-4 h-4" />, label: "SMS" },
-                  { icon: <Mail className="w-4 h-4" />, label: "Email" },
+                  { icon: <BsWhatsapp size={14} />, label: "WhatsApp" },
+                  { icon: <RiSmartphoneLine size={15} />, label: "SMS" },
+                  { icon: <FiMail size={14} />, label: "Email" },
                 ].map(({ icon, label }) => (
                   <button
                     key={label}
                     onClick={() => setShared(true)}
-                    className={`flex flex-col items-center gap-1.5 py-3 rounded-xl border transition-all
+                    className={`flex flex-col items-center gap-1.5 py-2.5 rounded-xl border text-[11px] font-medium transition-all
                       ${
                         shared
-                          ? "border-blue-500/30 bg-blue-500/5 text-blue-400"
-                          : "border-slate-800 bg-slate-800/50 text-slate-500 hover:border-blue-500/30 hover:text-blue-400"
+                          ? "border-blue-500/30 bg-blue-600/10 text-blue-400"
+                          : "border-white/5 bg-white/5 text-slate-400 hover:border-blue-500/30 hover:bg-blue-600/10 hover:text-blue-400"
                       }`}
                   >
-                    {icon}
-                    <span className="text-[11px] font-semibold">{label}</span>
+                    {icon} {label}
                   </button>
                 ))}
               </div>
               {shared && (
-                <div className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-blue-500">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Trip details shared successfully
+                <div className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-blue-400">
+                  <FiCheckCircle size={11} /> Trip details shared
                 </div>
               )}
             </div>
           ) : (
             <div className="rounded-xl border border-red-500/15 bg-red-500/5 px-4 py-3 flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+              <FiAlertCircle size={18} className="text-red-400 flex-shrink-0" />
               <div>
                 <div className="text-[13px] font-semibold text-red-400">
                   Trip Cancelled
@@ -553,49 +524,47 @@ function BookingCard({
           {/* Bottom actions */}
           <div className="flex gap-2 pt-1">
             {booking.status === "cancelled" ? (
-              <button className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white font-bold text-[13px] py-2.5 rounded-xl hover:bg-blue-500 transition-all shadow-md shadow-blue-600/20 hover:-translate-y-0.5">
-                <Search className="w-4 h-4" />
-                Find Another Ride
+              <button className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold text-[13px] py-2.5 rounded-xl hover:bg-blue-500 transition-all shadow-md shadow-blue-600/20 hover:-translate-y-0.5">
+                <FiSearch size={14} /> Find Another Ride
               </button>
             ) : (
               <>
-                <button className="flex-1 flex items-center justify-center gap-2 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[13px] py-2.5 rounded-xl hover:border-slate-600 hover:bg-slate-700 transition-all">
-                  <Share2 className="w-4 h-4" />
-                  Share Trip
+                <button className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/5 text-slate-300 font-medium text-[13px] py-2.5 rounded-xl hover:bg-white/10 hover:border-white/10 transition-all">
+                  <FiShare2 size={14} /> Share Trip
                 </button>
-                {booking.status !== "cancelled" && (
-                  <button
-                    onClick={() => setCancelling(!cancelling)}
-                    className="flex-1 flex items-center justify-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 font-semibold text-[13px] py-2.5 rounded-xl hover:bg-red-500/15 hover:border-red-500/30 transition-all"
-                  >
-                    <XCircle className="w-4 h-4" />
-                    Cancel Trip
-                  </button>
-                )}
+                <button
+                  onClick={() => setCancelling(!cancelling)}
+                  className="flex-1 flex items-center justify-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 font-medium text-[13px] py-2.5 rounded-xl hover:bg-red-500/15 hover:border-red-500/30 transition-all"
+                >
+                  <FiXCircle size={14} /> Cancel Trip
+                </button>
               </>
             )}
           </div>
 
-          {/* Cancel confirm modal inline */}
+          {/* Inline cancel confirm */}
           {cancelling && (
-            <div className="rounded-xl border border-red-500/25 bg-red-500/8 p-4">
-              <div className="text-[13px] font-bold text-red-400 mb-1 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" /> Confirm Cancellation
+            <div
+              className="rounded-xl border border-red-500/25 bg-red-500/8 p-4"
+              style={{ animation: "bookingIn 0.2s ease-out both" }}
+            >
+              <div className="text-[13px] font-semibold text-red-400 mb-1 flex items-center gap-2">
+                <FiAlertCircle size={14} /> Confirm Cancellation
               </div>
               <div className="text-[12px] text-slate-500 mb-3">
-                Are you sure you want to cancel this booking? This action cannot
-                be undone.
+                Are you sure you want to cancel this booking? This cannot be
+                undone.
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => setCancelling(false)}
-                  className="flex-1 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 text-[12px] font-semibold hover:bg-slate-700 transition-all"
+                  className="flex-1 py-2 rounded-lg bg-white/5 border border-white/5 text-slate-400 text-[12px] font-medium hover:bg-white/10 transition-all"
                 >
                   Keep Booking
                 </button>
                 <button
                   onClick={() => setCancelling(false)}
-                  className="flex-1 py-2 rounded-lg bg-red-500 text-white text-[12px] font-bold hover:bg-red-400 transition-all"
+                  className="flex-1 py-2 rounded-lg bg-red-500 text-white text-[12px] font-semibold hover:bg-red-400 transition-all"
                 >
                   Yes, Cancel
                 </button>
@@ -608,16 +577,16 @@ function BookingCard({
   );
 }
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
+// ─── EmptyState ───────────────────────────────────────────────────────────────
 
 function EmptyState({ filter }: { filter: Filter }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-16 h-16 rounded-full border border-slate-800 bg-slate-900 flex items-center justify-center mb-5 opacity-70">
-        <Bookmark className="w-7 h-7 text-slate-600" />
+      <div className="w-14 h-14 rounded-xl border border-white/5 bg-slate-900/60 flex items-center justify-center mb-5 opacity-50">
+        <FiBookmark size={24} className="text-slate-600" />
       </div>
       <div
-        className="text-[16px] font-bold text-slate-500 mb-1"
+        className="text-[15px] font-semibold text-slate-500 mb-1"
         style={{ fontFamily: "'Syne', sans-serif" }}
       >
         {filter === "all" ? "No bookings yet" : `No ${filter} bookings`}
@@ -637,7 +606,7 @@ export default function MyBookings() {
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
   const [expandedId, setExpandedId] = useState<string | null>("1");
 
-  const filters: { key: Filter; label: string; count?: number }[] = [
+  const filterDefs: { key: Filter; label: string; count: number }[] = [
     { key: "all", label: "All", count: MOCK_BOOKINGS.length },
     {
       key: "confirmed",
@@ -664,86 +633,97 @@ export default function MyBookings() {
   const confirmedCount = MOCK_BOOKINGS.filter(
     (b) => b.status === "confirmed"
   ).length;
+  const totalSpent = MOCK_BOOKINGS.filter(
+    (b) => b.status !== "cancelled"
+  ).reduce((s, b) => s + b.price * b.seats, 0);
+  const upcomingCount = MOCK_BOOKINGS.filter(
+    (b) => b.status === "confirmed" || b.status === "pending"
+  ).length;
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap');
 
-        .my-bookings-root * { box-sizing: border-box; }
-        .my-bookings-root { font-family: 'DM Sans', sans-serif; }
-
-        .booking-card-enter {
-          animation: bookingIn 0.25s ease-out both;
+        .mb-root * { box-sizing: border-box; }
+        .mb-root {
+          font-family: 'DM Sans', sans-serif;
+          background: #0f172a;
+          color: #cbd5e1;
+          min-height: 100vh;
         }
+        .mb-root ::-webkit-scrollbar { width: 4px; }
+        .mb-root ::-webkit-scrollbar-track { background: transparent; }
+        .mb-root ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+        .booking-enter { animation: bookingIn 0.25s ease-out both; }
         @keyframes bookingIn {
           from { opacity: 0; transform: translateY(10px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-
-        .my-bookings-root ::-webkit-scrollbar { width: 4px; }
-        .my-bookings-root ::-webkit-scrollbar-track { background: transparent; }
-        .my-bookings-root ::-webkit-scrollbar-thumb { background: #2a3530; border-radius: 4px; }
       `}</style>
 
-      <div className="my-bookings-root bg-[#0b0f0e] min-h-screen text-[#e8f0ec]">
-        <div className="max-w-[780px] mx-auto px-6 py-8">
+      <div className="mb-root">
+        <div className="max-w-[780px] lg:max-w-[1100px] mx-auto px-6 py-8">
           {/* ── Page Header ─────────────────────────────────────── */}
           <div className="flex items-start justify-between mb-8">
             <div>
               <h1
-                className="text-[28px] font-black text-white leading-tight tracking-tight flex items-center gap-3"
+                className="text-[26px] font-bold text-white leading-tight tracking-tight flex items-center gap-2.5"
                 style={{ fontFamily: "'Syne', sans-serif" }}
               >
-                <Bookmark className="w-7 h-7 text-blue-500" />
+                <FiBookmark className="text-blue-400" size={24} />
                 My Bookings
                 {confirmedCount > 0 && (
-                  <span className="bg-blue-600 text-white text-[13px] font-bold px-2.5 py-0.5 rounded-full">
+                  <span className="bg-blue-600 text-white text-[12px] font-semibold px-2.5 py-0.5 rounded-full">
                     {confirmedCount}
                   </span>
                 )}
               </h1>
-              <p className="text-slate-500 text-[14px] mt-1">
+              <p className="text-slate-500 text-sm mt-1">
                 Manage your upcoming and past trip bookings
               </p>
             </div>
 
             <button
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-[13px] px-4 py-2.5 rounded-xl shadow-lg shadow-blue-600/20 hover:-translate-y-0.5 transition-all"
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-[13px] px-4 py-2.5 rounded-xl shadow-lg shadow-blue-600/20 hover:-translate-y-0.5 transition-all"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
-              <Search className="w-4 h-4" />
-              Find a Ride
+              <FiSearch size={14} /> Find a Ride
             </button>
           </div>
 
-          {/* ── Summary Stats ────────────────────────────────────── */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          {/* ── Stats ─────────────────────────────────────────────── */}
+          <div className="grid grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
             {[
               {
                 label: "Total Trips",
                 value: MOCK_BOOKINGS.length,
-                icon: <Bookmark className="w-4 h-4" />,
-                color: "from-blue-500/10 to-blue-500/5 border-blue-500/20",
+                icon: <FiBookmark size={14} />,
+                color: "from-blue-600/20 to-blue-600/5 border-blue-500/20",
                 valueColor: "text-blue-400",
               },
               {
                 label: "Total Spent",
-                value: `₦${MOCK_BOOKINGS.filter((b) => b.status !== "cancelled")
-                  .reduce((s, b) => s + b.price * b.seats, 0)
-                  .toLocaleString()}`,
-                icon: <Banknote className="w-4 h-4" />,
-                color: "from-slate-800 to-slate-900 border-slate-800",
+                value: `₦${totalSpent.toLocaleString()}`,
+                icon: <TbCreditCard size={15} />,
+                color: "from-white/5 to-white/[0.02] border-white/5",
                 valueColor: "text-white",
               },
               {
                 label: "Upcoming",
-                value: MOCK_BOOKINGS.filter(
-                  (b) => b.status === "confirmed" || b.status === "pending"
-                ).length,
-                icon: <Calendar className="w-4 h-4" />,
-                color: "from-slate-800 to-slate-900 border-slate-800",
+                value: upcomingCount,
+                icon: <FiCalendar size={14} />,
+                color: "from-white/5 to-white/[0.02] border-white/5",
                 valueColor: "text-white",
+              },
+              {
+                label: "Confirmed",
+                value: confirmedCount,
+                icon: <FiCheckCircle size={14} />,
+                color:
+                  "from-emerald-500/10 to-emerald-500/5 border-emerald-500/20",
+                valueColor: "text-emerald-400",
               },
             ].map((s) => (
               <div
@@ -766,40 +746,38 @@ export default function MyBookings() {
             ))}
           </div>
 
-          {/* ── Filter Pills ──────────────────────────────────────── */}
+          {/* ── Filter Pills ─────────────────────────────────────── */}
           <div className="flex gap-2 flex-wrap mb-5">
-            {filters.map(({ key, label, count }) => (
+            {filterDefs.map(({ key, label, count }) => (
               <button
                 key={key}
                 onClick={() => setActiveFilter(key)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-semibold border transition-all
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-all
                   ${
                     activeFilter === key
                       ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-transparent text-slate-500 border-slate-800 hover:border-slate-600 hover:text-slate-300"
+                      : "bg-transparent text-slate-500 border-white/5 hover:border-blue-500/30 hover:text-slate-300"
                   }`}
               >
                 {label}
-                {count !== undefined && (
-                  <span
-                    className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center
-                      ${
-                        activeFilter === key
-                          ? "bg-white/20 text-white"
-                          : "bg-slate-800 text-slate-500"
-                      }`}
-                  >
-                    {count}
-                  </span>
-                )}
+                <span
+                  className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full min-w-[18px] text-center
+                    ${
+                      activeFilter === key
+                        ? "bg-white/20 text-white"
+                        : "bg-white/5 text-slate-500"
+                    }`}
+                >
+                  {count}
+                </span>
               </button>
             ))}
           </div>
 
-          {/* ── Results Meta ─────────────────────────────────────── */}
+          {/* ── Results meta ─────────────────────────────────────── */}
           {filteredBookings.length > 0 && (
             <div className="flex items-center gap-2 text-[13px] text-slate-500 mb-4">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse inline-block" />
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse inline-block" />
               <span>
                 <span className="text-white font-semibold">
                   {filteredBookings.length} booking
@@ -814,31 +792,34 @@ export default function MyBookings() {
           {filteredBookings.length === 0 ? (
             <EmptyState filter={activeFilter} />
           ) : (
-            <div className="flex flex-col gap-3">
-              {filteredBookings.map((booking, i) => (
-                <div
-                  key={booking.id}
-                  className="booking-card-enter"
-                  style={{ animationDelay: `${i * 60}ms` }}
-                >
-                  <BookingCard
-                    booking={booking}
-                    expanded={expandedId === booking.id}
-                    onToggle={() =>
-                      setExpandedId(
-                        expandedId === booking.id ? null : booking.id
-                      )
-                    }
-                  />
-                </div>
-              ))}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {filteredBookings.map((booking, i) => {
+                const isExpanded = expandedId === booking.id;
+                return (
+                  <div
+                    key={booking.id}
+                    className={`booking-enter ${
+                      isExpanded ? "lg:col-span-2" : ""
+                    }`}
+                    style={{ animationDelay: `${i * 60}ms` }}
+                  >
+                    <BookingCard
+                      booking={booking}
+                      expanded={isExpanded}
+                      onToggle={() =>
+                        setExpandedId(isExpanded ? null : booking.id)
+                      }
+                    />
+                  </div>
+                );
+              })}
             </div>
           )}
 
-          {/* ── Bottom refresh hint ──────────────────────────────── */}
+          {/* ── Footer ──────────────────────────────────────────── */}
           {filteredBookings.length > 0 && (
             <div className="flex items-center justify-center gap-2 mt-8 text-[12px] text-slate-700">
-              <RotateCcw className="w-3.5 h-3.5" />
+              <FiRotateCcw size={12} />
               Last synced just now
             </div>
           )}
@@ -847,3 +828,4 @@ export default function MyBookings() {
     </>
   );
 }
+

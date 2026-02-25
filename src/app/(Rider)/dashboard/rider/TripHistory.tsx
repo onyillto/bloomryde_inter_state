@@ -216,7 +216,9 @@ function StarDisplay({
       {Array.from({ length: 5 }).map((_, i) => (
         <svg
           key={i}
-          className={`${sz} ${i < rating ? "text-amber-400" : "text-slate-700"}`}
+          className={`${sz} ${
+            i < rating ? "text-amber-400" : "text-slate-700"
+          }`}
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -305,7 +307,7 @@ function StarRater({
             placeholder="Leave a review (optional)..."
             maxLength={200}
             rows={2}
-            className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-[13px] text-slate-200 placeholder:text-slate-600 resize-none focus:outline-none focus:border-blue-500/60 transition-colors"
+            className="w-full bg-slate-800/80 border border-white/10 rounded-xl px-3 py-2.5 text-[13px] text-slate-200 placeholder:text-slate-500 resize-none focus:outline-none focus:border-blue-500/60 transition-colors"
           />
           <button
             onClick={() => {
@@ -346,8 +348,8 @@ function TripHistoryCard({
         relative rounded-2xl border transition-all duration-200 overflow-hidden
         ${
           expanded
-            ? "border-blue-500/30 bg-blue-500/[0.03] shadow-lg shadow-blue-500/5"
-            : "border-slate-800 bg-slate-900 hover:border-slate-700 hover:bg-slate-800/60"
+            ? "border-blue-500/40 bg-slate-900/60 shadow-lg shadow-blue-500/5"
+            : "border-white/5 bg-slate-900/60 hover:border-white/10 hover:bg-slate-800/50"
         }
       `}
     >
@@ -367,10 +369,10 @@ function TripHistoryCard({
             flex-shrink-0 w-14 rounded-xl text-center py-2.5 border
             ${
               trip.status === "cancelled"
-                ? "bg-slate-800/80 border-slate-800"
+                ? "bg-white/5 border-white/5 opacity-60"
                 : expanded
-                ? "bg-blue-500/15 border-blue-500/25"
-                : "bg-slate-800 border-slate-700"
+                ? "bg-blue-600/20 border-blue-500/20"
+                : "bg-white/5 border-white/5"
             }
           `}
         >
@@ -396,7 +398,7 @@ function TripHistoryCard({
                 trip.status === "cancelled"
                   ? "from-slate-700 to-slate-800"
                   : trip.avatarBg
-              } flex items-center justify-center text-[10px] font-bold text-blue-300 border border-slate-700 flex-shrink-0`}
+              } flex items-center justify-center text-[10px] font-bold text-blue-300 border border-white/10 flex-shrink-0`}
             >
               {trip.driverInitials}
             </div>
@@ -417,7 +419,9 @@ function TripHistoryCard({
           <div className="flex items-center gap-1.5 text-[13px] mb-2">
             <span
               className={`font-medium truncate ${
-                trip.status === "cancelled" ? "text-slate-600" : "text-slate-300"
+                trip.status === "cancelled"
+                  ? "text-slate-600"
+                  : "text-slate-300"
               }`}
             >
               {trip.from}
@@ -494,7 +498,7 @@ function TripHistoryCard({
 
       {/* ── Expanded Panel ────────────────────────────── */}
       {expanded && (
-        <div className="border-t border-slate-800 px-5 pb-5 pt-4 space-y-4">
+        <div className="border-t border-white/5 px-5 pb-5 pt-4 space-y-4">
           {/* Trip details grid */}
           <div className="grid grid-cols-3 gap-3">
             {[
@@ -537,8 +541,8 @@ function TripHistoryCard({
                 key={label}
                 className={`rounded-xl p-3 border ${
                   highlight
-                    ? "bg-blue-500/8 border-blue-500/20"
-                    : "bg-slate-800/60 border-slate-800"
+                    ? "bg-blue-600/10 border-blue-500/20"
+                    : "bg-white/5 border-white/5"
                 }`}
               >
                 <div
@@ -566,7 +570,7 @@ function TripHistoryCard({
           </div>
 
           {/* Reference */}
-          <div className="flex items-center gap-3 rounded-xl bg-slate-800/50 border border-slate-800 px-4 py-3">
+          <div className="flex items-center gap-3 rounded-xl bg-white/5 border border-white/5 px-4 py-3">
             <div className="flex-1">
               <div className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest mb-0.5">
                 Booking Reference
@@ -582,7 +586,7 @@ function TripHistoryCard({
 
           {/* Rating section — only for completed + unrated */}
           {trip.status === "completed" && !localRating && (
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
               <div
                 className="flex items-center gap-2 text-[13px] font-bold text-white mb-1"
                 style={{ fontFamily: "'Syne', sans-serif" }}
@@ -604,7 +608,7 @@ function TripHistoryCard({
 
           {/* Rating already submitted */}
           {trip.status === "completed" && localRating && (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+            <div className="rounded-2xl border border-white/5 bg-white/5 p-4">
               <div className="flex items-center justify-between mb-2">
                 <div
                   className="text-[13px] font-bold text-white flex items-center gap-2"
@@ -643,12 +647,12 @@ function TripHistoryCard({
 
           {/* Bottom CTA */}
           <div className="flex gap-2 pt-1">
-            <button className="flex-1 flex items-center justify-center gap-2 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[13px] py-2.5 rounded-xl hover:border-slate-600 hover:bg-slate-700 transition-all">
+            <button className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/5 text-slate-300 font-semibold text-[13px] py-2.5 rounded-xl hover:border-white/10 hover:bg-white/10 transition-all">
               <Search className="w-4 h-4" />
               Book Same Route
             </button>
             {trip.status === "completed" && (
-              <button className="flex-1 flex items-center justify-center gap-2 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[13px] py-2.5 rounded-xl hover:border-slate-600 hover:bg-slate-700 transition-all">
+              <button className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/5 text-slate-300 font-semibold text-[13px] py-2.5 rounded-xl hover:border-white/10 hover:bg-white/10 transition-all">
                 <RotateCcw className="w-4 h-4" />
                 Book Again
               </button>
@@ -711,7 +715,12 @@ export default function TripHistory() {
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap');
 
         .trip-history-root * { box-sizing: border-box; }
-        .trip-history-root { font-family: 'DM Sans', sans-serif; }
+        .trip-history-root {
+          font-family: 'DM Sans', sans-serif;
+          background: #0f172a;
+          color: #cbd5e1;
+          min-height: 100vh;
+        }
 
         .trip-enter {
           animation: tripIn 0.25s ease-out both;
@@ -723,11 +732,11 @@ export default function TripHistory() {
 
         .trip-history-root ::-webkit-scrollbar { width: 4px; }
         .trip-history-root ::-webkit-scrollbar-track { background: transparent; }
-        .trip-history-root ::-webkit-scrollbar-thumb { background: #2a3530; border-radius: 4px; }
+        .trip-history-root ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
       `}</style>
 
-      <div className="trip-history-root bg-[#0b0f0e] min-h-screen text-[#e8f0ec]">
-        <div className="max-w-[780px] mx-auto px-6 py-8">
+      <div className="trip-history-root">
+        <div className="max-w-[780px] lg:max-w-[1100px] mx-auto px-6 py-8">
           {/* ── Page Header ───────────────────────────────────────── */}
           <div className="flex items-start justify-between mb-8">
             <div>
@@ -753,7 +762,7 @@ export default function TripHistory() {
           </div>
 
           {/* ── Stats ─────────────────────────────────────────────── */}
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             {[
               {
                 label: "Total Trips",
@@ -761,14 +770,14 @@ export default function TripHistory() {
                 sub: `${
                   MOCK_HISTORY.filter((t) => t.status === "cancelled").length
                 } cancelled`,
-                color: "from-blue-500/10 to-blue-500/5 border-blue-500/20",
+                color: "from-blue-600/20 to-blue-600/5 border-blue-500/20",
                 valueColor: "text-blue-400",
               },
               {
                 label: "Total Spent",
                 value: `₦${totalSpent.toLocaleString()}`,
                 sub: "on completed trips",
-                color: "from-slate-800 to-slate-900 border-slate-800",
+                color: "from-white/5 to-white/[0.02] border-white/5",
                 valueColor: "text-white",
               },
               {
@@ -782,14 +791,14 @@ export default function TripHistory() {
                   )
                 ).size,
                 sub: "unique destinations",
-                color: "from-slate-800 to-slate-900 border-slate-800",
+                color: "from-white/5 to-white/[0.02] border-white/5",
                 valueColor: "text-white",
               },
               {
                 label: "Avg Rating Given",
                 value: avgRating === "—" ? "—" : `${avgRating} ★`,
                 sub: `${ratedTrips.length} trips rated`,
-                color: "from-amber-500/8 to-amber-500/3 border-amber-500/15",
+                color: "from-amber-500/10 to-amber-500/5 border-amber-500/20",
                 valueColor: "text-amber-400",
               },
             ].map((s) => (
@@ -839,7 +848,7 @@ export default function TripHistory() {
                     ${
                       filter === key
                         ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-transparent text-slate-500 border-slate-800 hover:border-slate-600 hover:text-slate-300"
+                        : "bg-transparent text-slate-500 border-white/5 hover:border-blue-500/30 hover:text-slate-300"
                     }`}
                 >
                   {label}
@@ -847,7 +856,7 @@ export default function TripHistory() {
                     className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
                       filter === key
                         ? "bg-white/20 text-white"
-                        : "bg-slate-800 text-slate-500"
+                        : "bg-white/5 text-slate-500"
                     }`}
                   >
                     {count}
@@ -860,7 +869,7 @@ export default function TripHistory() {
             <div className="relative">
               <button
                 onClick={() => setShowSort(!showSort)}
-                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-semibold border border-slate-800 text-slate-500 hover:border-slate-600 hover:text-slate-300 transition-all"
+                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-semibold border border-white/5 text-slate-500 hover:border-blue-500/30 hover:text-slate-300 transition-all"
               >
                 <Filter className="w-3.5 h-3.5" />
                 {sortLabels[sortOrder]}
@@ -871,7 +880,7 @@ export default function TripHistory() {
                 />
               </button>
               {showSort && (
-                <div className="absolute right-0 top-full mt-2 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl z-10 w-40">
+                <div className="absolute right-0 top-full mt-2 bg-slate-900 border border-white/5 rounded-xl overflow-hidden shadow-xl z-10 w-40">
                   {(Object.entries(sortLabels) as [SortOrder, string][]).map(
                     ([key, label]) => (
                       <button
@@ -898,7 +907,7 @@ export default function TripHistory() {
 
           {/* ── Results meta ─────────────────────────────────────── */}
           {filteredTrips.length > 0 && (
-            <div className="flex items-center gap-2 text-[13px] text-zinc-500 mb-4">
+            <div className="flex items-center gap-2 text-[13px] text-slate-500 mb-4">
               <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse inline-block" />
               <span>
                 <span className="text-white font-semibold">
@@ -914,45 +923,50 @@ export default function TripHistory() {
           {/* ── Trip Cards ───────────────────────────────────────── */}
           {filteredTrips.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-full border border-zinc-800 bg-zinc-900 flex items-center justify-center mb-5 opacity-70">
-                <Clock className="w-7 h-7 text-zinc-600" />
+              <div className="w-16 h-16 rounded-full border border-white/5 bg-slate-900/60 flex items-center justify-center mb-5 opacity-70">
+                <Clock className="w-7 h-7 text-slate-600" />
               </div>
               <div
-                className="text-[16px] font-bold text-zinc-500 mb-1"
+                className="text-[16px] font-bold text-slate-500 mb-1"
                 style={{ fontFamily: "'Syne', sans-serif" }}
               >
                 No trips found
               </div>
-              <div className="text-[13px] text-zinc-600">
+              <div className="text-[13px] text-slate-600">
                 {filter === "cancelled"
                   ? "You have no cancelled trips"
                   : "Your completed trips will appear here"}
               </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
-              {filteredTrips.map((trip, i) => (
-                <div
-                  key={trip.id}
-                  className="trip-enter"
-                  style={{ animationDelay: `${i * 60}ms` }}
-                >
-                  <TripHistoryCard
-                    trip={trip}
-                    expanded={expandedId === trip.id}
-                    onToggle={() =>
-                      setExpandedId(expandedId === trip.id ? null : trip.id)
-                    }
-                    onRate={handleRate}
-                  />
-                </div>
-              ))}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {filteredTrips.map((trip, i) => {
+                const isExpanded = expandedId === trip.id;
+                return (
+                  <div
+                    key={trip.id}
+                    className={`trip-enter ${
+                      isExpanded ? "lg:col-span-2" : ""
+                    }`}
+                    style={{ animationDelay: `${i * 60}ms` }}
+                  >
+                    <TripHistoryCard
+                      trip={trip}
+                      expanded={isExpanded}
+                      onToggle={() =>
+                        setExpandedId(isExpanded ? null : trip.id)
+                      }
+                      onRate={handleRate}
+                    />
+                  </div>
+                );
+              })}
             </div>
           )}
 
           {/* ── Footer ──────────────────────────────────────────── */}
           {filteredTrips.length > 0 && (
-            <div className="flex items-center justify-center gap-2 mt-8 text-[12px] text-zinc-700">
+            <div className="flex items-center justify-center gap-2 mt-8 text-[12px] text-slate-700">
               <RotateCcw className="w-3.5 h-3.5" />
               Showing all history · Last synced just now
             </div>
