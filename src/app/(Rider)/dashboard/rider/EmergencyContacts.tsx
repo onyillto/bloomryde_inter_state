@@ -20,6 +20,9 @@ import {
   Smartphone,
   Mail,
   Info,
+  Car,
+  MapPin,
+  Clock,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -843,17 +846,29 @@ export default function EmergencyContacts() {
             {/* What gets shared */}
             <div className="grid grid-cols-2 gap-2 mt-4">
               {[
-                { icon: "🧑‍✈️", text: "Driver name & phone" },
-                { icon: "🚗", text: "Vehicle & plate number" },
-                { icon: "📍", text: "Pickup & destination" },
-                { icon: "🕐", text: "Departure date & time" },
+                {
+                  icon: <User className="w-3.5 h-3.5 text-blue-400" />,
+                  text: "Driver name & phone",
+                },
+                {
+                  icon: <Car className="w-3.5 h-3.5 text-blue-400" />,
+                  text: "Vehicle & plate number",
+                },
+                {
+                  icon: <MapPin className="w-3.5 h-3.5 text-blue-400" />,
+                  text: "Pickup & destination",
+                },
+                {
+                  icon: <Clock className="w-3.5 h-3.5 text-blue-400" />,
+                  text: "Departure date & time",
+                },
               ].map((item) => (
                 <div
                   key={item.text}
-                  className="flex items-center gap-2 text-[12px] text-zinc-500"
+                  className="flex items-center gap-2 text-[12px] text-zinc-400"
                 >
-                  <span>{item.icon}</span>
-                  {item.text}
+                  <span className="flex-shrink-0">{item.icon}</span>
+                  <span>{item.text}</span>
                 </div>
               ))}
             </div>

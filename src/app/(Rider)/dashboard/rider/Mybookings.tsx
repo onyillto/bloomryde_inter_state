@@ -139,7 +139,7 @@ function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
         <svg
           key={i}
           className={`w-3 h-3 ${
-            i < rating ? "text-amber-400" : "text-zinc-700"
+            i < rating ? "text-amber-400" : "text-slate-700"
           }`}
           fill="currentColor"
           viewBox="0 0 20 20"
@@ -212,7 +212,7 @@ function BookingCard({
         ${
           expanded
             ? "border-blue-500/40 bg-blue-500/[0.03] shadow-lg shadow-blue-500/5"
-            : "border-zinc-800 bg-zinc-900 hover:border-zinc-700 hover:bg-zinc-800/60"
+            : "border-slate-800 bg-slate-900 hover:border-slate-700 hover:bg-slate-800/60"
         }
       `}
     >
@@ -233,7 +233,7 @@ function BookingCard({
             ${
               expanded
                 ? "bg-blue-500/15 border-blue-500/30"
-                : "bg-zinc-800 border-zinc-700"
+                : "bg-slate-800 border-slate-700"
             }
           `}
         >
@@ -243,7 +243,7 @@ function BookingCard({
           >
             {booking.dateShort}
           </div>
-          <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mt-0.5">
+          <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mt-0.5">
             {booking.monthShort}
           </div>
         </div>
@@ -253,7 +253,7 @@ function BookingCard({
           <div className="flex items-center gap-2 mb-1">
             {/* Inline avatar */}
             <div
-              className={`w-7 h-7 rounded-full bg-gradient-to-br ${booking.avatarBg} flex items-center justify-center text-[10px] font-bold text-blue-300 border border-zinc-700 flex-shrink-0`}
+              className={`w-7 h-7 rounded-full bg-gradient-to-br ${booking.avatarBg} flex items-center justify-center text-[10px] font-bold text-blue-300 border border-slate-700 flex-shrink-0`}
             >
               {booking.driverInitials}
             </div>
@@ -261,14 +261,14 @@ function BookingCard({
               {booking.driverName}
             </span>
             <StarRating rating={booking.driverRating} />
-            <span className="text-[11px] text-zinc-600 hidden sm:inline">
+            <span className="text-[11px] text-slate-600 hidden sm:inline">
               ({booking.driverTrips})
             </span>
           </div>
 
           {/* Route */}
           <div className="flex items-center gap-1.5 text-[13px] mb-2">
-            <span className="text-zinc-300 font-medium truncate">
+            <span className="text-slate-300 font-medium truncate">
               {booking.from}
             </span>
             <svg
@@ -291,16 +291,16 @@ function BookingCard({
 
           {/* Meta chips */}
           <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <span className="flex items-center gap-1.5 text-[12px] text-zinc-500">
-              <Clock className="w-3.5 h-3.5 text-zinc-600" />
+            <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
+              <Clock className="w-3.5 h-3.5 text-slate-600" />
               {booking.time} · {booking.duration}
             </span>
-            <span className="flex items-center gap-1.5 text-[12px] text-zinc-500">
-              <Car className="w-3.5 h-3.5 text-zinc-600" />
+            <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
+              <Car className="w-3.5 h-3.5 text-slate-600" />
               {booking.vehicle} · {booking.vehicleColor}
             </span>
-            <span className="flex items-center gap-1.5 text-[12px] text-zinc-500">
-              <Users className="w-3.5 h-3.5 text-zinc-600" />
+            <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
+              <Users className="w-3.5 h-3.5 text-slate-600" />
               {booking.seats} seat{booking.seats > 1 ? "s" : ""}
             </span>
           </div>
@@ -316,10 +316,10 @@ function BookingCard({
             >
               ₦{total.toLocaleString()}
             </div>
-            <div className="text-[11px] text-zinc-600 mt-0.5">cash</div>
+            <div className="text-[11px] text-slate-600 mt-0.5">cash</div>
           </div>
           <ChevronDown
-            className={`w-4 h-4 text-zinc-600 transition-transform duration-200 ${
+            className={`w-4 h-4 text-slate-600 transition-transform duration-200 ${
               expanded ? "rotate-180" : ""
             }`}
           />
@@ -328,7 +328,7 @@ function BookingCard({
 
       {/* ── Expanded Panel ────────────────────────────── */}
       {expanded && (
-        <div className="border-t border-zinc-800 px-5 pb-5 pt-4 space-y-4">
+        <div className="border-t border-slate-800 px-5 pb-5 pt-4 space-y-4">
           {/* Trip details grid */}
           <div className="grid grid-cols-3 gap-3">
             {[
@@ -369,12 +369,12 @@ function BookingCard({
                 className={`rounded-xl p-3 border ${
                   highlight
                     ? "bg-blue-500/8 border-blue-500/20"
-                    : "bg-zinc-800/60 border-zinc-800"
+                    : "bg-slate-800/60 border-slate-800"
                 }`}
               >
                 <div
                   className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-1.5 ${
-                    highlight ? "text-blue-500" : "text-zinc-600"
+                    highlight ? "text-blue-500" : "text-slate-600"
                   }`}
                 >
                   {icon}
@@ -384,7 +384,7 @@ function BookingCard({
                   className={`text-[13px] font-semibold ${
                     highlight
                       ? "text-blue-400 text-[16px] font-black"
-                      : "text-zinc-300"
+                      : "text-slate-300"
                   }`}
                   style={highlight ? { fontFamily: "'Syne', sans-serif" } : {}}
                 >
@@ -395,13 +395,13 @@ function BookingCard({
           </div>
 
           {/* Reference number */}
-          <div className="flex items-center gap-3 rounded-xl bg-zinc-800/50 border border-zinc-800 px-4 py-3">
+          <div className="flex items-center gap-3 rounded-xl bg-slate-800/50 border border-slate-800 px-4 py-3">
             <div className="flex-1">
-              <div className="text-[11px] font-semibold text-zinc-600 uppercase tracking-widest mb-0.5">
+              <div className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest mb-0.5">
                 Booking Reference
               </div>
               <div
-                className="font-mono text-[14px] font-bold text-zinc-200 tracking-widest"
+                className="font-mono text-[14px] font-bold text-slate-200 tracking-widest"
                 style={{ fontFamily: "'Syne', sans-serif" }}
               >
                 {booking.ref}
@@ -413,7 +413,7 @@ function BookingCard({
                 ${
                   copied
                     ? "bg-blue-500/15 border-blue-500/30 text-blue-400"
-                    : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200"
+                    : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200"
                 }`}
             >
               {copied ? (
@@ -445,9 +445,9 @@ function BookingCard({
                     {booking.driverInitials}
                   </div>
                   {/* Verified dot */}
-                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center border-2 border-zinc-900">
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center border-2 border-slate-900">
                     <svg
-                      className="w-2 h-2 text-zinc-900"
+                      className="w-2 h-2 text-slate-900"
                       fill="none"
                       viewBox="0 0 12 12"
                     >
@@ -465,7 +465,7 @@ function BookingCard({
                   <div className="font-semibold text-[15px] text-white">
                     {booking.driverName}
                   </div>
-                  <div className="flex items-center gap-1.5 text-[12px] text-zinc-500 mt-0.5">
+                  <div className="flex items-center gap-1.5 text-[12px] text-slate-500 mt-0.5">
                     <CheckCircle2 className="w-3 h-3 text-blue-500" />
                     Verified · {booking.driverTrips} trips
                   </div>
@@ -484,7 +484,7 @@ function BookingCard({
                   <Phone className="w-4 h-4" />
                   Call Driver
                 </button>
-                <button className="flex items-center justify-center gap-2 bg-zinc-800 text-zinc-200 font-semibold text-[13px] py-2.5 rounded-xl border border-zinc-700 hover:border-zinc-600 hover:bg-zinc-700 transition-all">
+                <button className="flex items-center justify-center gap-2 bg-slate-800 text-slate-200 font-semibold text-[13px] py-2.5 rounded-xl border border-slate-700 hover:border-slate-600 hover:bg-slate-700 transition-all">
                   <MessageCircle className="w-4 h-4" />
                   WhatsApp
                 </button>
@@ -494,7 +494,7 @@ function BookingCard({
 
           {/* Share trip / cancelled state */}
           {booking.status !== "cancelled" ? (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-4">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
               <div
                 className="flex items-center gap-2 text-[13px] font-bold text-white mb-1"
                 style={{ fontFamily: "'Syne', sans-serif" }}
@@ -502,7 +502,7 @@ function BookingCard({
                 <Shield className="w-4 h-4 text-blue-500" />
                 Share Trip Details
               </div>
-              <div className="text-[12px] text-zinc-500 mb-3">
+              <div className="text-[12px] text-slate-500 mb-3">
                 Auto-shared to emergency contact · Chioma Adeyemi
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -521,7 +521,7 @@ function BookingCard({
                       ${
                         shared
                           ? "border-blue-500/30 bg-blue-500/5 text-blue-400"
-                          : "border-zinc-800 bg-zinc-800/50 text-zinc-500 hover:border-blue-500/30 hover:text-blue-400"
+                          : "border-slate-800 bg-slate-800/50 text-slate-500 hover:border-blue-500/30 hover:text-blue-400"
                       }`}
                   >
                     {icon}
@@ -543,7 +543,7 @@ function BookingCard({
                 <div className="text-[13px] font-semibold text-red-400">
                   Trip Cancelled
                 </div>
-                <div className="text-[12px] text-zinc-500">
+                <div className="text-[12px] text-slate-500">
                   This trip was cancelled. You can search for another ride.
                 </div>
               </div>
@@ -559,7 +559,7 @@ function BookingCard({
               </button>
             ) : (
               <>
-                <button className="flex-1 flex items-center justify-center gap-2 bg-zinc-800 border border-zinc-700 text-zinc-300 font-semibold text-[13px] py-2.5 rounded-xl hover:border-zinc-600 hover:bg-zinc-700 transition-all">
+                <button className="flex-1 flex items-center justify-center gap-2 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[13px] py-2.5 rounded-xl hover:border-slate-600 hover:bg-slate-700 transition-all">
                   <Share2 className="w-4 h-4" />
                   Share Trip
                 </button>
@@ -582,14 +582,14 @@ function BookingCard({
               <div className="text-[13px] font-bold text-red-400 mb-1 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" /> Confirm Cancellation
               </div>
-              <div className="text-[12px] text-zinc-500 mb-3">
+              <div className="text-[12px] text-slate-500 mb-3">
                 Are you sure you want to cancel this booking? This action cannot
                 be undone.
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => setCancelling(false)}
-                  className="flex-1 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-400 text-[12px] font-semibold hover:bg-zinc-700 transition-all"
+                  className="flex-1 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 text-[12px] font-semibold hover:bg-slate-700 transition-all"
                 >
                   Keep Booking
                 </button>
@@ -613,16 +613,16 @@ function BookingCard({
 function EmptyState({ filter }: { filter: Filter }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-16 h-16 rounded-full border border-zinc-800 bg-zinc-900 flex items-center justify-center mb-5 opacity-70">
-        <Bookmark className="w-7 h-7 text-zinc-600" />
+      <div className="w-16 h-16 rounded-full border border-slate-800 bg-slate-900 flex items-center justify-center mb-5 opacity-70">
+        <Bookmark className="w-7 h-7 text-slate-600" />
       </div>
       <div
-        className="text-[16px] font-bold text-zinc-500 mb-1"
+        className="text-[16px] font-bold text-slate-500 mb-1"
         style={{ fontFamily: "'Syne', sans-serif" }}
       >
         {filter === "all" ? "No bookings yet" : `No ${filter} bookings`}
       </div>
-      <div className="text-[13px] text-zinc-600 max-w-xs">
+      <div className="text-[13px] text-slate-600 max-w-xs">
         {filter === "all"
           ? "Search for a ride to make your first booking"
           : `You have no ${filter} trips at the moment`}
@@ -703,7 +703,7 @@ export default function MyBookings() {
                   </span>
                 )}
               </h1>
-              <p className="text-zinc-500 text-[14px] mt-1">
+              <p className="text-slate-500 text-[14px] mt-1">
                 Manage your upcoming and past trip bookings
               </p>
             </div>
@@ -733,7 +733,7 @@ export default function MyBookings() {
                   .reduce((s, b) => s + b.price * b.seats, 0)
                   .toLocaleString()}`,
                 icon: <Banknote className="w-4 h-4" />,
-                color: "from-zinc-800 to-zinc-900 border-zinc-800",
+                color: "from-slate-800 to-slate-900 border-slate-800",
                 valueColor: "text-white",
               },
               {
@@ -742,7 +742,7 @@ export default function MyBookings() {
                   (b) => b.status === "confirmed" || b.status === "pending"
                 ).length,
                 icon: <Calendar className="w-4 h-4" />,
-                color: "from-zinc-800 to-zinc-900 border-zinc-800",
+                color: "from-slate-800 to-slate-900 border-slate-800",
                 valueColor: "text-white",
               },
             ].map((s) => (
@@ -751,10 +751,10 @@ export default function MyBookings() {
                 className={`rounded-2xl border bg-gradient-to-br ${s.color} px-4 py-4`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[12px] text-zinc-500 font-medium">
+                  <span className="text-[12px] text-slate-500 font-medium">
                     {s.label}
                   </span>
-                  <span className="text-zinc-600">{s.icon}</span>
+                  <span className="text-slate-600">{s.icon}</span>
                 </div>
                 <div
                   className={`font-black text-[26px] leading-none ${s.valueColor}`}
@@ -776,7 +776,7 @@ export default function MyBookings() {
                   ${
                     activeFilter === key
                       ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-transparent text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-zinc-300"
+                      : "bg-transparent text-slate-500 border-slate-800 hover:border-slate-600 hover:text-slate-300"
                   }`}
               >
                 {label}
@@ -786,7 +786,7 @@ export default function MyBookings() {
                       ${
                         activeFilter === key
                           ? "bg-white/20 text-white"
-                          : "bg-zinc-800 text-zinc-500"
+                          : "bg-slate-800 text-slate-500"
                       }`}
                   >
                     {count}
@@ -798,7 +798,7 @@ export default function MyBookings() {
 
           {/* ── Results Meta ─────────────────────────────────────── */}
           {filteredBookings.length > 0 && (
-            <div className="flex items-center gap-2 text-[13px] text-zinc-500 mb-4">
+            <div className="flex items-center gap-2 text-[13px] text-slate-500 mb-4">
               <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse inline-block" />
               <span>
                 <span className="text-white font-semibold">
@@ -837,7 +837,7 @@ export default function MyBookings() {
 
           {/* ── Bottom refresh hint ──────────────────────────────── */}
           {filteredBookings.length > 0 && (
-            <div className="flex items-center justify-center gap-2 mt-8 text-[12px] text-zinc-700">
+            <div className="flex items-center justify-center gap-2 mt-8 text-[12px] text-slate-700">
               <RotateCcw className="w-3.5 h-3.5" />
               Last synced just now
             </div>

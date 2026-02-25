@@ -113,7 +113,7 @@ function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
         <svg
           key={i}
           className={`w-3 h-3 ${
-            i < rating ? "text-amber-400" : "text-zinc-700"
+            i < rating ? "text-amber-400" : "text-slate-700"
           }`}
           fill="currentColor"
           viewBox="0 0 20 20"
@@ -169,7 +169,7 @@ function TripCard({
         ${
           selected
             ? "border-blue-500/60 bg-slate-900/60 shadow-lg shadow-blue-500/5"
-            : "border-zinc-800 bg-zinc-900 hover:border-zinc-700 hover:bg-zinc-800/60"
+            : "border-slate-800 bg-slate-900 hover:border-slate-700 hover:bg-slate-800/60"
         }
       `}
     >
@@ -187,15 +187,15 @@ function TripCard({
             }
               flex items-center justify-center font-bold text-sm text-blue-300
               border-2 ${
-                selected ? "border-blue-500/40" : "border-zinc-700"
+                selected ? "border-blue-500/40" : "border-[#0f172a]"
               } transition-colors`}
           >
             {trip.driverInitials}
           </div>
           {/* Verified badge */}
-          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center border-2 border-zinc-900">
+          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center border-2 border-slate-900">
             <svg
-              className="w-2 h-2 text-zinc-900"
+              className="w-2 h-2 text-slate-900"
               fill="none"
               viewBox="0 0 12 12"
             >
@@ -217,14 +217,14 @@ function TripCard({
               {trip.driverName}
             </span>
             <StarRating rating={trip.rating} />
-            <span className="text-[11px] text-zinc-500">
+            <span className="text-[11px] text-slate-500">
               ({trip.totalTrips})
             </span>
           </div>
 
           {/* Route */}
           <div className="flex items-center gap-1.5 text-sm mb-3">
-            <span className="text-zinc-300 font-medium truncate">
+            <span className="text-slate-300 font-medium truncate">
               {trip.from}
             </span>
             <svg
@@ -247,9 +247,9 @@ function TripCard({
 
           {/* Meta chips */}
           <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-            <div className="flex items-center gap-1.5 text-[12px] text-zinc-400">
+            <div className="flex items-center gap-1.5 text-[12px] text-slate-400">
               <svg
-                className="w-3.5 h-3.5 text-zinc-500"
+                className="w-3.5 h-3.5 text-slate-500"
                 fill="none"
                 viewBox="0 0 24 24"
               >
@@ -269,9 +269,9 @@ function TripCard({
               </svg>
               {trip.departure}
             </div>
-            <div className="flex items-center gap-1.5 text-[12px] text-zinc-400">
+            <div className="flex items-center gap-1.5 text-[12px] text-slate-400">
               <svg
-                className="w-3.5 h-3.5 text-zinc-500"
+                className="w-3.5 h-3.5 text-slate-500"
                 fill="none"
                 viewBox="0 0 24 24"
               >
@@ -283,9 +283,9 @@ function TripCard({
               </svg>
               {trip.duration}
             </div>
-            <div className="flex items-center gap-1.5 text-[12px] text-zinc-400">
+            <div className="flex items-center gap-1.5 text-[12px] text-slate-400">
               <svg
-                className="w-3.5 h-3.5 text-zinc-500"
+                className="w-3.5 h-3.5 text-slate-500"
                 fill="none"
                 viewBox="0 0 24 24"
               >
@@ -330,7 +330,7 @@ function TripCard({
           {/* Seat visualizer (shown when selected) */}
           {selected && (
             <div className="mt-3">
-              <span className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider">
+              <span className="text-[11px] text-slate-500 font-medium uppercase tracking-wider">
                 Seat availability
               </span>
               <SeatIndicator total={trip.seats} left={trip.seatsLeft} />
@@ -347,7 +347,7 @@ function TripCard({
             >
               ₦{trip.price.toLocaleString()}
             </div>
-            <div className="text-[11px] text-zinc-500 mt-0.5">per person</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">per person</div>
           </div>
 
           {/* Seats left badge */}
@@ -357,8 +357,8 @@ function TripCard({
               isAlmostFull
                 ? "bg-red-500/15 text-red-400 border border-red-500/20"
                 : isFull
-                ? "bg-zinc-700/50 text-zinc-500"
-                : "bg-zinc-800 text-zinc-400 border border-zinc-700"
+                ? "bg-slate-700/50 text-slate-500"
+                : "bg-slate-800 text-slate-400 border border-slate-700"
             }`}
           >
             {isAlmostFull
@@ -377,7 +377,7 @@ function TripCard({
               ${
                 selected
                   ? "bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-600/25 hover:-translate-y-0.5"
-                  : "bg-zinc-800 text-blue-400 border border-zinc-700 hover:border-blue-500/40 hover:bg-zinc-700 group-hover:border-blue-500/30"
+                  : "bg-slate-800 text-blue-400 border border-slate-700 hover:border-blue-500/40 hover:bg-slate-700 group-hover:border-blue-500/30"
               }`}
           >
             Contact Driver
@@ -421,9 +421,9 @@ function ContactPanel({
             className={`w-12 h-12 rounded-full bg-gradient-to-br ${trip.avatarBg} flex items-center justify-center font-bold text-sm text-blue-300 border-2 border-blue-500/30 relative`}
           >
             {trip.driverInitials}
-            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center border-2 border-zinc-900">
+            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center border-2 border-slate-900">
               <svg
-                className="w-2 h-2 text-zinc-900"
+                className="w-2 h-2 text-slate-900"
                 fill="none"
                 viewBox="0 0 12 12"
               >
@@ -439,7 +439,7 @@ function ContactPanel({
           </div>
           <div>
             <div className="font-semibold text-[15px]">{trip.driverName}</div>
-            <div className="text-[12px] text-zinc-500">
+            <div className="text-[12px] text-slate-500">
               {trip.vehicle} · {trip.vehicleColor} · {trip.plate}
             </div>
           </div>
@@ -451,7 +451,7 @@ function ContactPanel({
         >
           +234 803 XXX XXXX
         </div>
-        <div className="font-mono text-[11px] text-zinc-500 bg-zinc-800/60 px-3 py-1.5 rounded-lg inline-block tracking-wider">
+        <div className="font-mono text-[11px] text-slate-500 bg-slate-800/60 px-3 py-1.5 rounded-lg inline-block tracking-wider">
           REF: {refNum}
         </div>
 
@@ -466,7 +466,7 @@ function ContactPanel({
             </svg>
             Call Driver
           </button>
-          <button className="flex items-center justify-center gap-2 bg-zinc-800 text-zinc-200 font-semibold text-[13px] py-2.5 rounded-xl border border-zinc-700 hover:border-zinc-600 hover:bg-zinc-700 transition-all">
+          <button className="flex items-center justify-center gap-2 bg-slate-800 text-slate-200 font-semibold text-[13px] py-2.5 rounded-xl border border-slate-700 hover:border-slate-600 hover:bg-slate-700 transition-all">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
               <path
                 d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
@@ -486,7 +486,7 @@ function ContactPanel({
       </div>
 
       {/* Booking Summary */}
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
         <div
           className="text-[13px] font-bold text-white mb-3"
           style={{ fontFamily: "'Syne', sans-serif" }}
@@ -505,12 +505,12 @@ function ContactPanel({
             ["Passengers", `${passengers} person${passengers > 1 ? "s" : ""}`],
           ].map(([label, value]) => (
             <div key={label} className="flex justify-between items-center">
-              <span className="text-zinc-500">{label}</span>
-              <span className="text-zinc-200 font-medium">{value}</span>
+              <span className="text-slate-500">{label}</span>
+              <span className="text-slate-200 font-medium">{value}</span>
             </div>
           ))}
-          <div className="border-t border-zinc-800 mt-1 pt-2 flex justify-between items-center">
-            <span className="text-zinc-500">Total to Pay Driver</span>
+          <div className="border-t border-slate-800 mt-1 pt-2 flex justify-between items-center">
+            <span className="text-slate-500">Total to Pay Driver</span>
             <span
               className="font-black text-lg text-blue-400"
               style={{ fontFamily: "'Syne', sans-serif" }}
@@ -522,14 +522,14 @@ function ContactPanel({
       </div>
 
       {/* Share Trip */}
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
         <div
           className="text-[13px] font-bold text-white mb-1"
           style={{ fontFamily: "'Syne', sans-serif" }}
         >
           🛡️ Share Trip Details
         </div>
-        <div className="text-[12px] text-zinc-500 mb-3">
+        <div className="text-[12px] text-slate-500 mb-3">
           Auto-shared to emergency contact · Chioma Adeyemi
         </div>
         <div className="grid grid-cols-3 gap-2">
@@ -545,7 +545,7 @@ function ContactPanel({
                 ${
                   shared
                     ? "border-blue-500/30 bg-blue-500/5 text-blue-400"
-                    : "border-zinc-800 bg-zinc-800/50 text-zinc-400 hover:border-blue-500/30 hover:bg-blue-500/5 hover:text-blue-400"
+                    : "border-slate-800 bg-slate-800/50 text-slate-400 hover:border-blue-500/30 hover:bg-blue-500/5 hover:text-blue-400"
                 }`}
             >
               <span className="text-xl">{icon}</span>
@@ -600,18 +600,18 @@ function ConfirmedState({
       >
         Booking Confirmed!
       </div>
-      <div className="text-zinc-400 text-sm mb-2">
+      <div className="text-slate-400 text-sm mb-2">
         Your trip with{" "}
         <span className="text-white font-semibold">{trip.driverName}</span> is
         locked in.
       </div>
-      <div className="text-zinc-500 text-sm mb-8">
+      <div className="text-slate-500 text-sm mb-8">
         Check <span className="text-blue-400">My Bookings</span> for reminders
         and driver contact.
       </div>
       <button
         onClick={onReset}
-        className="px-6 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-sm font-semibold text-zinc-300 hover:bg-zinc-700 transition-all"
+        className="px-6 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-700 transition-all"
       >
         Book Another Trip
       </button>
@@ -738,15 +738,15 @@ export default function FindRide() {
             >
               Find a Ride
             </h1>
-            <p className="text-zinc-500 text-[14px] mt-1">
+            <p className="text-slate-500 text-[14px] mt-1">
               Search verified drivers on your route and connect directly
             </p>
           </div>
 
           {/* Search Card */}
-          <div className="rounded-2xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-[#111816] p-6 mb-6 shadow-xl">
+          <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-[#111816] p-6 mb-6 shadow-xl">
             <div
-              className="text-[13px] font-bold text-zinc-400 mb-4 flex items-center gap-2"
+              className="text-[13px] font-bold text-slate-400 mb-4 flex items-center gap-2"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
               <svg
@@ -773,13 +773,13 @@ export default function FindRide() {
             <div className="grid grid-cols-2 gap-3 mb-3 md:grid-cols-4">
               {/* From */}
               <div className="col-span-1">
-                <label className="block text-[11px] font-semibold text-zinc-500 uppercase tracking-widest mb-2">
+                <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-2">
                   From
                 </label>
                 <select
                   value={from}
                   onChange={(e) => setFrom(e.target.value)}
-                  className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3 py-2.5 text-[14px] text-white focus:outline-none focus:border-emerald-500/60 transition-colors"
+                  className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-[14px] text-white focus:outline-none focus:border-emerald-500/60 transition-colors"
                 >
                   <option>Lagos (Jibowu)</option>
                   <option>Lagos (Mile 2)</option>
@@ -798,13 +798,13 @@ export default function FindRide() {
 
               {/* To */}
               <div className="col-span-1">
-                <label className="block text-[11px] font-semibold text-zinc-500 uppercase tracking-widest mb-2">
+                <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-2">
                   To
                 </label>
                 <select
                   value={to}
                   onChange={(e) => setTo(e.target.value)}
-                  className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3 py-2.5 text-[14px] text-white focus:outline-none focus:border-emerald-500/60 transition-colors"
+                  className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-[14px] text-white focus:outline-none focus:border-emerald-500/60 transition-colors"
                 >
                   <option>Abuja (Utako Park)</option>
                   <option>Port Harcourt (Waterlines)</option>
@@ -817,26 +817,26 @@ export default function FindRide() {
 
               {/* Date */}
               <div className="col-span-1">
-                <label className="block text-[11px] font-semibold text-zinc-500 uppercase tracking-widest mb-2">
+                <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-2">
                   Date
                 </label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3 py-2.5 text-[14px] text-white focus:outline-none focus:border-emerald-500/60 transition-colors [color-scheme:dark]"
+                  className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-[14px] text-white focus:outline-none focus:border-emerald-500/60 transition-colors [color-scheme:dark]"
                 />
               </div>
 
               {/* Passengers */}
               <div className="col-span-1">
-                <label className="block text-[11px] font-semibold text-zinc-500 uppercase tracking-widest mb-2">
+                <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-2">
                   Passengers
                 </label>
                 <select
                   value={passengers}
                   onChange={(e) => setPassengers(Number(e.target.value))}
-                  className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3 py-2.5 text-[14px] text-white focus:outline-none focus:border-emerald-500/60 transition-colors"
+                  className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-[14px] text-white focus:outline-none focus:border-emerald-500/60 transition-colors"
                 >
                   {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                     <option key={n} value={n}>
@@ -869,7 +869,7 @@ export default function FindRide() {
               <div className="flex-1 min-w-0">
                 {/* Results meta + filters */}
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2 text-[13px] text-zinc-500">
+                  <div className="flex items-center gap-2 text-[13px] text-slate-500">
                     <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse inline-block" />
                     <span>
                       <span className="text-white font-semibold">
@@ -900,7 +900,7 @@ export default function FindRide() {
                         ${
                           activeFilter === key
                             ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-transparent text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-zinc-300"
+                            : "bg-transparent text-slate-500 border-slate-800 hover:border-slate-600 hover:text-slate-300"
                         }`}
                     >
                       {label}
@@ -937,14 +937,14 @@ export default function FindRide() {
               {(contactedTrip || confirmed) && (
                 <div className="w-[340px] flex-shrink-0 sticky top-6 panel-enter">
                   {confirmed && contactedTrip ? (
-                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900 overflow-hidden">
+                    <div className="rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden">
                       <ConfirmedState
                         trip={contactedTrip}
                         onReset={handleReset}
                       />
                     </div>
                   ) : contactedTrip ? (
-                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 overflow-y-auto max-h-[calc(100vh-120px)]">
+                    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5 overflow-y-auto max-h-[calc(100vh-120px)]">
                       <ContactPanel
                         trip={contactedTrip}
                         passengers={passengers}
@@ -972,9 +972,9 @@ export default function FindRide() {
           {/* Empty pre-search state */}
           {!searched && !loading && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-full border border-zinc-800 bg-zinc-900 flex items-center justify-center mb-5 opacity-60">
+              <div className="w-16 h-16 rounded-full border border-slate-800 bg-slate-900 flex items-center justify-center mb-5 opacity-60">
                 <svg
-                  className="w-8 h-8 text-zinc-600"
+                  className="w-8 h-8 text-slate-600"
                   fill="none"
                   viewBox="0 0 24 24"
                 >
@@ -993,12 +993,12 @@ export default function FindRide() {
                 </svg>
               </div>
               <div
-                className="text-[16px] font-bold text-zinc-600 mb-1"
+                className="text-[16px] font-bold text-slate-600 mb-1"
                 style={{ fontFamily: "'Syne', sans-serif" }}
               >
                 Enter your route above
               </div>
-              <div className="text-[13px] text-zinc-700">
+              <div className="text-[13px] text-slate-700">
                 Choose your departure, destination, and date to find available
                 trips
               </div>

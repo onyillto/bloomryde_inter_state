@@ -216,7 +216,7 @@ function StarDisplay({
       {Array.from({ length: 5 }).map((_, i) => (
         <svg
           key={i}
-          className={`${sz} ${i < rating ? "text-amber-400" : "text-zinc-700"}`}
+          className={`${sz} ${i < rating ? "text-amber-400" : "text-slate-700"}`}
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -280,7 +280,7 @@ function StarRater({
                 className={`w-6 h-6 transition-colors ${
                   active
                     ? "text-amber-400"
-                    : "text-zinc-700 hover:text-zinc-500"
+                    : "text-slate-700 hover:text-slate-500"
                 }`}
                 fill="currentColor"
                 viewBox="0 0 20 20"
@@ -305,7 +305,7 @@ function StarRater({
             placeholder="Leave a review (optional)..."
             maxLength={200}
             rows={2}
-            className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3 py-2.5 text-[13px] text-zinc-200 placeholder:text-zinc-600 resize-none focus:outline-none focus:border-blue-500/60 transition-colors"
+            className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-[13px] text-slate-200 placeholder:text-slate-600 resize-none focus:outline-none focus:border-blue-500/60 transition-colors"
           />
           <button
             onClick={() => {
@@ -347,7 +347,7 @@ function TripHistoryCard({
         ${
           expanded
             ? "border-blue-500/30 bg-blue-500/[0.03] shadow-lg shadow-blue-500/5"
-            : "border-zinc-800 bg-zinc-900 hover:border-zinc-700 hover:bg-zinc-800/60"
+            : "border-slate-800 bg-slate-900 hover:border-slate-700 hover:bg-slate-800/60"
         }
       `}
     >
@@ -367,22 +367,22 @@ function TripHistoryCard({
             flex-shrink-0 w-14 rounded-xl text-center py-2.5 border
             ${
               trip.status === "cancelled"
-                ? "bg-zinc-800/80 border-zinc-800"
+                ? "bg-slate-800/80 border-slate-800"
                 : expanded
                 ? "bg-blue-500/15 border-blue-500/25"
-                : "bg-zinc-800 border-zinc-700"
+                : "bg-slate-800 border-slate-700"
             }
           `}
         >
           <div
             className={`font-black text-[22px] leading-none ${
-              trip.status === "cancelled" ? "text-zinc-600" : "text-white"
+              trip.status === "cancelled" ? "text-slate-600" : "text-white"
             }`}
             style={{ fontFamily: "'Syne', sans-serif" }}
           >
             {trip.dateShort}
           </div>
-          <div className="text-[11px] font-semibold uppercase tracking-wide mt-0.5 text-zinc-500">
+          <div className="text-[11px] font-semibold uppercase tracking-wide mt-0.5 text-slate-500">
             {trip.monthShort}
           </div>
         </div>
@@ -394,21 +394,21 @@ function TripHistoryCard({
             <div
               className={`w-7 h-7 rounded-full bg-gradient-to-br ${
                 trip.status === "cancelled"
-                  ? "from-zinc-700 to-zinc-800"
+                  ? "from-slate-700 to-slate-800"
                   : trip.avatarBg
-              } flex items-center justify-center text-[10px] font-bold text-blue-300 border border-zinc-700 flex-shrink-0`}
+              } flex items-center justify-center text-[10px] font-bold text-blue-300 border border-slate-700 flex-shrink-0`}
             >
               {trip.driverInitials}
             </div>
             <span
               className={`font-semibold text-[15px] tracking-tight truncate ${
-                trip.status === "cancelled" ? "text-zinc-500" : "text-white"
+                trip.status === "cancelled" ? "text-slate-500" : "text-white"
               }`}
             >
               {trip.driverName}
             </span>
             <StarDisplay rating={trip.driverRating} />
-            <span className="text-[11px] text-zinc-600 hidden sm:inline">
+            <span className="text-[11px] text-slate-600 hidden sm:inline">
               ({trip.driverTrips})
             </span>
           </div>
@@ -417,14 +417,14 @@ function TripHistoryCard({
           <div className="flex items-center gap-1.5 text-[13px] mb-2">
             <span
               className={`font-medium truncate ${
-                trip.status === "cancelled" ? "text-zinc-600" : "text-zinc-300"
+                trip.status === "cancelled" ? "text-slate-600" : "text-slate-300"
               }`}
             >
               {trip.from}
             </span>
             <svg
               className={`w-3.5 h-3.5 flex-shrink-0 ${
-                trip.status === "cancelled" ? "text-zinc-700" : "text-blue-500"
+                trip.status === "cancelled" ? "text-slate-700" : "text-blue-500"
               }`}
               fill="none"
               viewBox="0 0 24 24"
@@ -439,7 +439,7 @@ function TripHistoryCard({
             </svg>
             <span
               className={`font-medium truncate ${
-                trip.status === "cancelled" ? "text-zinc-600" : "text-blue-400"
+                trip.status === "cancelled" ? "text-slate-600" : "text-blue-400"
               }`}
             >
               {trip.to}
@@ -448,12 +448,12 @@ function TripHistoryCard({
 
           {/* Meta chips */}
           <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <span className="flex items-center gap-1.5 text-[12px] text-zinc-500">
-              <Clock className="w-3.5 h-3.5 text-zinc-600" />
+            <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
+              <Clock className="w-3.5 h-3.5 text-slate-600" />
               {trip.date} · {trip.time}
             </span>
-            <span className="flex items-center gap-1.5 text-[12px] text-zinc-500">
-              <Car className="w-3.5 h-3.5 text-zinc-600" />
+            <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
+              <Car className="w-3.5 h-3.5 text-slate-600" />
               {trip.vehicle} · {trip.vehicleColor}
             </span>
           </div>
@@ -467,14 +467,14 @@ function TripHistoryCard({
             <div
               className={`font-black text-[20px] leading-none ${
                 trip.status === "cancelled"
-                  ? "text-zinc-600 line-through"
+                  ? "text-slate-600 line-through"
                   : "text-blue-400"
               }`}
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
               ₦{(trip.price * trip.seats).toLocaleString()}
             </div>
-            <div className="text-[11px] text-zinc-600 mt-0.5">
+            <div className="text-[11px] text-slate-600 mt-0.5">
               {trip.seats} seat{trip.seats > 1 ? "s" : ""}
             </div>
           </div>
@@ -485,7 +485,7 @@ function TripHistoryCard({
           )}
 
           <ChevronDown
-            className={`w-4 h-4 text-zinc-600 transition-transform duration-200 ${
+            className={`w-4 h-4 text-slate-600 transition-transform duration-200 ${
               expanded ? "rotate-180" : ""
             }`}
           />
@@ -494,7 +494,7 @@ function TripHistoryCard({
 
       {/* ── Expanded Panel ────────────────────────────── */}
       {expanded && (
-        <div className="border-t border-zinc-800 px-5 pb-5 pt-4 space-y-4">
+        <div className="border-t border-slate-800 px-5 pb-5 pt-4 space-y-4">
           {/* Trip details grid */}
           <div className="grid grid-cols-3 gap-3">
             {[
@@ -538,12 +538,12 @@ function TripHistoryCard({
                 className={`rounded-xl p-3 border ${
                   highlight
                     ? "bg-blue-500/8 border-blue-500/20"
-                    : "bg-zinc-800/60 border-zinc-800"
+                    : "bg-slate-800/60 border-slate-800"
                 }`}
               >
                 <div
                   className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-1.5 ${
-                    highlight ? "text-blue-500" : "text-zinc-600"
+                    highlight ? "text-blue-500" : "text-slate-600"
                   }`}
                 >
                   {icon}
@@ -554,8 +554,8 @@ function TripHistoryCard({
                     highlight
                       ? "text-blue-400 text-[16px] font-black"
                       : trip.status === "cancelled" && label === "Paid"
-                      ? "text-zinc-600"
-                      : "text-zinc-300"
+                      ? "text-slate-600"
+                      : "text-slate-300"
                   }`}
                   style={highlight ? { fontFamily: "'Syne', sans-serif" } : {}}
                 >
@@ -566,13 +566,13 @@ function TripHistoryCard({
           </div>
 
           {/* Reference */}
-          <div className="flex items-center gap-3 rounded-xl bg-zinc-800/50 border border-zinc-800 px-4 py-3">
+          <div className="flex items-center gap-3 rounded-xl bg-slate-800/50 border border-slate-800 px-4 py-3">
             <div className="flex-1">
-              <div className="text-[11px] font-semibold text-zinc-600 uppercase tracking-widest mb-0.5">
+              <div className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest mb-0.5">
                 Booking Reference
               </div>
               <div
-                className="font-mono text-[14px] font-bold text-zinc-400 tracking-widest"
+                className="font-mono text-[14px] font-bold text-slate-400 tracking-widest"
                 style={{ fontFamily: "'Syne', sans-serif" }}
               >
                 {trip.ref}
@@ -590,7 +590,7 @@ function TripHistoryCard({
                 <Star className="w-4 h-4 text-amber-400" />
                 Rate this trip
               </div>
-              <div className="text-[12px] text-zinc-500 mb-3">
+              <div className="text-[12px] text-slate-500 mb-3">
                 How was your journey with {trip.driverName}?
               </div>
               <StarRater
@@ -604,7 +604,7 @@ function TripHistoryCard({
 
           {/* Rating already submitted */}
           {trip.status === "completed" && localRating && (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-4">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
               <div className="flex items-center justify-between mb-2">
                 <div
                   className="text-[13px] font-bold text-white flex items-center gap-2"
@@ -617,8 +617,8 @@ function TripHistoryCard({
               </div>
               {trip.review && (
                 <div className="flex items-start gap-2 mt-2">
-                  <MessageSquare className="w-3.5 h-3.5 text-zinc-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-[12px] text-zinc-400 italic">
+                  <MessageSquare className="w-3.5 h-3.5 text-slate-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-[12px] text-slate-400 italic">
                     "{trip.review}"
                   </p>
                 </div>
@@ -634,7 +634,7 @@ function TripHistoryCard({
                 <div className="text-[13px] font-semibold text-red-400">
                   Trip was cancelled
                 </div>
-                <div className="text-[12px] text-zinc-500">
+                <div className="text-[12px] text-slate-500">
                   You were not charged for this trip.
                 </div>
               </div>
@@ -643,12 +643,12 @@ function TripHistoryCard({
 
           {/* Bottom CTA */}
           <div className="flex gap-2 pt-1">
-            <button className="flex-1 flex items-center justify-center gap-2 bg-zinc-800 border border-zinc-700 text-zinc-300 font-semibold text-[13px] py-2.5 rounded-xl hover:border-zinc-600 hover:bg-zinc-700 transition-all">
+            <button className="flex-1 flex items-center justify-center gap-2 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[13px] py-2.5 rounded-xl hover:border-slate-600 hover:bg-slate-700 transition-all">
               <Search className="w-4 h-4" />
               Book Same Route
             </button>
             {trip.status === "completed" && (
-              <button className="flex-1 flex items-center justify-center gap-2 bg-zinc-800 border border-zinc-700 text-zinc-300 font-semibold text-[13px] py-2.5 rounded-xl hover:border-zinc-600 hover:bg-zinc-700 transition-all">
+              <button className="flex-1 flex items-center justify-center gap-2 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[13px] py-2.5 rounded-xl hover:border-slate-600 hover:bg-slate-700 transition-all">
                 <RotateCcw className="w-4 h-4" />
                 Book Again
               </button>
@@ -738,7 +738,7 @@ export default function TripHistory() {
                 <Clock className="w-7 h-7 text-blue-500" />
                 Trip History
               </h1>
-              <p className="text-zinc-500 text-[14px] mt-1">
+              <p className="text-slate-500 text-[14px] mt-1">
                 All your past journeys and ratings
               </p>
             </div>
@@ -768,7 +768,7 @@ export default function TripHistory() {
                 label: "Total Spent",
                 value: `₦${totalSpent.toLocaleString()}`,
                 sub: "on completed trips",
-                color: "from-zinc-800 to-zinc-900 border-zinc-800",
+                color: "from-slate-800 to-slate-900 border-slate-800",
                 valueColor: "text-white",
               },
               {
@@ -782,7 +782,7 @@ export default function TripHistory() {
                   )
                 ).size,
                 sub: "unique destinations",
-                color: "from-zinc-800 to-zinc-900 border-zinc-800",
+                color: "from-slate-800 to-slate-900 border-slate-800",
                 valueColor: "text-white",
               },
               {
@@ -797,7 +797,7 @@ export default function TripHistory() {
                 key={s.label}
                 className={`rounded-2xl border bg-gradient-to-br ${s.color} px-4 py-4`}
               >
-                <div className="text-[12px] text-zinc-500 font-medium mb-2">
+                <div className="text-[12px] text-slate-500 font-medium mb-2">
                   {s.label}
                 </div>
                 <div
@@ -806,7 +806,7 @@ export default function TripHistory() {
                 >
                   {s.value}
                 </div>
-                <div className="text-[11px] text-zinc-600">{s.sub}</div>
+                <div className="text-[11px] text-slate-600">{s.sub}</div>
               </div>
             ))}
           </div>
@@ -839,7 +839,7 @@ export default function TripHistory() {
                     ${
                       filter === key
                         ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-transparent text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-zinc-300"
+                        : "bg-transparent text-slate-500 border-slate-800 hover:border-slate-600 hover:text-slate-300"
                     }`}
                 >
                   {label}
@@ -847,7 +847,7 @@ export default function TripHistory() {
                     className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
                       filter === key
                         ? "bg-white/20 text-white"
-                        : "bg-zinc-800 text-zinc-500"
+                        : "bg-slate-800 text-slate-500"
                     }`}
                   >
                     {count}
@@ -860,7 +860,7 @@ export default function TripHistory() {
             <div className="relative">
               <button
                 onClick={() => setShowSort(!showSort)}
-                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-semibold border border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300 transition-all"
+                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-semibold border border-slate-800 text-slate-500 hover:border-slate-600 hover:text-slate-300 transition-all"
               >
                 <Filter className="w-3.5 h-3.5" />
                 {sortLabels[sortOrder]}
@@ -871,7 +871,7 @@ export default function TripHistory() {
                 />
               </button>
               {showSort && (
-                <div className="absolute right-0 top-full mt-2 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-xl z-10 w-40">
+                <div className="absolute right-0 top-full mt-2 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl z-10 w-40">
                   {(Object.entries(sortLabels) as [SortOrder, string][]).map(
                     ([key, label]) => (
                       <button
@@ -884,7 +884,7 @@ export default function TripHistory() {
                         ${
                           sortOrder === key
                             ? "bg-blue-600/20 text-blue-400"
-                            : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                            : "text-slate-400"
                         }`}
                       >
                         {label}

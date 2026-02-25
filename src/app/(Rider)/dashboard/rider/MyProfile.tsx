@@ -92,7 +92,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-2">
+      <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 mb-2">
         {icon}
         {label}
       </label>
@@ -101,7 +101,7 @@ function Field({
           <select
             value={value}
             onChange={(e) => onChange?.(e.target.value)}
-            className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-[14px] text-white focus:outline-none focus:border-blue-500/60 focus:bg-zinc-800 transition-colors"
+            className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-[14px] text-white focus:outline-none focus:border-blue-500/60 focus:bg-slate-800 transition-colors"
           >
             {["Male", "Female", "Prefer not to say"].map((o) => (
               <option key={o} value={o} style={{ background: "#141a18" }}>
@@ -115,12 +115,12 @@ function Field({
             value={value}
             placeholder={placeholder}
             onChange={(e) => onChange?.(e.target.value)}
-            className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/60 focus:bg-zinc-800 transition-colors [color-scheme:dark]"
+            className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/60 focus:bg-slate-800 transition-colors [color-scheme:dark]"
           />
         )
       ) : (
-        <div className="flex items-center gap-2 bg-zinc-800/40 border border-zinc-800 rounded-xl px-3.5 py-2.5 min-h-[42px]">
-          <span className="text-[14px] text-zinc-300 font-medium">
+        <div className="flex items-center gap-2 bg-slate-800/40 border border-slate-800 rounded-xl px-3.5 py-2.5 min-h-[42px]">
+          <span className="text-[14px] text-slate-300 font-medium">
             {type === "date" ? formatDate(value) : value || "—"}
           </span>
         </div>
@@ -144,7 +144,7 @@ function Avatar({ initials, editing }: { initials: string; editing: boolean }) {
         <>
           <button
             onClick={() => fileRef.current?.click()}
-            className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white border-2 border-zinc-900 hover:bg-blue-500 transition-all shadow-lg"
+            className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white border-2 border-slate-900 hover:bg-blue-500 transition-all shadow-lg"
           >
             <Camera className="w-3.5 h-3.5" />
           </button>
@@ -180,7 +180,7 @@ function TabBtn({
         ${
           active
             ? "bg-blue-600 text-white shadow-md shadow-blue-600/25"
-            : "bg-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
+            : "bg-transparent text-slate-500 hover:text-slate-300 hover:bg-slate-800"
         }`}
     >
       {icon}
@@ -207,7 +207,7 @@ function ActivityBar({
         {trips > 0 ? trips : ""}
       </span>
       <div
-        className="w-full bg-zinc-800 rounded-full overflow-hidden"
+        className="w-full bg-slate-800 rounded-full overflow-hidden"
         style={{ height: "56px" }}
       >
         <div
@@ -215,7 +215,7 @@ function ActivityBar({
           style={{ height: `${pct}%`, marginTop: `${100 - pct}%` }}
         />
       </div>
-      <span className="text-[11px] text-zinc-600 font-medium">{month}</span>
+      <span className="text-[11px] text-slate-600 font-medium">{month}</span>
     </div>
   );
 }
@@ -282,7 +282,7 @@ export default function MyProfile() {
                 <User className="w-7 h-7 text-blue-500" />
                 My Profile
               </h1>
-              <p className="text-zinc-500 text-[14px] mt-1">
+              <p className="text-slate-500 text-[14px] mt-1">
                 Manage your personal information and account details
               </p>
             </div>
@@ -293,7 +293,7 @@ export default function MyProfile() {
                 <>
                   <button
                     onClick={handleDiscard}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold border border-zinc-700 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 bg-zinc-800/50 transition-all"
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold border border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200 bg-slate-800/50 transition-all"
                   >
                     <X className="w-4 h-4" /> Discard
                   </button>
@@ -308,7 +308,7 @@ export default function MyProfile() {
               ) : (
                 <button
                   onClick={() => setEditing(true)}
-                  className="flex items-center gap-2 bg-zinc-800 border border-zinc-700 hover:border-blue-500/40 hover:text-blue-400 text-zinc-300 font-semibold text-[13px] px-4 py-2 rounded-xl transition-all"
+                  className="flex items-center gap-2 bg-slate-800 border border-slate-700 hover:border-blue-500/40 hover:text-blue-400 text-slate-300 font-semibold text-[13px] px-4 py-2 rounded-xl transition-all"
                 >
                   <Edit3 className="w-4 h-4" /> Edit Profile
                 </button>
@@ -327,7 +327,7 @@ export default function MyProfile() {
           )}
 
           {/* ── Profile Hero Card ─────────────────────────────────── */}
-          <div className="relative rounded-2xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-[#111816] p-6 mb-6 overflow-hidden">
+          <div className="relative rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-[#111816] p-6 mb-6 overflow-hidden">
             {/* Background glow */}
             <div className="absolute top-0 left-0 w-48 h-48 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -355,14 +355,14 @@ export default function MyProfile() {
                       value={form.firstName}
                       onChange={(e) => set("firstName")(e.target.value)}
                       placeholder="First name"
-                      className="bg-zinc-800/80 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-[18px] font-black text-white focus:outline-none focus:border-blue-500/60 transition-colors"
+                      className="bg-slate-800/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-[18px] font-black text-white focus:outline-none focus:border-blue-500/60 transition-colors"
                       style={{ fontFamily: "'Syne', sans-serif" }}
                     />
                     <input
                       value={form.lastName}
                       onChange={(e) => set("lastName")(e.target.value)}
                       placeholder="Last name"
-                      className="bg-zinc-800/80 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-[18px] font-black text-white focus:outline-none focus:border-blue-500/60 transition-colors"
+                      className="bg-slate-800/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-[18px] font-black text-white focus:outline-none focus:border-blue-500/60 transition-colors"
                       style={{ fontFamily: "'Syne', sans-serif" }}
                     />
                   </div>
@@ -376,16 +376,16 @@ export default function MyProfile() {
                 )}
 
                 <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-4">
-                  <span className="flex items-center gap-1.5 text-[13px] text-zinc-500">
-                    <Mail className="w-3.5 h-3.5 text-zinc-600" />
+                  <span className="flex items-center gap-1.5 text-[13px] text-slate-500">
+                    <Mail className="w-3.5 h-3.5 text-slate-600" />
                     {form.email}
                   </span>
-                  <span className="flex items-center gap-1.5 text-[13px] text-zinc-500">
-                    <Phone className="w-3.5 h-3.5 text-zinc-600" />
+                  <span className="flex items-center gap-1.5 text-[13px] text-slate-500">
+                    <Phone className="w-3.5 h-3.5 text-slate-600" />
                     {form.phone}
                   </span>
-                  <span className="flex items-center gap-1.5 text-[13px] text-zinc-500">
-                    <MapPin className="w-3.5 h-3.5 text-zinc-600" />
+                  <span className="flex items-center gap-1.5 text-[13px] text-slate-500">
+                    <MapPin className="w-3.5 h-3.5 text-slate-600" />
                     {form.city}, {form.state}
                   </span>
                 </div>
@@ -410,7 +410,7 @@ export default function MyProfile() {
                     },
                   ].map((s) => (
                     <div key={s.label} className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5 text-[12px] text-zinc-600">
+                      <div className="flex items-center gap-1.5 text-[12px] text-slate-600">
                         {s.icon}
                         {s.label}
                       </div>
@@ -453,7 +453,7 @@ export default function MyProfile() {
           {activeTab === "personal" && (
             <div className="section-enter space-y-4">
               {/* Basic info */}
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
                 <div
                   className="text-[13px] font-bold text-white mb-4 flex items-center gap-2"
                   style={{ fontFamily: "'Syne', sans-serif" }}
@@ -496,7 +496,7 @@ export default function MyProfile() {
               </div>
 
               {/* Contact info */}
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
                 <div
                   className="text-[13px] font-bold text-white mb-4 flex items-center gap-2"
                   style={{ fontFamily: "'Syne', sans-serif" }}
@@ -586,7 +586,7 @@ export default function MyProfile() {
                     label: "Cities Visited",
                     value: "6",
                     sub: "Unique destinations",
-                    color: "from-zinc-800 to-zinc-900 border-zinc-800",
+                    color: "from-slate-800 to-slate-900 border-slate-800",
                     valueColor: "text-white",
                   },
                   {
@@ -594,7 +594,7 @@ export default function MyProfile() {
                     label: "Total Spent",
                     value: "₦29,500",
                     sub: "On completed trips",
-                    color: "from-zinc-800 to-zinc-900 border-zinc-800",
+                    color: "from-slate-800 to-slate-900 border-slate-800",
                     valueColor: "text-white",
                   },
                 ].map((s) => (
@@ -611,16 +611,16 @@ export default function MyProfile() {
                     >
                       {s.value}
                     </div>
-                    <div className="text-[13px] font-semibold text-zinc-300 mb-0.5">
+                    <div className="text-[13px] font-semibold text-slate-300 mb-0.5">
                       {s.label}
                     </div>
-                    <div className="text-[12px] text-zinc-600">{s.sub}</div>
+                    <div className="text-[12px] text-slate-600">{s.sub}</div>
                   </div>
                 ))}
               </div>
 
               {/* Activity chart */}
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
                 <div
                   className="text-[13px] font-bold text-white mb-1 flex items-center gap-2"
                   style={{ fontFamily: "'Syne', sans-serif" }}
@@ -628,7 +628,7 @@ export default function MyProfile() {
                   <TrendingUp className="w-4 h-4 text-blue-500" />
                   Trip Activity
                 </div>
-                <div className="text-[12px] text-zinc-600 mb-5">
+                <div className="text-[12px] text-slate-600 mb-5">
                   Trips per month
                 </div>
                 <div className="flex items-end gap-3 h-20">
@@ -639,7 +639,7 @@ export default function MyProfile() {
               </div>
 
               {/* Favourite routes */}
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
                 <div
                   className="text-[13px] font-bold text-white mb-4 flex items-center gap-2"
                   style={{ fontFamily: "'Syne', sans-serif" }}
@@ -658,7 +658,7 @@ export default function MyProfile() {
                       className="flex items-center gap-3"
                     >
                       <div className="flex items-center gap-1.5 text-[13px] min-w-[140px]">
-                        <span className="text-zinc-300 font-medium">
+                        <span className="text-slate-300 font-medium">
                           {r.from}
                         </span>
                         <svg
@@ -678,13 +678,13 @@ export default function MyProfile() {
                           {r.to}
                         </span>
                       </div>
-                      <div className="flex-1 bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                      <div className="flex-1 bg-slate-800 rounded-full h-1.5 overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-blue-700 to-blue-500 rounded-full transition-all duration-700"
                           style={{ width: `${r.pct}%` }}
                         />
                       </div>
-                      <span className="text-[12px] text-zinc-500 font-semibold min-w-[16px] text-right">
+                      <span className="text-[12px] text-slate-500 font-semibold min-w-[16px] text-right">
                         {r.count}x
                       </span>
                     </div>
@@ -716,7 +716,7 @@ export default function MyProfile() {
                     >
                       Account Verified
                     </div>
-                    <div className="text-[12px] text-zinc-500">
+                    <div className="text-[12px] text-slate-500">
                       Phone number and email confirmed · Active since Jan 2026
                     </div>
                   </div>
@@ -725,7 +725,7 @@ export default function MyProfile() {
               </div>
 
               {/* Security actions */}
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
                 <div
                   className="text-[13px] font-bold text-white mb-4 flex items-center gap-2"
                   style={{ fontFamily: "'Syne', sans-serif" }}
@@ -736,25 +736,25 @@ export default function MyProfile() {
                 <div className="space-y-1">
                   {[
                     {
-                      icon: <Phone className="w-4 h-4 text-zinc-500" />,
+                      icon: <Phone className="w-4 h-4 text-slate-500" />,
                       label: "Change Phone Number",
                       sub: "Verified · +234 812 345 6789",
                       chevron: true,
                     },
                     {
-                      icon: <Mail className="w-4 h-4 text-zinc-500" />,
+                      icon: <Mail className="w-4 h-4 text-slate-500" />,
                       label: "Change Email Address",
                       sub: "amara.kolawole@gmail.com",
                       chevron: true,
                     },
                     {
-                      icon: <Lock className="w-4 h-4 text-zinc-500" />,
+                      icon: <Lock className="w-4 h-4 text-slate-500" />,
                       label: "Change PIN / Password",
                       sub: "Last changed 30 days ago",
                       chevron: true,
                     },
                     {
-                      icon: <Bell className="w-4 h-4 text-zinc-500" />,
+                      icon: <Bell className="w-4 h-4 text-slate-500" />,
                       label: "Login Notifications",
                       sub: "Alert me when a new device logs in",
                       chevron: true,
@@ -762,20 +762,20 @@ export default function MyProfile() {
                   ].map((item) => (
                     <button
                       key={item.label}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-transparent hover:border-zinc-800 hover:bg-zinc-800/60 text-left transition-all group"
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-transparent hover:border-slate-800 hover:bg-slate-800/60 text-left transition-all group"
                     >
-                      <div className="w-9 h-9 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center flex-shrink-0 group-hover:border-blue-500/30 transition-colors">
+                      <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center flex-shrink-0 group-hover:border-blue-500/30 transition-colors">
                         {item.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[14px] font-medium text-zinc-200">
+                        <div className="text-[14px] font-medium text-slate-200">
                           {item.label}
                         </div>
-                        <div className="text-[12px] text-zinc-600 truncate">
+                        <div className="text-[12px] text-slate-600 truncate">
                           {item.sub}
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-zinc-700 group-hover:text-blue-500 transition-colors flex-shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-slate-700 group-hover:text-blue-500 transition-colors flex-shrink-0" />
                     </button>
                   ))}
                 </div>
@@ -795,7 +795,7 @@ export default function MyProfile() {
                     {
                       label: "Download My Data",
                       sub: "Export all your account data as a file",
-                      color: "text-zinc-300",
+                      color: "text-slate-300",
                     },
                     {
                       label: "Deactivate Account",
@@ -810,7 +810,7 @@ export default function MyProfile() {
                   ].map((item) => (
                     <button
                       key={item.label}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/80 hover:border-zinc-700 hover:bg-zinc-800/60 text-left transition-all group"
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-800 bg-slate-900/80 hover:border-slate-700 hover:bg-slate-800/60 text-left transition-all group"
                     >
                       <div className="flex-1">
                         <div
@@ -818,11 +818,11 @@ export default function MyProfile() {
                         >
                           {item.label}
                         </div>
-                        <div className="text-[12px] text-zinc-600">
+                        <div className="text-[12px] text-slate-600">
                           {item.sub}
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-zinc-700 group-hover:text-zinc-500 transition-colors flex-shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-slate-700 group-hover:text-slate-500 transition-colors flex-shrink-0" />
                     </button>
                   ))}
                 </div>
