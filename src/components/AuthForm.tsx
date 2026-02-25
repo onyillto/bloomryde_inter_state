@@ -16,7 +16,15 @@ import {
 const RESEND_SECONDS = 60;
 const MAX_ATTEMPTS = 3;
 
-export default function AuthForm({ onForgotPassword, onRegister }) {
+interface AuthFormProps {
+  onForgotPassword: () => void;
+  onRegister: () => void;
+}
+
+export default function AuthForm({
+  onForgotPassword,
+  onRegister,
+}: AuthFormProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("login"); // "login" | "register"
 
@@ -33,8 +41,8 @@ export default function AuthForm({ onForgotPassword, onRegister }) {
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
   const otpRefs = useRef([]);
-  const resendIntervalRef = useRef(null);
-  const lockoutIntervalRef = useRef(null);
+  const resendIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lockoutIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Reset register flow when switching tabs
   const handleTabSwitch = (tab) => {
@@ -44,8 +52,8 @@ export default function AuthForm({ onForgotPassword, onRegister }) {
     setOtp(["", "", "", "", "", ""]);
     setOtpStatus("idle");
     setAttempts(0);
-    clearInterval(resendIntervalRef.current);
-    clearInterval(lockoutIntervalRef.current);
+    if (resendIntervalRef.current) clearInterval(resendIntervalRef.current);
+    if (lockoutIntervalRef.current) clearInterval(lockoutIntervalRef.current);
   };
 
   // Start OTP countdown when entering otp step
@@ -53,14 +61,14 @@ export default function AuthForm({ onForgotPassword, onRegister }) {
     if (activeTab !== "register" || regStep !== 1) return;
     startResendCountdown();
     return () => {
-      clearInterval(resendIntervalRef.current);
-      clearInterval(lockoutIntervalRef.current);
+      if (resendIntervalRef.current) clearInterval(resendIntervalRef.current);
+      if (lockoutIntervalRef.current) clearInterval(lockoutIntervalRef.current);
     };
   }, [regStep, activeTab]);
 
   const startResendCountdown = () => {
     setResendTimer(RESEND_SECONDS);
-    clearInterval(resendIntervalRef.current);
+    if (resendIntervalRef.current) clearInterval(resendIntervalRef.current);
     resendIntervalRef.current = setInterval(() => {
       setResendTimer((t) => {
         if (t <= 1) {
@@ -75,7 +83,7 @@ export default function AuthForm({ onForgotPassword, onRegister }) {
   const startLockout = () => {
     const LOCKOUT = 60;
     setLockoutTimer(LOCKOUT);
-    clearInterval(lockoutIntervalRef.current);
+    if (lockoutIntervalRef.current) clearInterval(lockoutIntervalRef.current);
     lockoutIntervalRef.current = setInterval(() => {
       setLockoutTimer((t) => {
         if (t <= 1) {

@@ -28,10 +28,10 @@ export default function Header({ setIsSidebarOpen }: HeaderProps) {
           <Icons.Bell />
           <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full"></span>
         </button>
-        <button className="book-btn flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-semibold text-white">
+        {/* <button className="book-btn flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-semibold text-white">
           <Icons.Plus />
-          Book a Ride
-        </button>
+          Change mode
+        </button> */}
       </div>
     </div>
   );

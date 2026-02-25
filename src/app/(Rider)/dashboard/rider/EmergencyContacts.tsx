@@ -117,7 +117,7 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
     <button
       onClick={onToggle}
       className={`relative w-10 h-5 rounded-full transition-all flex-shrink-0 ${
-        on ? "bg-blue-600" : "bg-zinc-700"
+        on ? "bg-blue-600" : "bg-slate-700"
       }`}
     >
       <div
@@ -146,7 +146,7 @@ function NotifyRow({
     <div className="flex items-center justify-between py-2">
       <div
         className={`flex items-center gap-2 text-[13px] ${
-          on ? "text-zinc-300" : "text-zinc-600"
+          on ? "text-slate-300" : "text-slate-600"
         }`}
       >
         {icon}
@@ -199,8 +199,8 @@ function ContactCard({
               ? "border-blue-500/40 bg-blue-500/[0.04] shadow-lg shadow-blue-500/5"
               : "border-blue-500/25 bg-blue-500/[0.03] hover:border-blue-500/40"
             : expanded
-            ? "border-zinc-700 bg-zinc-800/60 shadow-lg"
-            : "border-zinc-800 bg-zinc-900 hover:border-zinc-700 hover:bg-zinc-800/60"
+            ? "border-blue-500/40 bg-slate-900/60 shadow-lg shadow-blue-500/5"
+            : "border-white/5 bg-slate-900/60 hover:border-white/10 hover:bg-slate-800/50"
         }`}
     >
       {/* Default top accent */}
@@ -221,7 +221,7 @@ function ContactCard({
             ${
               contact.isDefault
                 ? "bg-blue-500/15 border-blue-500/30"
-                : "bg-zinc-800 border-zinc-700"
+                : "bg-white/5 border-white/10"
             }`}
         >
           {getRelIcon(contact.relationship)}
@@ -242,12 +242,12 @@ function ContactCard({
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3 text-[13px] text-zinc-500">
+          <div className="flex items-center gap-3 text-[13px] text-slate-500">
             <span className="flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 text-zinc-600" />
+              <Phone className="w-3.5 h-3.5 text-slate-600" />
               {contact.phone}
             </span>
-            <span className="text-zinc-700">·</span>
+            <span className="text-slate-700">·</span>
             <span>{contact.relationship}</span>
           </div>
           {/* Notify channels */}
@@ -281,13 +281,13 @@ function ContactCard({
               ${
                 editing
                   ? "bg-blue-600/20 border-blue-500/30 text-blue-400"
-                  : "bg-zinc-800 border-zinc-700 text-zinc-500 hover:border-blue-500/30 hover:text-blue-400"
+                  : "bg-white/5 border-white/10 text-slate-500 hover:border-blue-500/30 hover:text-blue-400"
               }`}
           >
             <Edit3 className="w-3.5 h-3.5" />
           </button>
           <ChevronDown
-            className={`w-4 h-4 text-zinc-600 transition-transform duration-200 ${
+            className={`w-4 h-4 text-slate-600 transition-transform duration-200 ${
               expanded ? "rotate-180" : ""
             }`}
           />
@@ -296,53 +296,53 @@ function ContactCard({
 
       {/* ── Expanded Panel ────────────────────────────── */}
       {expanded && (
-        <div className="border-t border-zinc-800 px-5 pb-5 pt-4 space-y-4">
+        <div className="border-t border-white/5 px-5 pb-5 pt-4 space-y-4">
           {editing ? (
             /* Edit mode */
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-2">
+                  <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 mb-2">
                     <User className="w-3 h-3" /> Full Name *
                   </label>
                   <input
                     value={form.name}
                     onChange={(e) => set("name")(e.target.value)}
                     placeholder="Contact's full name"
-                    className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/60 focus:bg-zinc-800 transition-colors"
+                    className="w-full bg-slate-800/80 border border-white/5 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-2">
+                  <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 mb-2">
                     <Phone className="w-3 h-3" /> Phone Number *
                   </label>
                   <input
                     value={form.phone}
                     onChange={(e) => set("phone")(e.target.value)}
                     placeholder="+234 800 000 0000"
-                    className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/60 focus:bg-zinc-800 transition-colors"
+                    className="w-full bg-slate-800/80 border border-white/5 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-2">
+                  <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 mb-2">
                     <Heart className="w-3 h-3" /> Relationship
                   </label>
                   <select
                     value={form.relationship}
                     onChange={(e) => set("relationship")(e.target.value)}
-                    className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-[14px] text-white focus:outline-none focus:border-blue-500/60 transition-colors"
+                    className="w-full bg-slate-800/80 border border-white/5 rounded-xl px-3.5 py-2.5 text-[14px] text-white focus:outline-none focus:border-blue-500/60 transition-colors"
                   >
-                    <option value="" style={{ background: "#141a18" }}>
+                    <option value="" style={{ background: "#1e293b" }}>
                       Select...
                     </option>
                     {RELATIONSHIPS.map((r) => (
                       <option
                         key={r}
                         value={r}
-                        style={{ background: "#141a18" }}
+                        style={{ background: "#1e293b" }}
                       >
                         {r}
                       </option>
@@ -350,7 +350,7 @@ function ContactCard({
                   </select>
                 </div>
                 <div>
-                  <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-2">
+                  <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 mb-2">
                     <Mail className="w-3 h-3" /> Email (Optional)
                   </label>
                   <input
@@ -358,14 +358,14 @@ function ContactCard({
                     value={form.email || ""}
                     onChange={(e) => set("email")(e.target.value)}
                     placeholder="contact@email.com"
-                    className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/60 focus:bg-zinc-800 transition-colors"
+                    className="w-full bg-slate-800/80 border border-white/5 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors"
                   />
                 </div>
               </div>
 
               {/* Notify channels */}
-              <div className="rounded-xl border border-zinc-800 bg-zinc-800/40 px-4 py-3">
-                <div className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest mb-2">
+              <div className="rounded-xl border border-white/5 bg-white/5 px-4 py-3">
+                <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2">
                   Notify via
                 </div>
                 <NotifyRow
@@ -396,7 +396,7 @@ function ContactCard({
               <div className="flex gap-2 pt-1">
                 <button
                   onClick={handleDiscard}
-                  className="flex-1 flex items-center justify-center gap-2 bg-zinc-800 border border-zinc-700 text-zinc-400 font-semibold text-[13px] py-2.5 rounded-xl hover:border-zinc-600 hover:text-zinc-200 transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/5 text-slate-400 font-semibold text-[13px] py-2.5 rounded-xl hover:border-white/10 hover:text-slate-200 transition-all"
                 >
                   <X className="w-4 h-4" /> Discard
                 </button>
@@ -432,12 +432,12 @@ function ContactCard({
                 ].map(({ icon, label, value }) => (
                   <div
                     key={label}
-                    className="rounded-xl bg-zinc-800/60 border border-zinc-800 p-3"
+                    className="rounded-xl bg-slate-800/60 border border-white/5 p-3"
                   >
-                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-1.5">
+                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                       {icon} {label}
                     </div>
-                    <div className="text-[13px] font-semibold text-zinc-300">
+                    <div className="text-[13px] font-semibold text-slate-300">
                       {value}
                     </div>
                   </div>
@@ -445,8 +445,8 @@ function ContactCard({
               </div>
 
               {/* Notify preview */}
-              <div className="rounded-xl border border-zinc-800 bg-zinc-800/40 px-4 py-3">
-                <div className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest mb-2.5">
+              <div className="rounded-xl border border-white/5 bg-white/5 px-4 py-3">
+                <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2.5">
                   Notification Channels
                 </div>
                 <div className="flex gap-2">
@@ -479,7 +479,7 @@ function ContactCard({
                         ${
                           on
                             ? activeClass
-                            : "text-zinc-700 bg-zinc-800/60 border-zinc-800"
+                            : "text-slate-700 bg-slate-800/60 border-white/5"
                         }`}
                     >
                       {icon} {label}
@@ -521,13 +521,13 @@ function ContactCard({
                   <div className="text-[13px] font-bold text-red-400 mb-1 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4" /> Remove Contact?
                   </div>
-                  <div className="text-[12px] text-zinc-500 mb-3">
+                  <div className="text-[12px] text-slate-500 mb-3">
                     {contact.name} will no longer receive trip notifications.
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setConfirmDelete(false)}
-                      className="flex-1 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-400 text-[12px] font-semibold hover:bg-zinc-700 transition-all"
+                      className="flex-1 py-2 rounded-lg bg-white/5 border border-white/5 text-slate-400 text-[12px] font-semibold hover:bg-white/10 transition-all"
                     >
                       Keep
                     </button>
@@ -601,7 +601,7 @@ function AddContactForm({
         </div>
         <button
           onClick={onCancel}
-          className="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-zinc-300 transition-all"
+          className="w-7 h-7 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-slate-500 hover:text-slate-300 transition-all"
         >
           <X className="w-3.5 h-3.5" />
         </button>
@@ -610,48 +610,48 @@ function AddContactForm({
       {/* Fields */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-2">
+          <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 mb-2">
             <User className="w-3 h-3" /> Full Name *
           </label>
           <input
             value={form.name}
             onChange={(e) => set("name")(e.target.value)}
             placeholder="e.g. Chioma Adeyemi"
-            className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/60 focus:bg-zinc-800 transition-colors"
+            className="w-full bg-slate-800/80 border border-white/5 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors"
           />
         </div>
         <div>
-          <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-2">
+          <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 mb-2">
             <Phone className="w-3 h-3" /> Phone Number *
           </label>
           <input
             value={form.phone}
             onChange={(e) => set("phone")(e.target.value)}
             placeholder="+234 800 000 0000"
-            className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/60 focus:bg-zinc-800 transition-colors"
+            className="w-full bg-slate-800/80 border border-white/5 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors"
           />
         </div>
         <div>
-          <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-2">
+          <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 mb-2">
             <Heart className="w-3 h-3" /> Relationship
           </label>
           <select
             value={form.relationship}
             onChange={(e) => set("relationship")(e.target.value)}
-            className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-[14px] text-zinc-300 focus:outline-none focus:border-blue-500/60 transition-colors"
+            className="w-full bg-slate-800/80 border border-white/5 rounded-xl px-3.5 py-2.5 text-[14px] text-slate-300 focus:outline-none focus:border-blue-500/60 transition-colors"
           >
-            <option value="" style={{ background: "#141a18" }}>
+            <option value="" style={{ background: "#1e293b" }}>
               Select...
             </option>
             {RELATIONSHIPS.map((r) => (
-              <option key={r} value={r} style={{ background: "#141a18" }}>
+              <option key={r} value={r} style={{ background: "#1e293b" }}>
                 {r}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-2">
+          <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 mb-2">
             <Mail className="w-3 h-3" /> Email (Optional)
           </label>
           <input
@@ -659,14 +659,14 @@ function AddContactForm({
             value={form.email}
             onChange={(e) => set("email")(e.target.value)}
             placeholder="contact@email.com"
-            className="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/60 focus:bg-zinc-800 transition-colors"
+            className="w-full bg-slate-800/80 border border-white/5 rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors"
           />
         </div>
       </div>
 
       {/* Notify channels */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-800/40 px-4 py-3">
-        <div className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest mb-2">
+      <div className="rounded-xl border border-white/5 bg-white/5 px-4 py-3">
+        <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2">
           Notify this contact via
         </div>
         <NotifyRow
@@ -700,7 +700,7 @@ function AddContactForm({
       <div className="flex gap-2">
         <button
           onClick={onCancel}
-          className="flex-1 flex items-center justify-center gap-2 bg-zinc-800 border border-zinc-700 text-zinc-400 font-semibold text-[13px] py-2.5 rounded-xl hover:border-zinc-600 hover:text-zinc-200 transition-all"
+          className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/5 text-slate-400 font-semibold text-[13px] py-2.5 rounded-xl hover:border-white/10 hover:text-slate-200 transition-all"
         >
           Cancel
         </button>
@@ -753,11 +753,16 @@ export default function EmergencyContacts() {
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap');
 
         .ec-root * { box-sizing: border-box; }
-        .ec-root { font-family: 'DM Sans', sans-serif; }
+        .ec-root {
+          font-family: 'DM Sans', sans-serif;
+          background: #0f172a;
+          color: #cbd5e1;
+          min-height: 100vh;
+        }
 
         .ec-root ::-webkit-scrollbar { width: 4px; }
         .ec-root ::-webkit-scrollbar-track { background: transparent; }
-        .ec-root ::-webkit-scrollbar-thumb { background: #2a3530; border-radius: 4px; }
+        .ec-root ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 
         .card-enter { animation: cardIn 0.25s ease-out both; }
         @keyframes cardIn {
@@ -770,11 +775,11 @@ export default function EmergencyContacts() {
           to   { opacity: 1; transform: translateY(0); }
         }
 
-        select option { background: #141a18; }
+        select option { background: #1e293b; }
       `}</style>
 
-      <div className="ec-root bg-[#0b0f0e] min-h-screen text-[#e8f0ec]">
-        <div className="max-w-[780px] mx-auto px-6 py-8">
+      <div className="ec-root">
+        <div className="max-w-[780px] lg:max-w-[1100px] mx-auto px-6 py-8">
           {/* ── Page Header ─────────────────────────────────────── */}
           <div className="flex items-start justify-between mb-8">
             <div>
@@ -785,7 +790,7 @@ export default function EmergencyContacts() {
                 <Shield className="w-7 h-7 text-blue-500" />
                 Emergency Contacts
               </h1>
-              <p className="text-zinc-500 text-[14px] mt-1">
+              <p className="text-slate-500 text-[14px] mt-1">
                 People notified automatically when you book a trip
               </p>
             </div>
@@ -795,7 +800,7 @@ export default function EmergencyContacts() {
               className={`flex items-center gap-2 font-bold text-[13px] px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5
                 ${
                   showAddForm
-                    ? "bg-zinc-800 border border-zinc-700 text-zinc-400 hover:border-zinc-600"
+                    ? "bg-white/5 border border-white/5 text-slate-400 hover:border-white/10"
                     : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20"
                 }`}
               style={{ fontFamily: "'Syne', sans-serif" }}
@@ -832,7 +837,7 @@ export default function EmergencyContacts() {
             </div>
             <div className="flex items-start gap-3">
               <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-              <p className="text-[13px] text-zinc-400 leading-relaxed">
+              <p className="text-[13px] text-slate-400 leading-relaxed">
                 When you confirm a booking, your{" "}
                 <span className="text-white font-semibold">
                   default contact
@@ -865,7 +870,7 @@ export default function EmergencyContacts() {
               ].map((item) => (
                 <div
                   key={item.text}
-                  className="flex items-center gap-2 text-[12px] text-zinc-400"
+                  className="flex items-center gap-2 text-[12px] text-slate-400"
                 >
                   <span className="flex-shrink-0">{item.icon}</span>
                   <span>{item.text}</span>
@@ -875,7 +880,7 @@ export default function EmergencyContacts() {
           </div>
 
           {/* ── Stats row ────────────────────────────────────────── */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
             {[
               {
                 label: "Total Contacts",
@@ -888,7 +893,7 @@ export default function EmergencyContacts() {
                 label: "Default Contact",
                 value: defaultContact?.name.split(" ")[0] || "None",
                 icon: <Star className="w-4 h-4" />,
-                color: "from-zinc-800 to-zinc-900 border-zinc-800",
+                color: "from-white/5 to-white/[0.02] border-white/5",
                 valueColor: "text-white",
               },
               {
@@ -901,7 +906,7 @@ export default function EmergencyContacts() {
                     ].filter(Boolean).length
                   : 0,
                 icon: <Bell className="w-4 h-4" />,
-                color: "from-zinc-800 to-zinc-900 border-zinc-800",
+                color: "from-white/5 to-white/[0.02] border-white/5",
                 valueColor: "text-white",
               },
             ].map((s) => (
@@ -910,10 +915,10 @@ export default function EmergencyContacts() {
                 className={`rounded-2xl border bg-gradient-to-br ${s.color} px-4 py-4`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[12px] text-zinc-500 font-medium">
+                  <span className="text-[12px] text-slate-500 font-medium">
                     {s.label}
                   </span>
-                  <span className="text-zinc-600">{s.icon}</span>
+                  <span className="text-slate-600">{s.icon}</span>
                 </div>
                 <div
                   className={`font-black text-[24px] leading-none ${s.valueColor}`}
@@ -938,16 +943,16 @@ export default function EmergencyContacts() {
           {/* ── Contacts list ────────────────────────────────────── */}
           {contacts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-full border border-zinc-800 bg-zinc-900 flex items-center justify-center mb-5 opacity-70">
-                <Shield className="w-7 h-7 text-zinc-600" />
+              <div className="w-16 h-16 rounded-full border border-white/5 bg-slate-900/60 flex items-center justify-center mb-5 opacity-70">
+                <Shield className="w-7 h-7 text-slate-600" />
               </div>
               <div
-                className="text-[16px] font-bold text-zinc-500 mb-1"
+                className="text-[16px] font-bold text-slate-500 mb-1"
                 style={{ fontFamily: "'Syne', sans-serif" }}
               >
                 No emergency contacts
               </div>
-              <div className="text-[13px] text-zinc-600 mb-5">
+              <div className="text-[13px] text-slate-600 mb-5">
                 Add a contact to keep your loved ones informed when you travel
               </div>
               <button
@@ -958,11 +963,11 @@ export default function EmergencyContacts() {
               </button>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {contacts.map((contact, i) => (
                 <div
                   key={contact.id}
-                  className="card-enter"
+                  className={`card-enter ${expandedId === contact.id ? "lg:col-span-2" : ""}`}
                   style={{ animationDelay: `${i * 60}ms` }}
                 >
                   <ContactCard
@@ -984,7 +989,7 @@ export default function EmergencyContacts() {
 
           {/* ── Max contacts hint ────────────────────────────────── */}
           {contacts.length > 0 && contacts.length < 5 && (
-            <div className="flex items-center justify-center gap-2 mt-8 text-[12px] text-zinc-700">
+            <div className="flex items-center justify-center gap-2 mt-8 text-[12px] text-slate-700">
               <Users className="w-3.5 h-3.5" />
               You can add up to 5 emergency contacts · {5 -
                 contacts.length}{" "}

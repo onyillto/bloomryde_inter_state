@@ -36,13 +36,15 @@ const viewMeta = {
   },
 };
 
+type ViewType = keyof typeof viewMeta;
+
 export default function BloomRydesAuthPage() {
-  const [view, setView] = useState("auth");
+  const [view, setView] = useState<ViewType>("auth");
   const [animating, setAnimating] = useState(false);
   const [slideOut, setSlideOut] = useState(false);
   const [slideDir, setSlideDir] = useState("forward");
 
-  const switchTo = (target, dir = "forward") => {
+  const switchTo = (target: ViewType, dir = "forward") => {
     if (animating) return;
     setSlideDir(dir);
     setAnimating(true);
@@ -87,7 +89,6 @@ export default function BloomRydesAuthPage() {
             {view === "register" && (
               <RegisterForm
                 onBack={() => switchTo("auth", "back")}
-                onSwitchToLogin={() => switchTo("auth", "back")}
               />
             )}
           </div>

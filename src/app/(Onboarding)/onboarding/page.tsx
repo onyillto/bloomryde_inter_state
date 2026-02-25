@@ -8,7 +8,7 @@ import DriverOnboarding from "../../../components/DriverOnboarding";
 // ─────────────────────────────────────────────────────────────
 //  CHOOSE TYPE SCREEN (Desktop Optimized)
 // ─────────────────────────────────────────────────────────────
-function ChooseTypePage({ onSelect }) {
+function ChooseTypePage({ onSelect }: { onSelect: (role: "rider" | "driver") => void }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-700 via-blue-600 to-blue-500 flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden">
       {/* Dynamic Background Elements */}
@@ -128,13 +128,13 @@ function ChooseTypePage({ onSelect }) {
 // ─────────────────────────────────────────────────────────────
 //  ROOT PAGE EXPORT
 // ─────────────────────────────────────────────────────────────
-export default function OnboardingPage({ searchParams }) {
+export default function OnboardingPage({ searchParams }: { searchParams: { phone?: string } }) {
   const phone = searchParams?.phone ?? "";
-  const [role, setRole] = useState(null);
+  const [role, setRole] = useState<"rider" | "driver" | null>(null);
   const [visible, setVisible] = useState(true);
   const [dir, setDir] = useState("forward");
 
-  const navigate = (target, direction) => {
+  const navigate = (target: "rider" | "driver" | null, direction: "forward" | "back") => {
     setDir(direction);
     setVisible(false);
     setTimeout(() => {
