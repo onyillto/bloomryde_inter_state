@@ -12,7 +12,7 @@ import Performance from "./Driverperformance"
 import Vehicle from "./Drivermyvehicle"
 import  DriverDocument from "./DriverDocument"
 import DriverProfile from "./DriverProfile"
-// import DriverSettings from "./Driversettings"
+ import DriverSettings from "./Driversettings"
 
 export default function DriverDashboardPage() {
   const [activeNav, setActiveNav] = useState("dashboard");
@@ -30,7 +30,7 @@ export default function DriverDashboardPage() {
         return <Vehicle />;
        case "documents": return <DriverDocument />;
        case "profile":   return <DriverProfile />;
-      // case "settings":  return <DriverSettings />;
+       case "settings":  return <DriverSettings />;
       default:
         return <DriverDashboardContent />;
     }
