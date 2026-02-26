@@ -7,7 +7,7 @@ import type { Trip } from "./DriverTypes";
 
 type TripStatus = "published" | "draft" | "completed" | "cancelled";
 
-type FullTrip = Omit<Trip, 'status'> & {
+type FullTrip = Omit<Trip, "status"> & {
   status: TripStatus;
   earnings: number;
   duration: string;
@@ -831,7 +831,7 @@ export default function DriverMyTrips() {
       `}</style>
 
       <div className="mt-root">
-        <div className="max-w-[1100px] mx-auto px-6 py-8">
+        <div className="max-w-screen-xl mx-auto px-6 py-8">
           {/* ── Header ──────────────────────────────────────── */}
           <div className="flex items-start justify-between mb-8">
             <div>

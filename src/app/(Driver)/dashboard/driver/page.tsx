@@ -4,18 +4,19 @@ import { useState } from "react";
 import DriverSidebar from "./Sidebar";
 import DriverHeader from "./Header";
 import DriverDashboardContent from "./DashboardContent";
-import CreateTrip from "./Createtrip"
-import MyTrips from "./Drivermytrips"
+import CreateTrip from "./Createtrip";
+import MyTrips from "./Drivermytrips";
 import DriverRegistration from "./Driverregistration";
-import Passengers  from "./Driverpassengers"
-import Performance from "./Driverperformance"
-import Vehicle from "./Drivermyvehicle"
-import  DriverDocument from "./DriverDocument"
-import DriverProfile from "./DriverProfile"
- import DriverSettings from "./Driversettings"
+import Passengers from "./Driverpassengers";
+import Performance from "./Driverperformance";
+import Vehicle from "./Drivermyvehicle";
+import DriverDocument from "./DriverDocument";
+import DriverProfile from "./DriverProfile";
+import DriverSettings from "./Driversettings";
 
 export default function DriverDashboardPage() {
   const [activeNav, setActiveNav] = useState("dashboard");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const renderContent = () => {
     switch (activeNav) {
@@ -23,14 +24,20 @@ export default function DriverDashboardPage() {
         return <DriverDashboardContent />;
       case "create":
         return <CreateTrip />;
-       case "trips":     return <MyTrips />;
-       case "passengers":return <Passengers />;
-       case "performance":return <Performance />;
+      case "trips":
+        return <MyTrips />;
+      case "passengers":
+        return <Passengers />;
+      case "performance":
+        return <Performance />;
       case "vehicle":
         return <Vehicle />;
-       case "documents": return <DriverDocument />;
-       case "profile":   return <DriverProfile />;
-       case "settings":  return <DriverSettings />;
+      case "documents":
+        return <DriverDocument />;
+      case "profile":
+        return <DriverProfile />;
+      case "settings":
+        return <DriverSettings />;
       default:
         return <DriverDashboardContent />;
     }
@@ -50,11 +57,24 @@ export default function DriverDashboardPage() {
         .sb::-webkit-scrollbar-thumb { background:#dbeafe; border-radius:4px; }
       `}</style>
 
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       <div className="dr flex h-screen bg-slate-50 overflow-hidden">
-        <DriverSidebar activeNav={activeNav} setActiveNav={setActiveNav} />
+        <DriverSidebar
+          activeNav={activeNav}
+          setActiveNav={setActiveNav}
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
+        />
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-[940px] mx-auto px-8 py-8">
-            <DriverHeader />
+          <div className="max-w-screen-xl mx-auto px-8 py-8">
+            <DriverHeader setIsSidebarOpen={setIsSidebarOpen} />
             {renderContent()}
           </div>
         </main>

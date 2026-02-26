@@ -241,7 +241,7 @@ export default function CreateTrip() {
       `}</style>
 
       <div className="ct bg-slate-50 min-h-screen">
-        <div className="max-w-[980px] mx-auto px-6 py-8">
+        <div className="max-w-screen-xl mx-auto px-6 py-8">
           {/* Page header */}
           <div className="mb-8">
             <h1

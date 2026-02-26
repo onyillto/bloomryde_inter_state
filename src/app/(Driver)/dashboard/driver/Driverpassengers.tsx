@@ -740,7 +740,7 @@ export default function DriverPassengers() {
       `}</style>
 
       <div className="dp-root">
-        <div className="max-w-[1100px] mx-auto px-6 py-8">
+        <div className="max-w-screen-xl mx-auto px-6 py-8">
           {/* ── Header ──────────────────────────────────────── */}
           <div className="flex items-start justify-between mb-8">
             <div>

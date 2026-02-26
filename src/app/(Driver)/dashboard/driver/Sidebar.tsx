@@ -61,32 +61,55 @@ function NavItem({
 export default function DriverSidebar({
   activeNav,
   setActiveNav,
+  isSidebarOpen,
+  setIsSidebarOpen,
 }: {
   activeNav: string;
   setActiveNav: (v: string) => void;
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (v: boolean) => void;
 }) {
   return (
-    <aside className="sb w-[228px] flex-shrink-0 bg-white border-r border-slate-200 flex flex-col overflow-y-auto">
+    <aside
+      className={`sb w-[228px] flex-shrink-0 bg-white border-r border-slate-200 flex flex-col overflow-y-auto
+      fixed inset-y-0 left-0 z-50 transform ${
+        isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+      } md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}
+    >
       {/* Logo */}
       <div className="px-5 pt-5 pb-4 border-b border-slate-100 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-[18px] shadow-md shadow-blue-200 flex-shrink-0">
-            🚗
-          </div>
-          <div>
-            <div
-              className="font-black text-[15px] text-slate-900 leading-tight"
-              style={{ fontFamily: "'Syne',sans-serif" }}
-            >
-              BloomRydes
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-[18px] shadow-md shadow-blue-200 flex-shrink-0">
+              🚗
             </div>
-            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
-              Driver Portal
+            <div>
+              <div
+                className="font-black text-[15px] text-slate-900 leading-tight"
+                style={{ fontFamily: "'Syne',sans-serif" }}
+              >
+                BloomRydes
+              </div>
+              <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
+                Driver Portal
+              </div>
             </div>
           </div>
+          <button
+            className="md:hidden text-slate-400 hover:text-slate-500"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24">
+              <path
+                d="M18 6L6 18M6 6l12 12"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
         </div>
       </div>
-
 
       <div className="px-3 pt-4">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-2">

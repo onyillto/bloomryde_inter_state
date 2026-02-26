@@ -2,22 +2,41 @@
 
 import { IconBell, IconCheck } from "./Drivericons";
 
-export default function DriverHeader() {
+export default function DriverHeader({
+  setIsSidebarOpen,
+}: {
+  setIsSidebarOpen: (v: boolean) => void;
+}) {
   return (
     <div className="flex items-center justify-between mb-8">
-      <div>
-        <h1
-          className="text-[26px] font-black text-slate-900 leading-tight flex items-center gap-3"
-          style={{ fontFamily: "'Syne',sans-serif" }}
+      <div className="flex items-center gap-4">
+        <button
+          className="md:hidden text-slate-500 hover:text-slate-600"
+          onClick={() => setIsSidebarOpen(true)}
         >
-          Welcome back, Emeka
-          <span className="inline-flex items-center gap-1.5 text-[12px] font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white">
-            <IconCheck /> Verified
-          </span>
-        </h1>
-        <p className="text-[14px] text-slate-500 mt-1">
-          You're a verified driver — passengers can find your trips.
-        </p>
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24">
+            <path
+              d="M4 6h16M4 12h16M4 18h16"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+        <div>
+          <h1
+            className="text-[26px] font-black text-slate-900 leading-tight flex items-center gap-3"
+            style={{ fontFamily: "'Syne',sans-serif" }}
+          >
+            Welcome back, Emeka
+            <span className="inline-flex items-center gap-1.5 text-[12px] font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white">
+              <IconCheck /> Verified
+            </span>
+          </h1>
+          <p className="text-[14px] text-slate-500 mt-1">
+            You're a verified driver — passengers can find your trips.
+          </p>
+        </div>
       </div>
       <div className="flex items-center gap-3">
         <button className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:border-blue-300 hover:text-blue-600 transition-all relative">
