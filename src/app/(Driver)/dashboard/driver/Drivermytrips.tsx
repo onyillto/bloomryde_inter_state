@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Trip } from "./Drivertypes";
+import type { Trip } from "./DriverTypes";
 
 // ─── Extended mock data ───────────────────────────────────────────────────────
 

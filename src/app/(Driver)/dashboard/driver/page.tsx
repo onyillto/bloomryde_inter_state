@@ -9,6 +9,11 @@ import MyTrips from "./Drivermytrips"
 import DriverRegistration from "./Driverregistration";
 import Passengers  from "./Driverpassengers"
 import Performance from "./Driverperformance"
+import Vehicle from "./Drivermyvehicle"
+import  DriverDocument from "./DriverDocument"
+import DriverProfile from "./DriverProfile"
+// import DriverSettings from "./Driversettings"
+
 export default function DriverDashboardPage() {
   const [activeNav, setActiveNav] = useState("dashboard");
 
@@ -22,9 +27,9 @@ export default function DriverDashboardPage() {
        case "passengers":return <Passengers />;
        case "performance":return <Performance />;
       case "vehicle":
-        return <DriverRegistration />;
-       case "documents": return <DriverRegistration />;
-      // case "profile":   return <DriverProfile />;
+        return <Vehicle />;
+       case "documents": return <DriverDocument />;
+       case "profile":   return <DriverProfile />;
       // case "settings":  return <DriverSettings />;
       default:
         return <DriverDashboardContent />;

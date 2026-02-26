@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { TRIPS, DOCS } from "./Driverdata";
-import type { Trip, Doc } from "./Drivertypes";
+import type { Trip, Doc } from "./DriverTypes";
 import { StarIcon, IconArrow } from "./Drivericons";
 
 function SeatVisual({ total, booked }: { total: number; booked: number }) {
