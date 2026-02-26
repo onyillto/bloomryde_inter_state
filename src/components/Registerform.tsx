@@ -12,46 +12,72 @@ import {
   XCircle,
 } from "lucide-react";
 
+// ─────────────────────────────────────────────────────────────
+//  TYPES
+// ─────────────────────────────────────────────────────────────
+
+interface RegisterFormProps {
+  onBack?: () => void;
+}
+
+/** Discriminated union — makes every status value explicit and exhaustive */
+type OtpStatus = "idle" | "success" | "error" | "locked";
+
+// ─────────────────────────────────────────────────────────────
+//  CONSTANTS
+// ─────────────────────────────────────────────────────────────
+
 const RESEND_SECONDS = 60;
 const MAX_ATTEMPTS = 3;
 
-const steps = ["Phone", "Verify", "Done"];
+const STEPS = ["Phone", "Verify", "Done"] as const;
 
-export default function RegisterForm({ onBack }) {
+// ─────────────────────────────────────────────────────────────
+//  COMPONENT
+// ─────────────────────────────────────────────────────────────
+
+export default function RegisterForm({ onBack }: RegisterFormProps) {
   const router = useRouter();
 
-  const [step, setStep] = useState(0); // 0: phone, 1: otp
-  const [phone, setPhone] = useState("");
+  const [step, setStep] = useState<number>(0);
+  const [phone, setPhone] = useState<string>("");
 
   // OTP state
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [otpStatus, setOtpStatus] = useState("idle"); // "idle" | "success" | "error" | "locked"
-  const [attempts, setAttempts] = useState(0);
-  const [resendTimer, setResendTimer] = useState(RESEND_SECONDS);
-  const [verifying, setVerifying] = useState(false);
-  const [lockoutTimer, setLockoutTimer] = useState(0);
+  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+  const [otpStatus, setOtpStatus] = useState<OtpStatus>("idle");
+  const [attempts, setAttempts] = useState<number>(0);
+  const [resendTimer, setResendTimer] = useState<number>(RESEND_SECONDS);
+  const [verifying, setVerifying] = useState<boolean>(false);
+  const [lockoutTimer, setLockoutTimer] = useState<number>(0);
 
-  const otpRefs = useRef([]);
-  const resendIntervalRef = useRef(null);
-  const lockoutIntervalRef = useRef(null);
+  /** Typed ref array — each slot holds an input element or null */
+  const otpRefs = useRef<Array<HTMLInputElement | null>>(Array(6).fill(null));
+  /** NodeJS.Timeout | null — avoids the implicit `any` from useRef([]) */
+  const resendIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lockoutIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  );
 
+  // ── Start resend countdown when we reach the OTP step ──
   useEffect(() => {
     if (step !== 1) return;
     setResendTimer(RESEND_SECONDS);
     startResendCountdown();
     return () => {
-      clearInterval(resendIntervalRef.current);
-      clearInterval(lockoutIntervalRef.current);
+      if (resendIntervalRef.current) clearInterval(resendIntervalRef.current);
+      if (lockoutIntervalRef.current) clearInterval(lockoutIntervalRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
+  // ── Countdown helpers ──
   const startResendCountdown = () => {
     setResendTimer(RESEND_SECONDS);
-    clearInterval(resendIntervalRef.current);
+    if (resendIntervalRef.current) clearInterval(resendIntervalRef.current);
     resendIntervalRef.current = setInterval(() => {
       setResendTimer((t) => {
         if (t <= 1) {
-          clearInterval(resendIntervalRef.current);
+          clearInterval(resendIntervalRef.current!);
           return 0;
         }
         return t - 1;
@@ -62,11 +88,11 @@ export default function RegisterForm({ onBack }) {
   const startLockout = () => {
     const LOCKOUT = 60;
     setLockoutTimer(LOCKOUT);
-    clearInterval(lockoutIntervalRef.current);
+    if (lockoutIntervalRef.current) clearInterval(lockoutIntervalRef.current);
     lockoutIntervalRef.current = setInterval(() => {
       setLockoutTimer((t) => {
         if (t <= 1) {
-          clearInterval(lockoutIntervalRef.current);
+          clearInterval(lockoutIntervalRef.current!);
           setOtpStatus("idle");
           setAttempts(0);
           setOtp(["", "", "", "", "", ""]);
@@ -78,37 +104,44 @@ export default function RegisterForm({ onBack }) {
     }, 1000);
   };
 
-  const goNext = () => setTimeout(() => setStep((s) => s + 1), 10);
-  const goBack = () => setTimeout(() => setStep((s) => s - 1), 10);
+  // ── Navigation ──
+  const goNext = () => setStep((s) => s + 1);
+  const goBack = () => setStep((s) => s - 1);
 
-  const handlePhoneSubmit = (e) => {
+  // ── Step 0: Phone ──
+  const handlePhoneSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (phone.length >= 10) goNext();
   };
 
-  const handleOtpChange = (index, value) => {
+  // ── Step 1: OTP ──
+  const handleOtpChange = (index: number, value: string) => {
     if (otpStatus === "locked" || verifying) return;
     if (!/^\d*$/.test(value)) return;
+
     const next = [...otp];
     next[index] = value.slice(-1);
     setOtp(next);
     setOtpStatus("idle");
+
     if (value && index < 5) otpRefs.current[index + 1]?.focus();
-    if (value && index === 5) {
-      const filled = [...next];
-      if (filled.every((d) => d !== "")) {
-        setTimeout(() => verifyOtp(filled), 200);
-      }
+
+    // Auto-submit when the last box is filled
+    if (value && index === 5 && next.every((d) => d !== "")) {
+      setTimeout(() => verifyOtp(next), 200);
     }
   };
 
-  const handleOtpKeyDown = (index, e) => {
+  const handleOtpKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       otpRefs.current[index - 1]?.focus();
     }
   };
 
-  const handleOtpPaste = (e) => {
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     const pasted = e.clipboardData
       .getData("text")
       .replace(/\D/g, "")
@@ -121,8 +154,9 @@ export default function RegisterForm({ onBack }) {
     }
   };
 
-  // Replace with real API call — demo: "123456" passes
-  const verifyOtp = (digits) => {
+  /** Replace the setTimeout mock with a real API call in production.
+   *  Demo: "123456" passes, anything else fails. */
+  const verifyOtp = (digits: string[]) => {
     const code = digits.join("");
     setVerifying(true);
     setOtpStatus("idle");
@@ -133,15 +167,14 @@ export default function RegisterForm({ onBack }) {
         setOtpStatus("success");
         setTimeout(() => router.push("/onboarding/choose-type"), 700);
       } else {
-        const newAttempts = attempts + 1;
-        setAttempts(newAttempts);
-        setOtpStatus("error");
+        setAttempts((prev) => {
+          const newAttempts = prev + 1;
+          setOtpStatus(newAttempts >= MAX_ATTEMPTS ? "locked" : "error");
+          if (newAttempts >= MAX_ATTEMPTS) startLockout();
+          return newAttempts;
+        });
         setOtp(["", "", "", "", "", ""]);
         setTimeout(() => otpRefs.current[0]?.focus(), 100);
-        if (newAttempts >= MAX_ATTEMPTS) {
-          setOtpStatus("locked");
-          startLockout();
-        }
       }
     }, 1200);
   };
@@ -157,14 +190,18 @@ export default function RegisterForm({ onBack }) {
 
   const otpComplete = otp.every((d) => d !== "");
 
+  // ─────────────────────────────────────────────────────────────
+  //  RENDER
+  // ─────────────────────────────────────────────────────────────
+
   return (
     <div className="relative">
       <div className="absolute -inset-4 bg-blue-600/5 blur-3xl rounded-[2.5rem]" />
 
       <div className="relative bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-8 lg:p-10 shadow-2xl">
-        {/* Step Progress Bar */}
+        {/* ── Step Progress Bar ── */}
         <div className="flex items-center gap-2 mb-8">
-          {steps.map((label, i) => (
+          {STEPS.map((label, i) => (
             <React.Fragment key={i}>
               <div className="flex flex-col items-center gap-1">
                 <div
@@ -190,7 +227,7 @@ export default function RegisterForm({ onBack }) {
                   {label}
                 </span>
               </div>
-              {i < steps.length - 1 && (
+              {i < STEPS.length - 1 && (
                 <div className="flex-1 h-[2px] rounded-full overflow-hidden bg-white/5 mb-4">
                   <div
                     className="h-full bg-blue-600 transition-all duration-700 ease-in-out"
@@ -227,7 +264,9 @@ export default function RegisterForm({ onBack }) {
                   <input
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setPhone(e.target.value)
+                    }
                     className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/40 focus:border-blue-600 transition-all"
                     placeholder="080 0000 0000"
                     autoFocus
@@ -250,6 +289,7 @@ export default function RegisterForm({ onBack }) {
 
             {onBack && (
               <button
+                type="button"
                 onClick={onBack}
                 className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-white transition-colors mx-auto"
               >
@@ -296,7 +336,7 @@ export default function RegisterForm({ onBack }) {
               </div>
             )}
 
-            {/* Lockout */}
+            {/* Lockout banner */}
             {otpStatus === "locked" && (
               <div className="flex items-center gap-2 px-3 py-3 rounded-xl bg-red-500/10 border border-red-500/20">
                 <XCircle size={16} className="text-red-400 shrink-0" />
@@ -314,7 +354,7 @@ export default function RegisterForm({ onBack }) {
               </div>
             )}
 
-            {/* OTP Boxes */}
+            {/* OTP boxes */}
             <div className="space-y-3">
               <div
                 className={`flex gap-2 justify-between ${
@@ -325,14 +365,20 @@ export default function RegisterForm({ onBack }) {
                 {otp.map((digit, i) => (
                   <input
                     key={i}
-                    ref={(el) => (otpRefs.current[i] = el)}
+                    ref={(el) => {
+                      otpRefs.current[i] = el;
+                    }} // ✅ void ref callback
                     type="text"
                     inputMode="numeric"
                     maxLength={1}
                     value={digit}
                     disabled={otpStatus === "locked" || verifying}
-                    onChange={(e) => handleOtpChange(i, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleOtpChange(i, e.target.value)
+                    }
+                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                      handleOtpKeyDown(i, e)
+                    }
                     className={`w-full aspect-square max-w-[52px] text-center text-xl font-black bg-black/40 border rounded-2xl text-white focus:outline-none transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
                       otpStatus === "success"
                         ? "border-green-500 ring-2 ring-green-600/30 bg-green-600/10 text-green-400"
@@ -394,6 +440,7 @@ export default function RegisterForm({ onBack }) {
             </div>
 
             <button
+              type="button"
               onClick={goBack}
               className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-white transition-colors mx-auto"
             >
@@ -406,10 +453,10 @@ export default function RegisterForm({ onBack }) {
       <style>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
-          20% { transform: translateX(-8px); }
-          40% { transform: translateX(8px); }
-          60% { transform: translateX(-5px); }
-          80% { transform: translateX(5px); }
+          20%       { transform: translateX(-8px); }
+          40%       { transform: translateX(8px); }
+          60%       { transform: translateX(-5px); }
+          80%       { transform: translateX(5px); }
         }
       `}</style>
     </div>

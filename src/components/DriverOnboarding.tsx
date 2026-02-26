@@ -20,16 +20,43 @@ import {
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────
-//  SHARED PRIMITIVES (Pro GUI Overhaul)
+//  TYPE HELPERS
 // ─────────────────────────────────────────────────────────────
 
-function Inp({ leftIcon: Icon, rightSlot, error, className = "", ...props }) {
+/** Normalises error prop: accepts string | undefined everywhere.
+ *  Internally we derive `hasError: boolean` for styling. */
+type ErrorProp = string | undefined;
+
+// ─────────────────────────────────────────────────────────────
+//  SHARED PRIMITIVES
+// ─────────────────────────────────────────────────────────────
+
+interface IconProps extends React.SVGProps<SVGSVGElement> {
+  size?: number | string;
+  strokeWidth?: number | string;
+}
+
+interface InpProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  leftIcon?: React.ComponentType<IconProps>;
+  rightSlot?: React.ReactNode;
+  /** Pass the error *message* string (or undefined). Styling is derived internally. */
+  error?: ErrorProp;
+}
+
+function Inp({
+  leftIcon: Icon,
+  rightSlot,
+  error,
+  className = "",
+  ...props
+}: InpProps) {
+  const hasError = Boolean(error);
   return (
     <div className="relative group">
       {Icon && (
         <div
           className={`absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors ${
-            error
+            hasError
               ? "text-red-400"
               : "text-slate-400 group-focus-within:text-blue-600"
           }`}
@@ -41,7 +68,7 @@ function Inp({ leftIcon: Icon, rightSlot, error, className = "", ...props }) {
         className={`w-full rounded-2xl border py-4 text-sm md:text-base text-slate-800 placeholder:text-slate-400 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-4 transition-all ${
           Icon ? "pl-11" : "pl-4"
         } ${rightSlot ? "pr-12" : "pr-4"} ${
-          error
+          hasError
             ? "border-red-200 focus:border-red-400 focus:ring-red-100"
             : "border-slate-100 focus:border-blue-500 focus:ring-blue-50"
         } ${className}`}
@@ -56,12 +83,19 @@ function Inp({ leftIcon: Icon, rightSlot, error, className = "", ...props }) {
   );
 }
 
-function Sel({ error, children, ...props }) {
+interface SelProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  /** Pass the error *message* string (or undefined). Styling is derived internally. */
+  error?: ErrorProp;
+  children: React.ReactNode;
+}
+
+function Sel({ error, children, ...props }: SelProps) {
+  const hasError = Boolean(error);
   return (
     <div className="relative group">
       <select
         className={`w-full rounded-2xl border py-4 text-sm md:text-base text-slate-800 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-4 transition-all appearance-none pl-4 pr-10 ${
-          error
+          hasError
             ? "border-red-200 focus:border-red-400 focus:ring-red-100"
             : "border-slate-100 focus:border-blue-500 focus:ring-blue-50"
         }`}
@@ -76,7 +110,14 @@ function Sel({ error, children, ...props }) {
   );
 }
 
-function Field({ label, error, children }) {
+interface FieldProps {
+  label?: string;
+  /** The error message to display. Pass undefined to hide. */
+  error?: ErrorProp;
+  children: React.ReactNode;
+}
+
+function Field({ label, error, children }: FieldProps) {
   return (
     <div className="space-y-2">
       {label && (
@@ -87,14 +128,21 @@ function Field({ label, error, children }) {
       {children}
       {error && (
         <p className="flex items-center gap-1.5 text-xs text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-left-1">
-          <AlertCircle size={14} /> {error}
+          <AlertCircle size={14} />
+          {error}
         </p>
       )}
     </div>
   );
 }
 
-function PrimaryBtn({ label = "Continue", onClick }) {
+function PrimaryBtn({
+  label = "Continue",
+  onClick,
+}: {
+  label?: string;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
@@ -109,7 +157,15 @@ function PrimaryBtn({ label = "Continue", onClick }) {
   );
 }
 
-function ProgressBar({ step, total, onBack }) {
+function ProgressBar({
+  step,
+  total,
+  onBack,
+}: {
+  step: number;
+  total: number;
+  onBack: () => void;
+}) {
   return (
     <div className="flex items-center gap-4">
       <button
@@ -139,20 +195,58 @@ function ProgressBar({ step, total, onBack }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  STEPS — (Refined Visual Logic)
+//  ERROR STATE TYPES  (all string, never boolean)
 // ─────────────────────────────────────────────────────────────
 
-function StepAccount({ data, onChange, onNext, phone }) {
-  const [show, setShow] = useState({ pw: false });
-  const [errors, setErrors] = useState({});
+type AccountErrors = { email?: string; password?: string };
+type PersonalErrors = { fullName?: string; dob?: string };
+type EmergencyErrors = { eName?: string; eRel?: string; ePhone?: string };
 
-  const validate = () => {
-    const e = {};
+// ─────────────────────────────────────────────────────────────
+//  STEP DATA TYPES
+// ─────────────────────────────────────────────────────────────
+
+interface StepAccountData {
+  email: string;
+  password: string;
+}
+interface StepPersonalData {
+  fullName: string;
+  gender: string;
+  dob: string;
+  photo: File | null;
+}
+interface StepEmergencyData {
+  eName: string;
+  eRel: string;
+  ePhone: string;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  STEP 1 — Account
+// ─────────────────────────────────────────────────────────────
+
+function StepAccount({
+  data,
+  onChange,
+  onNext,
+  phone,
+}: {
+  data: StepAccountData;
+  onChange: (key: keyof StepAccountData, value: string) => void;
+  onNext: () => void;
+  phone: string;
+}) {
+  const [show, setShow] = useState(false);
+  const [errors, setErrors] = useState<AccountErrors>({});
+
+  const validate = (): boolean => {
+    const e: AccountErrors = {};
     if (!data.email) e.email = "Email is required";
     if (!data.password || data.password.length < 8)
       e.password = "Min 8 characters";
     setErrors(e);
-    return !Object.keys(e).length;
+    return Object.keys(e).length === 0;
   };
 
   return (
@@ -165,54 +259,74 @@ function StepAccount({ data, onChange, onNext, phone }) {
           className="bg-slate-100 text-slate-500 opacity-70 border-none"
         />
       </Field>
+
       <Field label="Email Address" error={errors.email}>
         <Inp
           leftIcon={Mail}
           type="email"
           placeholder="name@email.com"
           value={data.email}
-          error={errors.email}
+          error={errors.email} // ✅ string | undefined — matches InpProps
           onChange={(e) => onChange("email", e.target.value)}
         />
       </Field>
+
       <Field label="Password" error={errors.password}>
         <Inp
           leftIcon={Lock}
-          type={show.pw ? "text" : "password"}
+          type={show ? "text" : "password"}
           placeholder="••••••••"
           value={data.password}
-          error={errors.password}
+          error={errors.password} // ✅ string | undefined
           onChange={(e) => onChange("password", e.target.value)}
           rightSlot={
             <button
-              onClick={() => setShow((s) => ({ ...s, pw: !s.pw }))}
+              type="button"
+              onClick={() => setShow((s) => !s)}
               className="text-slate-400 hover:text-blue-600 transition-colors"
             >
-              {show.pw ? <Eye size={18} /> : <EyeOff size={18} />}
+              {show ? <Eye size={18} /> : <EyeOff size={18} />}
             </button>
           }
         />
       </Field>
+
       <PrimaryBtn onClick={() => validate() && onNext()} />
     </div>
   );
 }
 
-function StepPersonal({ data, onChange, onNext }) {
-  const [errors, setErrors] = useState({});
-  const [preview, setPreview] = useState(null);
-  const ref = useRef(null);
+// ─────────────────────────────────────────────────────────────
+//  STEP 2 — Personal
+// ─────────────────────────────────────────────────────────────
 
-  const validate = () => {
-    const e = {};
+function StepPersonal({
+  data,
+  onChange,
+  onNext,
+}: {
+  data: StepPersonalData;
+  onChange: (
+    key: keyof StepPersonalData,
+    value: StepPersonalData[keyof StepPersonalData]
+  ) => void;
+  onNext: () => void;
+}) {
+  const [errors, setErrors] = useState<PersonalErrors>({});
+  const [preview, setPreview] = useState<string | null>(null);
+  const ref = useRef<HTMLInputElement>(null);
+
+  const validate = (): boolean => {
+    const e: PersonalErrors = {};
     if (!data.fullName) e.fullName = "Name is required";
     if (!data.dob) e.dob = "Required";
     setErrors(e);
-    return !Object.keys(e).length;
+    return Object.keys(e).length === 0;
   };
 
   return (
     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Avatar upload */}
       <div className="flex flex-col items-center py-4">
         <div
           className="relative group cursor-pointer"
@@ -220,7 +334,11 @@ function StepPersonal({ data, onChange, onNext }) {
         >
           <div className="w-28 h-28 rounded-[2.5rem] bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden transition-all group-hover:border-blue-400">
             {preview ? (
-              <img src={preview} className="w-full h-full object-cover" />
+              <img
+                src={preview}
+                alt="avatar"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <User size={44} className="text-slate-300" strokeWidth={1.5} />
             )}
@@ -232,8 +350,9 @@ function StepPersonal({ data, onChange, onNext }) {
             ref={ref}
             type="file"
             className="hidden"
+            accept="image/*"
             onChange={(e) => {
-              const f = e.target.files[0];
+              const f = e.target.files?.[0];
               if (f) {
                 onChange("photo", f);
                 setPreview(URL.createObjectURL(f));
@@ -251,6 +370,7 @@ function StepPersonal({ data, onChange, onNext }) {
           leftIcon={User}
           placeholder="Enter your legal name"
           value={data.fullName}
+          error={errors.fullName} // ✅ string | undefined
           onChange={(e) => onChange("fullName", e.target.value)}
         />
       </Field>
@@ -266,30 +386,45 @@ function StepPersonal({ data, onChange, onNext }) {
             <option value="female">Female</option>
           </Sel>
         </Field>
+
         <Field label="Date of Birth" error={errors.dob}>
           <Inp
             leftIcon={Calendar}
             type="date"
             value={data.dob}
+            error={errors.dob} // ✅ string | undefined
             onChange={(e) => onChange("dob", e.target.value)}
           />
         </Field>
       </div>
+
       <PrimaryBtn onClick={() => validate() && onNext()} />
     </div>
   );
 }
 
-function StepEmergency({ data, onChange, onNext }) {
-  const [errors, setErrors] = useState({});
+// ─────────────────────────────────────────────────────────────
+//  STEP 3 — Emergency
+// ─────────────────────────────────────────────────────────────
 
-  const validate = () => {
-    const e = {};
+function StepEmergency({
+  data,
+  onChange,
+  onNext,
+}: {
+  data: StepEmergencyData;
+  onChange: (key: keyof StepEmergencyData, value: string) => void;
+  onNext: () => void;
+}) {
+  const [errors, setErrors] = useState<EmergencyErrors>({});
+
+  const validate = (): boolean => {
+    const e: EmergencyErrors = {};
     if (!data.eName) e.eName = "Name required";
     if (!data.ePhone) e.ePhone = "Phone required";
     if (!data.eRel) e.eRel = "Relation required";
     setErrors(e);
-    return !Object.keys(e).length;
+    return Object.keys(e).length === 0;
   };
 
   return (
@@ -312,13 +447,16 @@ function StepEmergency({ data, onChange, onNext }) {
           leftIcon={User}
           placeholder="Full Name"
           value={data.eName}
+          error={errors.eName} // ✅ string | undefined
           onChange={(e) => onChange("eName", e.target.value)}
         />
       </Field>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Field label="Relationship" error={errors.eRel}>
           <Sel
             value={data.eRel}
+            error={errors.eRel} // ✅ string | undefined
             onChange={(e) => onChange("eRel", e.target.value)}
           >
             <option value="">Select...</option>
@@ -327,11 +465,13 @@ function StepEmergency({ data, onChange, onNext }) {
             <option value="Partner">Partner</option>
           </Sel>
         </Field>
+
         <Field label="Emergency Phone" error={errors.ePhone}>
           <Inp
             leftIcon={Phone}
             placeholder="+234..."
             value={data.ePhone}
+            error={errors.ePhone} // ✅ string | undefined
             onChange={(e) => onChange("ePhone", e.target.value)}
           />
         </Field>
@@ -348,34 +488,50 @@ function StepEmergency({ data, onChange, onNext }) {
 // ─────────────────────────────────────────────────────────────
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────
+
 const STEPS = [
   { title: "Account", subtitle: "Secure your passenger profile" },
   { title: "Identity", subtitle: "Personal info for driver matching" },
   { title: "Safety", subtitle: "Emergency contact setup" },
 ];
 
-export default function PassengerOnboarding({ phone = "", onBackToChoose }) {
+export default function PassengerOnboarding({
+  phone = "",
+  onBackToChoose,
+}: {
+  phone?: string;
+  onBackToChoose?: () => void;
+}) {
   const [step, setStep] = useState(1);
   const [done, setDone] = useState(false);
   const [visible, setVisible] = useState(true);
   const router = useRouter();
 
-  const [account, setAccount] = useState({ email: "", password: "" });
-  const [personal, setPersonal] = useState({
+  const [account, setAccount] = useState<StepAccountData>({
+    email: "",
+    password: "",
+  });
+  const [personal, setPersonal] = useState<StepPersonalData>({
     fullName: "",
     gender: "",
     dob: "",
     photo: null,
   });
-  const [emergency, setEmergency] = useState({
+  const [emergency, setEmergency] = useState<StepEmergencyData>({
     eName: "",
     eRel: "",
     ePhone: "",
   });
 
-  const upd = (setter) => (k, v) => setter((p) => ({ ...p, [k]: v }));
+  /** Generic field updater — fully typed so no implicit `any`. */
+  function makeUpdater<T extends object>(
+    setter: React.Dispatch<React.SetStateAction<T>>
+  ) {
+    return (key: keyof T, value: T[keyof T]) =>
+      setter((prev) => ({ ...prev, [key]: value }));
+  }
 
-  const animateTo = (target) => {
+  const animateTo = (target: number) => {
     setVisible(false);
     setTimeout(() => {
       setStep(target);
@@ -383,7 +539,8 @@ export default function PassengerOnboarding({ phone = "", onBackToChoose }) {
     }, 250);
   };
 
-  if (done)
+  // ── Success screen ──
+  if (done) {
     return (
       <div className="min-h-screen bg-blue-600 flex items-center justify-center p-6 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-400/20 via-transparent to-transparent opacity-50" />
@@ -400,7 +557,7 @@ export default function PassengerOnboarding({ phone = "", onBackToChoose }) {
             </p>
           </div>
           <button
-            onClick={() => router.push("/dashboard/passenger")}
+            onClick={() => router.push("/dashboard/driver")}
             className="w-full bg-white text-blue-600 font-black py-5 rounded-[2rem] shadow-2xl hover:scale-105 transition-all text-lg"
           >
             Start Booking Rides →
@@ -408,15 +565,17 @@ export default function PassengerOnboarding({ phone = "", onBackToChoose }) {
         </div>
       </div>
     );
+  }
 
+  // ── Main flow ──
   return (
     <div className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center relative overflow-hidden p-0 md:p-6">
-      {/* Decorative Accents */}
+      {/* Decorative accents */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
       <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 rounded-full blur-[140px] pointer-events-none" />
 
       <div className="w-full max-w-2xl z-10 flex flex-col h-screen md:h-auto">
-        {/* Header Section */}
+        {/* Header */}
         <div className="px-6 pt-10 pb-8 space-y-6 md:text-center">
           <ProgressBar
             step={step}
@@ -433,7 +592,7 @@ export default function PassengerOnboarding({ phone = "", onBackToChoose }) {
           </div>
         </div>
 
-        {/* Form Card */}
+        {/* Form card */}
         <div className="flex-1 md:flex-none bg-white md:rounded-[3rem] rounded-t-[3.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)] overflow-hidden">
           <div className="px-6 md:px-12 py-10">
             <div
@@ -446,7 +605,7 @@ export default function PassengerOnboarding({ phone = "", onBackToChoose }) {
               {step === 1 && (
                 <StepAccount
                   data={account}
-                  onChange={upd(setAccount)}
+                  onChange={makeUpdater(setAccount)}
                   onNext={() => animateTo(2)}
                   phone={phone}
                 />
@@ -454,14 +613,14 @@ export default function PassengerOnboarding({ phone = "", onBackToChoose }) {
               {step === 2 && (
                 <StepPersonal
                   data={personal}
-                  onChange={upd(setPersonal)}
+                  onChange={makeUpdater(setPersonal)}
                   onNext={() => animateTo(3)}
                 />
               )}
               {step === 3 && (
                 <StepEmergency
                   data={emergency}
-                  onChange={upd(setEmergency)}
+                  onChange={makeUpdater(setEmergency)}
                   onNext={() => setDone(true)}
                 />
               )}

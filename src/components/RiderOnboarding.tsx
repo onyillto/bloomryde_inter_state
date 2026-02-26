@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import {
   Phone,
@@ -10,7 +10,6 @@ import {
   EyeOff,
   User,
   Calendar,
-  ShieldCheck,
   Heart,
   ChevronLeft,
   ArrowRight,
@@ -21,16 +20,76 @@ import {
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────
-//  SHARED PRIMITIVES (Enhanced for Desktop)
+//  TYPE HELPERS
 // ─────────────────────────────────────────────────────────────
 
-function Inp({ leftIcon: Icon, rightSlot, error, className = "", ...props }) {
+/** Error prop is always a string message or undefined — never boolean */
+type ErrorProp = string | undefined;
+
+// ─────────────────────────────────────────────────────────────
+//  STEP DATA TYPES
+// ─────────────────────────────────────────────────────────────
+
+interface StepAccountData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+interface StepPersonalData {
+  fullName: string;
+  gender: string;
+  dob: string;
+  photo: File | null;
+}
+
+interface StepEmergencyData {
+  eName: string;
+  eRel: string;
+  ePhone: string;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  ERROR STATE TYPES  (all string, never boolean)
+// ─────────────────────────────────────────────────────────────
+
+type AccountErrors = {
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+};
+type PersonalErrors = { fullName?: string; gender?: string; dob?: string };
+type EmergencyErrors = { eName?: string; eRel?: string; ePhone?: string };
+
+// ─────────────────────────────────────────────────────────────
+//  SHARED PRIMITIVES
+// ─────────────────────────────────────────────────────────────
+
+interface IconProps extends React.SVGProps<SVGSVGElement> {
+  size?: number | string;
+  strokeWidth?: number | string;
+}
+
+interface InpProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  leftIcon?: React.ComponentType<IconProps>;
+  rightSlot?: React.ReactNode;
+  error?: ErrorProp;
+}
+
+function Inp({
+  leftIcon: Icon,
+  rightSlot,
+  error,
+  className = "",
+  ...props
+}: InpProps) {
+  const hasError = Boolean(error);
   return (
     <div className="relative group">
       {Icon && (
         <div
           className={`absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors ${
-            error
+            hasError
               ? "text-red-400"
               : "text-slate-400 group-focus-within:text-blue-600"
           }`}
@@ -42,7 +101,7 @@ function Inp({ leftIcon: Icon, rightSlot, error, className = "", ...props }) {
         className={`w-full rounded-2xl border py-4 text-sm md:text-base text-slate-800 placeholder:text-slate-400 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-4 transition-all ${
           Icon ? "pl-11" : "pl-4"
         } ${rightSlot ? "pr-12" : "pr-4"} ${
-          error
+          hasError
             ? "border-red-200 focus:border-red-400 focus:ring-red-100"
             : "border-slate-100 focus:border-blue-500 focus:ring-blue-50"
         } ${className}`}
@@ -57,12 +116,18 @@ function Inp({ leftIcon: Icon, rightSlot, error, className = "", ...props }) {
   );
 }
 
-function Sel({ error, children, ...props }) {
+interface SelProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  error?: ErrorProp;
+  children: React.ReactNode;
+}
+
+function Sel({ error, children, ...props }: SelProps) {
+  const hasError = Boolean(error);
   return (
     <div className="relative group">
       <select
         className={`w-full rounded-2xl border py-4 text-sm md:text-base text-slate-800 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-4 transition-all appearance-none pl-4 pr-10 ${
-          error
+          hasError
             ? "border-red-200 focus:border-red-400 focus:ring-red-100"
             : "border-slate-100 focus:border-blue-500 focus:ring-blue-50"
         }`}
@@ -77,7 +142,13 @@ function Sel({ error, children, ...props }) {
   );
 }
 
-function Field({ label, error, children }) {
+interface FieldProps {
+  label?: string;
+  error?: ErrorProp;
+  children: React.ReactNode;
+}
+
+function Field({ label, error, children }: FieldProps) {
   return (
     <div className="space-y-2">
       {label && (
@@ -95,9 +166,15 @@ function Field({ label, error, children }) {
   );
 }
 
-function PrimaryBtn({ label = "Continue", onClick }) {
+interface PrimaryBtnProps {
+  label?: string;
+  onClick: () => void;
+}
+
+function PrimaryBtn({ label = "Continue", onClick }: PrimaryBtnProps) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className="group w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black py-4 md:py-5 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 active:scale-[0.98] shadow-xl shadow-blue-600/25 mt-8"
     >
@@ -110,10 +187,17 @@ function PrimaryBtn({ label = "Continue", onClick }) {
   );
 }
 
-function ProgressBar({ step, total, onBack }) {
+interface ProgressBarProps {
+  step: number;
+  total: number;
+  onBack: () => void;
+}
+
+function ProgressBar({ step, total, onBack }: ProgressBarProps) {
   return (
     <div className="flex items-center gap-4">
       <button
+        type="button"
         onClick={onBack}
         className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white transition-all active:scale-90 shrink-0 backdrop-blur-md"
       >
@@ -139,8 +223,13 @@ function ProgressBar({ step, total, onBack }) {
   );
 }
 
-function ProfilePhotoUpload({ preview, onFile }) {
-  const ref = useRef(null);
+interface ProfilePhotoUploadProps {
+  preview: string | null;
+  onFile: (file: File, url: string) => void;
+}
+
+function ProfilePhotoUpload({ preview, onFile }: ProfilePhotoUploadProps) {
+  const ref = useRef<HTMLInputElement>(null);
   return (
     <div className="flex flex-col items-center gap-4 py-6">
       <div className="relative">
@@ -160,6 +249,7 @@ function ProfilePhotoUpload({ preview, onFile }) {
           )}
         </div>
         <button
+          type="button"
           onClick={() => ref.current?.click()}
           className="absolute -bottom-2 -right-2 w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg hover:bg-blue-700 transition-all border-4 border-white active:scale-90"
         >
@@ -170,7 +260,7 @@ function ProfilePhotoUpload({ preview, onFile }) {
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={(e) => {
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             const f = e.target.files?.[0];
             if (f) onFile(f, URL.createObjectURL(f));
           }}
@@ -187,15 +277,22 @@ function ProfilePhotoUpload({ preview, onFile }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  STEPS (Logic remains same, styling refined)
+//  STEP 1 — Account
 // ─────────────────────────────────────────────────────────────
 
-function StepAccount({ data, onChange, onNext, phone }) {
-  const [show, setShow] = useState({ pw: false, cpw: false });
-  const [errors, setErrors] = useState({});
+interface StepAccountProps {
+  data: StepAccountData;
+  onChange: (key: keyof StepAccountData, value: string) => void;
+  onNext: () => void;
+  phone: string;
+}
 
-  const validate = () => {
-    const e = {};
+function StepAccount({ data, onChange, onNext, phone }: StepAccountProps) {
+  const [show, setShow] = useState({ pw: false, cpw: false });
+  const [errors, setErrors] = useState<AccountErrors>({});
+
+  const validate = (): boolean => {
+    const e: AccountErrors = {};
     if (!data.email) e.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(data.email)) e.email = "Enter a valid email";
     if (!data.password || data.password.length < 8)
@@ -203,7 +300,7 @@ function StepAccount({ data, onChange, onNext, phone }) {
     if (data.password !== data.confirmPassword)
       e.confirmPassword = "Passwords don't match";
     setErrors(e);
-    return !Object.keys(e).length;
+    return Object.keys(e).length === 0;
   };
 
   return (
@@ -216,6 +313,7 @@ function StepAccount({ data, onChange, onNext, phone }) {
           className="bg-slate-100 text-slate-500 opacity-70 cursor-not-allowed border-none shadow-none"
         />
       </Field>
+
       <Field label="Email Address" error={errors.email}>
         <Inp
           leftIcon={Mail}
@@ -223,12 +321,13 @@ function StepAccount({ data, onChange, onNext, phone }) {
           placeholder="name@example.com"
           value={data.email}
           error={errors.email}
-          onChange={(e) => {
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             onChange("email", e.target.value);
-            setErrors((p) => ({ ...p, email: "" }));
+            setErrors((p) => ({ ...p, email: undefined }));
           }}
         />
       </Field>
+
       <Field label="Create Password" error={errors.password}>
         <Inp
           leftIcon={Lock}
@@ -236,9 +335,9 @@ function StepAccount({ data, onChange, onNext, phone }) {
           placeholder="••••••••"
           value={data.password}
           error={errors.password}
-          onChange={(e) => {
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             onChange("password", e.target.value);
-            setErrors((p) => ({ ...p, password: "" }));
+            setErrors((p) => ({ ...p, password: undefined }));
           }}
           rightSlot={
             <button
@@ -251,6 +350,7 @@ function StepAccount({ data, onChange, onNext, phone }) {
           }
         />
       </Field>
+
       <Field label="Confirm Password" error={errors.confirmPassword}>
         <Inp
           leftIcon={Lock}
@@ -258,9 +358,9 @@ function StepAccount({ data, onChange, onNext, phone }) {
           placeholder="••••••••"
           value={data.confirmPassword}
           error={errors.confirmPassword}
-          onChange={(e) => {
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             onChange("confirmPassword", e.target.value);
-            setErrors((p) => ({ ...p, confirmPassword: "" }));
+            setErrors((p) => ({ ...p, confirmPassword: undefined }));
           }}
           rightSlot={
             <button
@@ -273,22 +373,36 @@ function StepAccount({ data, onChange, onNext, phone }) {
           }
         />
       </Field>
+
       <PrimaryBtn onClick={() => validate() && onNext()} />
     </div>
   );
 }
 
-function StepPersonal({ data, onChange, onNext }) {
-  const [errors, setErrors] = useState({});
-  const [preview, setPreview] = useState(null);
+// ─────────────────────────────────────────────────────────────
+//  STEP 2 — Personal
+// ─────────────────────────────────────────────────────────────
 
-  const validate = () => {
-    const e = {};
+interface StepPersonalProps {
+  data: StepPersonalData;
+  onChange: (
+    key: keyof StepPersonalData,
+    value: StepPersonalData[keyof StepPersonalData]
+  ) => void;
+  onNext: () => void;
+}
+
+function StepPersonal({ data, onChange, onNext }: StepPersonalProps) {
+  const [errors, setErrors] = useState<PersonalErrors>({});
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const validate = (): boolean => {
+    const e: PersonalErrors = {};
     if (!data.fullName.trim()) e.fullName = "Full name is required";
     if (!data.gender) e.gender = "Select your gender";
     if (!data.dob) e.dob = "Select your date of birth";
     setErrors(e);
-    return !Object.keys(e).length;
+    return Object.keys(e).length === 0;
   };
 
   return (
@@ -300,26 +414,28 @@ function StepPersonal({ data, onChange, onNext }) {
           setPreview(url);
         }}
       />
+
       <Field label="Legal Full Name" error={errors.fullName}>
         <Inp
           leftIcon={User}
           placeholder="John Doe"
           value={data.fullName}
           error={errors.fullName}
-          onChange={(e) => {
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             onChange("fullName", e.target.value);
-            setErrors((p) => ({ ...p, fullName: "" }));
+            setErrors((p) => ({ ...p, fullName: undefined }));
           }}
         />
       </Field>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Field label="Gender" error={errors.gender}>
           <Sel
             value={data.gender}
             error={errors.gender}
-            onChange={(e) => {
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
               onChange("gender", e.target.value);
-              setErrors((p) => ({ ...p, gender: "" }));
+              setErrors((p) => ({ ...p, gender: undefined }));
             }}
           >
             <option value="">Choose...</option>
@@ -328,35 +444,47 @@ function StepPersonal({ data, onChange, onNext }) {
             <option value="other">Other</option>
           </Sel>
         </Field>
+
         <Field label="Date of Birth" error={errors.dob}>
           <Inp
             leftIcon={Calendar}
             type="date"
             value={data.dob}
             error={errors.dob}
-            onChange={(e) => {
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               onChange("dob", e.target.value);
-              setErrors((p) => ({ ...p, dob: "" }));
+              setErrors((p) => ({ ...p, dob: undefined }));
             }}
           />
         </Field>
       </div>
+
       <PrimaryBtn onClick={() => validate() && onNext()} />
     </div>
   );
 }
 
-function StepEmergency({ data, onChange, onNext }) {
-  const [errors, setErrors] = useState({});
+// ─────────────────────────────────────────────────────────────
+//  STEP 3 — Emergency
+// ─────────────────────────────────────────────────────────────
 
-  const validate = () => {
-    const e = {};
+interface StepEmergencyProps {
+  data: StepEmergencyData;
+  onChange: (key: keyof StepEmergencyData, value: string) => void;
+  onNext: () => void;
+}
+
+function StepEmergency({ data, onChange, onNext }: StepEmergencyProps) {
+  const [errors, setErrors] = useState<EmergencyErrors>({});
+
+  const validate = (): boolean => {
+    const e: EmergencyErrors = {};
     if (!data.eName.trim()) e.eName = "Name is required";
     if (!data.eRel) e.eRel = "Select relationship";
     if (!data.ePhone || data.ePhone.length < 10)
       e.ePhone = "Enter valid phone number";
     setErrors(e);
-    return !Object.keys(e).length;
+    return Object.keys(e).length === 0;
   };
 
   return (
@@ -373,25 +501,27 @@ function StepEmergency({ data, onChange, onNext }) {
           </p>
         </div>
       </div>
+
       <Field label="Contact Person Name" error={errors.eName}>
         <Inp
           leftIcon={User}
           placeholder="Emergency Contact Name"
           value={data.eName}
           error={errors.eName}
-          onChange={(e) => {
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             onChange("eName", e.target.value);
-            setErrors((p) => ({ ...p, eName: "" }));
+            setErrors((p) => ({ ...p, eName: undefined }));
           }}
         />
       </Field>
+
       <Field label="Relationship" error={errors.eRel}>
         <Sel
           value={data.eRel}
           error={errors.eRel}
-          onChange={(e) => {
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
             onChange("eRel", e.target.value);
-            setErrors((p) => ({ ...p, eRel: "" }));
+            setErrors((p) => ({ ...p, eRel: undefined }));
           }}
         >
           <option value="">How do you know them?</option>
@@ -401,6 +531,7 @@ function StepEmergency({ data, onChange, onNext }) {
           <option value="Colleague">Colleague</option>
         </Sel>
       </Field>
+
       <Field label="Contact Phone" error={errors.ePhone}>
         <Inp
           leftIcon={Phone}
@@ -408,12 +539,13 @@ function StepEmergency({ data, onChange, onNext }) {
           placeholder="+234 ..."
           value={data.ePhone}
           error={errors.ePhone}
-          onChange={(e) => {
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             onChange("ePhone", e.target.value);
-            setErrors((p) => ({ ...p, ePhone: "" }));
+            setErrors((p) => ({ ...p, ePhone: undefined }));
           }}
         />
       </Field>
+
       <PrimaryBtn
         label="Complete Registration"
         onClick={() => validate() && onNext()}
@@ -426,40 +558,52 @@ function StepEmergency({ data, onChange, onNext }) {
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────
 
-const STEPS = [
+interface RiderOnboardingProps {
+  phone?: string;
+  onBackToChoose?: () => void;
+}
+
+const STEP_META = [
   { title: "Account", subtitle: "Secure your access" },
   { title: "Identity", subtitle: "Verify your profile" },
   { title: "Safety", subtitle: "Emergency backup" },
-];
+] as const;
 
-export default function RiderOnboarding({ phone = "", onBackToChoose }) {
-  const [step, setStep] = useState(1);
-  const [done, setDone] = useState(false);
-  const [visible, setVisible] = useState(true);
-  const [slideDir, setSlideDir] = useState("forward");
+/** Generic field updater — fully typed, no implicit any */
+function makeUpdater<T extends object>(
+  setter: React.Dispatch<React.SetStateAction<T>>
+) {
+  return (key: keyof T, value: T[keyof T]) =>
+    setter((prev) => ({ ...prev, [key]: value }));
+}
+
+export default function RiderOnboarding({
+  phone = "",
+  onBackToChoose,
+}: RiderOnboardingProps) {
+  const [step, setStep] = useState<number>(1);
+  const [done, setDone] = useState<boolean>(false);
+  const [visible, setVisible] = useState<boolean>(true);
   const router = useRouter();
 
-  const [account, setAccount] = useState({
+  const [account, setAccount] = useState<StepAccountData>({
     email: "",
     password: "",
     confirmPassword: "",
   });
-  const [personal, setPersonal] = useState({
+  const [personal, setPersonal] = useState<StepPersonalData>({
     fullName: "",
     gender: "",
     dob: "",
     photo: null,
   });
-  const [emergency, setEmergency] = useState({
+  const [emergency, setEmergency] = useState<StepEmergencyData>({
     eName: "",
     eRel: "",
     ePhone: "",
   });
 
-  const upd = (setter) => (k, v) => setter((p) => ({ ...p, [k]: v }));
-
-  const animateTo = (target, dir) => {
-    setSlideDir(dir);
+  const animateTo = (target: number) => {
     setVisible(false);
     setTimeout(() => {
       setStep(target);
@@ -467,12 +611,11 @@ export default function RiderOnboarding({ phone = "", onBackToChoose }) {
     }, 270);
   };
 
-  const goNext = () =>
-    step < 3 ? animateTo(step + 1, "forward") : setDone(true);
-  const goBack = () =>
-    step > 1 ? animateTo(step - 1, "back") : onBackToChoose?.();
+  const goNext = () => (step < 3 ? animateTo(step + 1) : setDone(true));
+  const goBack = () => (step > 1 ? animateTo(step - 1) : onBackToChoose?.());
 
-  if (done)
+  // ── Success screen ──
+  if (done) {
     return (
       <div className="min-h-screen bg-blue-600 flex items-center justify-center p-6 overflow-hidden relative">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-400/20 via-transparent to-transparent opacity-50" />
@@ -494,6 +637,7 @@ export default function RiderOnboarding({ phone = "", onBackToChoose }) {
             </p>
           </div>
           <button
+            type="button"
             onClick={() => router.push("/dashboard/rider")}
             className="w-full bg-white text-blue-700 font-black py-5 rounded-[2rem] shadow-2xl hover:scale-105 transition-all active:scale-95 text-lg"
           >
@@ -502,43 +646,46 @@ export default function RiderOnboarding({ phone = "", onBackToChoose }) {
         </div>
       </div>
     );
+  }
 
-  const slideStyle = {
+  /** Inline style typed as CSSProperties — no implicit any on style object */
+  const slideStyle: CSSProperties = {
     transition: "all 400ms cubic-bezier(0.4, 0, 0.2, 1)",
     opacity: visible ? 1 : 0,
     transform: visible ? "translateY(0)" : "translateY(10px) scale(0.98)",
   };
 
+  // ── Main flow ──
   return (
     <div className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center relative overflow-hidden p-0 md:p-6">
-      {/* Background Pro Accents */}
+      {/* Background accents */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
       <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Main Container */}
+      {/* Main container */}
       <div className="w-full max-w-2xl z-10 flex flex-col h-screen md:h-auto">
-        {/* Top Navigation & Header */}
+        {/* Header */}
         <div className="px-6 pt-8 pb-6 space-y-6 md:text-center">
           <ProgressBar step={step} total={3} onBack={goBack} />
           <div>
             <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter">
-              {STEPS[step - 1].title}
+              {STEP_META[step - 1].title}
             </h2>
             <p className="text-slate-400 text-sm md:text-lg font-medium mt-2">
-              {STEPS[step - 1].subtitle}
+              {STEP_META[step - 1].subtitle}
             </p>
           </div>
         </div>
 
-        {/* Content Card */}
+        {/* Form card */}
         <div className="flex-1 md:flex-none bg-white md:rounded-[3rem] rounded-t-[3rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-500">
           <div className="px-6 md:px-12 py-10">
             <div style={slideStyle}>
               {step === 1 && (
                 <StepAccount
                   data={account}
-                  onChange={upd(setAccount)}
+                  onChange={makeUpdater(setAccount)}
                   onNext={goNext}
                   phone={phone}
                 />
@@ -546,21 +693,21 @@ export default function RiderOnboarding({ phone = "", onBackToChoose }) {
               {step === 2 && (
                 <StepPersonal
                   data={personal}
-                  onChange={upd(setPersonal)}
+                  onChange={makeUpdater(setPersonal)}
                   onNext={goNext}
                 />
               )}
               {step === 3 && (
                 <StepEmergency
                   data={emergency}
-                  onChange={upd(setEmergency)}
+                  onChange={makeUpdater(setEmergency)}
                   onNext={goNext}
                 />
               )}
             </div>
           </div>
 
-          {/* Subtle footer indicator for desktop */}
+          {/* Desktop step dots */}
           <div className="hidden md:flex justify-center pb-8 opacity-20">
             <div className="flex gap-1.5">
               {[1, 2, 3].map((i) => (

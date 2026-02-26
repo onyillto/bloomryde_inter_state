@@ -12,24 +12,65 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-// Step indicators
-const steps = ["Phone", "Verify OTP", "New Password"];
+// ─────────────────────────────────────────────────────────────
+//  TYPES
+// ─────────────────────────────────────────────────────────────
 
-export default function ForgotPasswordForm({ onBack }) {
-  const [step, setStep] = useState(0); // 0: phone, 1: otp, 2: new password
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [done, setDone] = useState(false);
-  const [resendTimer, setResendTimer] = useState(30);
-  const [animDir, setAnimDir] = useState("forward"); // for slide direction
+interface ForgotPasswordFormProps {
+  onBack?: () => void;
+}
 
-  const otpRefs = useRef([]);
+type AnimDir = "forward" | "back";
 
-  // Countdown timer for resend OTP
+// ─────────────────────────────────────────────────────────────
+//  CONSTANTS
+// ─────────────────────────────────────────────────────────────
+
+const STEPS = ["Phone", "Verify OTP", "New Password"] as const;
+
+const STRENGTH_LABEL = ["", "Weak", "Good", "Strong"] as const;
+const STRENGTH_COLOR = [
+  "",
+  "bg-red-500",
+  "bg-yellow-400",
+  "bg-green-500",
+] as const;
+
+// ─────────────────────────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────────────────────────
+
+/** Returns 0 (none) | 1 (weak) | 2 (good) | 3 (strong) */
+function getPasswordStrength(pw: string): 0 | 1 | 2 | 3 {
+  if (pw.length === 0) return 0;
+  if (pw.length < 6) return 1;
+  if (pw.length < 10) return 2;
+  return 3;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  COMPONENT
+// ─────────────────────────────────────────────────────────────
+
+export default function ForgotPasswordForm({
+  onBack,
+}: ForgotPasswordFormProps) {
+  const [step, setStep] = useState<number>(0);
+  const [phone, setPhone] = useState<string>("");
+  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirm, setShowConfirm] = useState<boolean>(false);
+  const [done, setDone] = useState<boolean>(false);
+  const [resendTimer, setResendTimer] = useState<number>(30);
+  // animDir is declared but drives animation class — kept for future direction-aware transitions
+  const [animDir, setAnimDir] = useState<AnimDir>("forward");
+
+  /** Typed ref array — each slot holds an input element or null */
+  const otpRefs = useRef<Array<HTMLInputElement | null>>(Array(6).fill(null));
+
+  // ── Countdown timer for resend OTP ──
   useEffect(() => {
     if (step !== 1) return;
     setResendTimer(30);
@@ -45,21 +86,25 @@ export default function ForgotPasswordForm({ onBack }) {
     return () => clearInterval(interval);
   }, [step]);
 
+  // ── Navigation helpers ──
   const goNext = () => {
     setAnimDir("forward");
-    setTimeout(() => setStep((s) => s + 1), 10);
-  };
-  const goBack = () => {
-    setAnimDir("back");
-    setTimeout(() => setStep((s) => s - 1), 10);
+    setStep((s) => s + 1);
   };
 
-  const handlePhoneSubmit = (e) => {
+  const goBack = () => {
+    setAnimDir("back");
+    setStep((s) => s - 1);
+  };
+
+  // ── Step 0: Phone ──
+  const handlePhoneSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (phone.length >= 10) goNext();
   };
 
-  const handleOtpChange = (index, value) => {
+  // ── Step 1: OTP ──
+  const handleOtpChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value.slice(-1);
@@ -67,13 +112,16 @@ export default function ForgotPasswordForm({ onBack }) {
     if (value && index < 5) otpRefs.current[index + 1]?.focus();
   };
 
-  const handleOtpKeyDown = (index, e) => {
+  const handleOtpKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       otpRefs.current[index - 1]?.focus();
     }
   };
 
-  const handleOtpPaste = (e) => {
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     const pasted = e.clipboardData
       .getData("text")
       .replace(/\D/g, "")
@@ -86,34 +134,30 @@ export default function ForgotPasswordForm({ onBack }) {
 
   const otpComplete = otp.every((d) => d !== "");
 
-  const handleOtpSubmit = (e) => {
+  const handleOtpSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (otpComplete) goNext();
   };
 
-  const handlePasswordSubmit = (e) => {
+  // ── Step 2: Password ──
+  const handlePasswordSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (password.length >= 6 && password === confirmPassword) setDone(true);
   };
 
-  const passwordMatch =
-    password && confirmPassword && password === confirmPassword;
-  const passwordStrength =
-    password.length === 0
-      ? 0
-      : password.length < 6
-      ? 1
-      : password.length < 10
-      ? 2
-      : 3;
-  const strengthLabel = ["", "Weak", "Good", "Strong"];
-  const strengthColor = ["", "bg-red-500", "bg-yellow-400", "bg-green-500"];
+  const passwordMatch = Boolean(
+    password && confirmPassword && password === confirmPassword
+  );
+  const passwordStrength = getPasswordStrength(password);
 
-  // Success screen
+  // ─────────────────────────────────────────────────────────────
+  //  SUCCESS SCREEN
+  // ─────────────────────────────────────────────────────────────
+
   if (done) {
     return (
       <div className="relative">
-        <div className="absolute -inset-4 bg-green-600/5 blur-3xl rounded-[2.5rem]"></div>
+        <div className="absolute -inset-4 bg-green-600/5 blur-3xl rounded-[2.5rem]" />
         <div className="relative bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-8 lg:p-10 shadow-2xl text-center space-y-6">
           <div className="flex justify-center">
             <div className="w-20 h-20 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center animate-[pulse_2s_ease-in-out_infinite]">
@@ -139,14 +183,18 @@ export default function ForgotPasswordForm({ onBack }) {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  //  MAIN RENDER
+  // ─────────────────────────────────────────────────────────────
+
   return (
     <div className="relative">
-      <div className="absolute -inset-4 bg-blue-600/5 blur-3xl rounded-[2.5rem]"></div>
+      <div className="absolute -inset-4 bg-blue-600/5 blur-3xl rounded-[2.5rem]" />
 
       <div className="relative bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-8 lg:p-10 shadow-2xl">
-        {/* Step Progress Bar */}
+        {/* ── Step Progress Bar ── */}
         <div className="flex items-center gap-2 mb-8">
-          {steps.map((label, i) => (
+          {STEPS.map((label, i) => (
             <React.Fragment key={i}>
               <div className="flex flex-col items-center gap-1">
                 <div
@@ -172,7 +220,7 @@ export default function ForgotPasswordForm({ onBack }) {
                   {label}
                 </span>
               </div>
-              {i < steps.length - 1 && (
+              {i < STEPS.length - 1 && (
                 <div className="flex-1 h-[2px] rounded-full overflow-hidden bg-white/5 mb-4">
                   <div
                     className="h-full bg-blue-600 transition-all duration-700 ease-in-out"
@@ -209,7 +257,9 @@ export default function ForgotPasswordForm({ onBack }) {
                   <input
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setPhone(e.target.value)
+                    }
                     className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/40 focus:border-blue-600 transition-all"
                     placeholder="080 0000 0000"
                     autoFocus
@@ -232,6 +282,7 @@ export default function ForgotPasswordForm({ onBack }) {
 
             {onBack && (
               <button
+                type="button"
                 onClick={onBack}
                 className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-white transition-colors mx-auto"
               >
@@ -258,7 +309,7 @@ export default function ForgotPasswordForm({ onBack }) {
             </header>
 
             <form onSubmit={handleOtpSubmit} className="space-y-6">
-              {/* OTP Boxes */}
+              {/* OTP boxes */}
               <div
                 className="flex gap-2 justify-between"
                 onPaste={handleOtpPaste}
@@ -266,13 +317,19 @@ export default function ForgotPasswordForm({ onBack }) {
                 {otp.map((digit, i) => (
                   <input
                     key={i}
-                    ref={(el) => (otpRefs.current[i] = el)}
+                    ref={(el) => {
+                      otpRefs.current[i] = el;
+                    }} // ✅ void ref callback — no implicit any
                     type="text"
                     inputMode="numeric"
                     maxLength={1}
                     value={digit}
-                    onChange={(e) => handleOtpChange(i, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleOtpChange(i, e.target.value)
+                    }
+                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                      handleOtpKeyDown(i, e)
+                    }
                     className={`w-full aspect-square max-w-[52px] text-center text-xl font-black bg-black/40 border rounded-2xl text-white focus:outline-none transition-all duration-200 ${
                       digit
                         ? "border-blue-500 ring-2 ring-blue-600/30 bg-blue-600/10"
@@ -283,7 +340,7 @@ export default function ForgotPasswordForm({ onBack }) {
                 ))}
               </div>
 
-              {/* Resend */}
+              {/* Resend timer */}
               <div className="text-center">
                 {resendTimer > 0 ? (
                   <p className="text-xs text-slate-600">
@@ -317,6 +374,7 @@ export default function ForgotPasswordForm({ onBack }) {
             </form>
 
             <button
+              type="button"
               onClick={goBack}
               className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-white transition-colors mx-auto"
             >
@@ -341,7 +399,7 @@ export default function ForgotPasswordForm({ onBack }) {
             </header>
 
             <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              {/* New Password */}
+              {/* New password field */}
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">
                   New Password
@@ -353,7 +411,9 @@ export default function ForgotPasswordForm({ onBack }) {
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setPassword(e.target.value)
+                    }
                     className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-12 text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/40 focus:border-blue-600 transition-all"
                     placeholder="••••••••"
                     autoFocus
@@ -371,12 +431,12 @@ export default function ForgotPasswordForm({ onBack }) {
                 {password.length > 0 && (
                   <div className="space-y-1 px-1 animate-in fade-in duration-200">
                     <div className="flex gap-1.5">
-                      {[1, 2, 3].map((lvl) => (
+                      {([1, 2, 3] as const).map((lvl) => (
                         <div
                           key={lvl}
                           className={`h-1 flex-1 rounded-full transition-all duration-300 ${
                             lvl <= passwordStrength
-                              ? strengthColor[passwordStrength]
+                              ? STRENGTH_COLOR[passwordStrength]
                               : "bg-white/10"
                           }`}
                         />
@@ -391,13 +451,13 @@ export default function ForgotPasswordForm({ onBack }) {
                           : "text-green-400"
                       }`}
                     >
-                      {strengthLabel[passwordStrength]}
+                      {STRENGTH_LABEL[passwordStrength]}
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* Confirm Password */}
+              {/* Confirm password field */}
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">
                   Confirm Password
@@ -409,7 +469,9 @@ export default function ForgotPasswordForm({ onBack }) {
                   <input
                     type={showConfirm ? "text" : "password"}
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setConfirmPassword(e.target.value)
+                    }
                     className={`w-full bg-black/40 border rounded-2xl py-4 pl-12 pr-12 text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 transition-all ${
                       confirmPassword
                         ? passwordMatch
@@ -427,6 +489,7 @@ export default function ForgotPasswordForm({ onBack }) {
                     {showConfirm ? <Eye size={18} /> : <EyeOff size={18} />}
                   </button>
                 </div>
+
                 {confirmPassword && !passwordMatch && (
                   <p className="text-[10px] text-red-400 font-bold ml-1 animate-in fade-in duration-200">
                     Passwords do not match
@@ -448,6 +511,7 @@ export default function ForgotPasswordForm({ onBack }) {
             </form>
 
             <button
+              type="button"
               onClick={goBack}
               className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-white transition-colors mx-auto"
             >

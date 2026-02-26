@@ -40,12 +40,16 @@ export default function AuthForm({
   const [verifying, setVerifying] = useState(false);
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
-  const otpRefs = useRef([]);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
   const resendIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lockoutIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Reset register flow when switching tabs
-  const handleTabSwitch = (tab) => {
+  interface HandleTabSwitch {
+    (tab: "login" | "register"): void;
+  }
+
+  const handleTabSwitch: HandleTabSwitch = (tab) => {
     setActiveTab(tab);
     setRegStep(0);
     setPhone("");
@@ -72,7 +76,9 @@ export default function AuthForm({
     resendIntervalRef.current = setInterval(() => {
       setResendTimer((t) => {
         if (t <= 1) {
-          clearInterval(resendIntervalRef.current);
+          if (resendIntervalRef.current !== null) {
+            clearInterval(resendIntervalRef.current);
+          }
           return 0;
         }
         return t - 1;
@@ -87,7 +93,9 @@ export default function AuthForm({
     lockoutIntervalRef.current = setInterval(() => {
       setLockoutTimer((t) => {
         if (t <= 1) {
-          clearInterval(lockoutIntervalRef.current);
+          if (lockoutIntervalRef.current !== null) {
+            clearInterval(lockoutIntervalRef.current);
+          }
           setOtpStatus("idle");
           setAttempts(0);
           setOtp(["", "", "", "", "", ""]);
@@ -99,33 +107,38 @@ export default function AuthForm({
     }, 1000);
   };
 
-  const handlePhoneSubmit = (e) => {
+  const handlePhoneSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (phone.length >= 10) setRegStep(1);
   };
 
-  const handleOtpChange = (index, value) => {
+  interface OtpChangeEvent {
+    index: number;
+    value: string;
+  }
+
+  const handleOtpChange = (index: number, value: string): void => {
     if (otpStatus === "locked" || verifying) return;
     if (!/^\d*$/.test(value)) return;
-    const next = [...otp];
+    const next: string[] = [...otp];
     next[index] = value.slice(-1);
     setOtp(next);
     setOtpStatus("idle");
     if (value && index < 5) otpRefs.current[index + 1]?.focus();
     if (value && index === 5) {
-      const filled = [...next];
+      const filled: string[] = [...next];
       if (filled.every((d) => d !== ""))
         setTimeout(() => verifyOtp(filled), 200);
     }
   };
 
-  const handleOtpKeyDown = (index, e) => {
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       otpRefs.current[index - 1]?.focus();
     }
   };
 
-  const handleOtpPaste = (e) => {
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const pasted = e.clipboardData
       .getData("text")
       .replace(/\D/g, "")
@@ -138,7 +151,7 @@ export default function AuthForm({
     }
   };
 
-  const verifyOtp = (digits) => {
+  const verifyOtp = (digits: string[]) => {
     const code = digits.join("");
     setVerifying(true);
     setOtpStatus("idle");
@@ -439,7 +452,9 @@ export default function AuthForm({
                     {otp.map((digit, i) => (
                       <input
                         key={i}
-                        ref={(el) => (otpRefs.current[i] = el)}
+                        ref={(el) => {
+                          otpRefs.current[i] = el;
+                        }}
                         type="text"
                         inputMode="numeric"
                         maxLength={1}
