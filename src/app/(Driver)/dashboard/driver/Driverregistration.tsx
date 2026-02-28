@@ -278,14 +278,7 @@ function Step1({
     setData({ ...data, [k]: v });
   return (
     <div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "14px",
-          marginBottom: "14px",
-        }}
-      >
+      <div className="reg-grid-2">
         <div>
           <Label>First Name *</Label>
           <Input
@@ -324,9 +317,7 @@ function Step1({
         <Label>Date of Birth * (Must be 21+)</Label>
         <Input type="date" value={data.dob} onChange={set("dob")} />
       </div>
-      <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}
-      >
+      <div className="reg-grid-2" style={{ marginBottom: 0 }}>
         <div>
           <Label>Street Address *</Label>
           <Input
@@ -359,14 +350,7 @@ function Step2({
   return (
     <div>
       <SectionLabel>Driver's License</SectionLabel>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "12px",
-          marginBottom: "14px",
-        }}
-      >
+      <div className="reg-grid-2">
         <UploadZone
           label="Front Side"
           hint="JPG, PNG or PDF"
@@ -382,14 +366,7 @@ function Step2({
           icon="📷"
         />
       </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "14px",
-          marginBottom: "20px",
-        }}
-      >
+      <div className="reg-grid-2" style={{ marginBottom: "20px" }}>
         <div>
           <Label>License Number</Label>
           <Input
@@ -458,14 +435,7 @@ function Step3({
   return (
     <div>
       <SectionLabel>Emergency Contact</SectionLabel>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "14px",
-          marginBottom: "14px",
-        }}
-      >
+      <div className="reg-grid-2">
         <div>
           <Label>Full Name *</Label>
           <Input
@@ -509,14 +479,7 @@ function Step3({
         👤 Your guarantor must be someone who can vouch for your character and
         will be contacted for verification.
       </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "14px",
-          marginBottom: "14px",
-        }}
-      >
+      <div className="reg-grid-2">
         <div>
           <Label>Guarantor Full Name *</Label>
           <Input
@@ -571,14 +534,7 @@ function Step4({
   return (
     <div>
       <SectionLabel>Vehicle Details</SectionLabel>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "14px",
-          marginBottom: "14px",
-        }}
-      >
+      <div className="reg-grid-2">
         <div>
           <Label>Vehicle Make *</Label>
           <Select
@@ -607,14 +563,7 @@ function Step4({
           />
         </div>
       </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: "14px",
-          marginBottom: "14px",
-        }}
-      >
+      <div className="reg-grid-3">
         <div>
           <Label>Year *</Label>
           <Select
@@ -655,14 +604,7 @@ function Step4({
           />
         </div>
       </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "14px",
-          marginBottom: "14px",
-        }}
-      >
+      <div className="reg-grid-2">
         <div>
           <Label>Passenger Seats *</Label>
           <input
@@ -700,14 +642,7 @@ function Step4({
       </div>
 
       <SectionLabel>Vehicle Photos (5 Required)</SectionLabel>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: "10px",
-          marginBottom: "20px",
-        }}
-      >
+      <div className="reg-grid-3" style={{ marginBottom: "20px" }}>
         {data.photos.map((p, i) => (
           <UploadZone
             key={p.label}
@@ -721,13 +656,7 @@ function Step4({
       </div>
 
       <SectionLabel>Vehicle Documents</SectionLabel>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: "10px",
-        }}
-      >
+      <div className="reg-grid-3" style={{ marginBottom: 0 }}>
         <UploadZone
           label="Registration Cert."
           hint="Current & valid"
@@ -1026,6 +955,11 @@ export default function DriverRegistration() {
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
         @keyframes bounce { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+        .reg-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+        .reg-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+        @media (max-width: 640px) {
+          .reg-grid-2, .reg-grid-3 { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
       <div

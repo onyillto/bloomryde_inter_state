@@ -281,7 +281,7 @@ export default function DriverMyVehicle() {
       `}</style>
 
       <div className="veh-root">
-        <div className="max-w-screen-xl mx-auto px-6 py-8">
+        <div className="max-w-screen-xl mx-auto px-4 py-6 md:px-6 md:py-8">
           {/* ── Header ──────────────────────────────────────── */}
           <div className="flex items-start justify-between mb-8">
             <div>
@@ -412,7 +412,7 @@ export default function DriverMyVehicle() {
               }}
             />
 
-            <div className="flex items-start gap-6 relative">
+            <div className="flex flex-col md:flex-row items-start gap-6 relative">
               {/* Vehicle icon */}
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-200">
                 <svg
@@ -527,7 +527,7 @@ export default function DriverMyVehicle() {
               </div>
 
               {/* Mileage ring */}
-              <div className="flex-shrink-0 text-right">
+              <div className="flex-shrink-0 text-left md:text-right mt-4 md:mt-0">
                 <div className="text-[11px] text-slate-400 mb-1">
                   Current Mileage
                 </div>
@@ -545,7 +545,7 @@ export default function DriverMyVehicle() {
           </div>
 
           {/* ── Tabs ─────────────────────────────────────────── */}
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0">
             {TABS.map((t) => (
               <button
                 key={t.key}
@@ -622,7 +622,7 @@ export default function DriverMyVehicle() {
                     </svg>
                   }
                 >
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <EditField
                       label="Make"
                       value={vehicle.make}
@@ -686,7 +686,7 @@ export default function DriverMyVehicle() {
                     </svg>
                   }
                 >
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <EditField
                       label="Seats"
                       value={vehicle.seats}
@@ -728,7 +728,7 @@ export default function DriverMyVehicle() {
               </div>
 
               {/* Quick health summary */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {[
                   {
                     label: "Service Health",

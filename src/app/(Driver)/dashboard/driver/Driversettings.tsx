@@ -484,7 +484,7 @@ export default function DriverSettings() {
       )}
 
       <div className="st-root">
-        <div className="max-w-screen-xl mx-auto px-6 py-8">
+        <div className="max-w-screen-xl mx-auto px-4 py-6 md:px-6 md:py-8">
           {/* ── Header ──────────────────────────────────────── */}
           <div className="flex items-start justify-between mb-8">
             <div>
@@ -529,7 +529,7 @@ export default function DriverSettings() {
 
           {/* ── Availability banner ───────────────────────────── */}
           <div
-            className={`flex items-center gap-4 rounded-2xl border px-5 py-4 mb-6 transition-all
+            className={`flex flex-col sm:flex-row items-center gap-4 rounded-2xl border px-5 py-4 mb-6 transition-all
             ${
               available
                 ? "bg-gradient-to-r from-emerald-50 to-white border-emerald-200"
@@ -580,7 +580,7 @@ export default function DriverSettings() {
           </div>
 
           {/* ── Tabs ─────────────────────────────────────────── */}
-          <div className="flex items-center gap-2 mb-6 flex-wrap">
+          <div className="flex items-center gap-2 mb-6 flex-wrap overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0">
             <TabBtn
               icon={<MdOutlineDirectionsCar className="w-3.5 h-3.5" />}
               label="Trip Preferences"

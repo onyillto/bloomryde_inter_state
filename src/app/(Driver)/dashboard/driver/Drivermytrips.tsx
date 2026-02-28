@@ -275,7 +275,7 @@ function TripRow({
 
       {/* ── Row header ────────────────────────────────────── */}
       <div
-        className="flex items-center gap-4 px-5 py-4 cursor-pointer select-none"
+        className="flex flex-wrap md:flex-nowrap items-center gap-4 px-5 py-4 cursor-pointer select-none"
         onClick={onToggle}
       >
         {/* Date block */}
@@ -336,7 +336,7 @@ function TripRow({
         </div>
 
         {/* Seat fill bar */}
-        <div className="w-[110px] flex-shrink-0">
+        <div className="w-[110px] flex-shrink-0 hidden md:block">
           <div className="text-[11px] text-slate-400 mb-1.5 font-medium">
             Seat fill
           </div>
@@ -344,7 +344,7 @@ function TripRow({
         </div>
 
         {/* Earnings */}
-        <div className="w-[90px] flex-shrink-0 text-right">
+        <div className="w-[90px] flex-shrink-0 text-right hidden md:block">
           <div className="text-[11px] text-slate-400 mb-0.5">Earnings</div>
           <div
             className={`font-black text-[16px] leading-none ${
@@ -403,9 +403,9 @@ function TripDetailPanel({ trip }: { trip: FullTrip }) {
 
   return (
     <div className="border-t border-slate-100 px-5 pb-5 pt-4">
-      <div className="grid grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         {/* Trip details grid */}
-        <div className="col-span-2 grid grid-cols-3 gap-3">
+        <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
             { label: "Pickup", value: trip.from },
             { label: "Drop-off", value: trip.to },
@@ -480,7 +480,7 @@ function TripDetailPanel({ trip }: { trip: FullTrip }) {
               </button>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {trip.passengers.map((p, i) => (
               <div
                 key={i}
@@ -588,7 +588,7 @@ function TripDetailPanel({ trip }: { trip: FullTrip }) {
       )}
 
       {/* Action buttons */}
-      <div className="flex items-center gap-2 pt-1">
+      <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
         {isDraft && (
           <>
             <button className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold text-[13px] py-2.5 rounded-xl hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 hover:-translate-y-0.5">
@@ -831,7 +831,7 @@ export default function DriverMyTrips() {
       `}</style>
 
       <div className="mt-root">
-        <div className="max-w-screen-xl mx-auto px-6 py-8">
+        <div className="max-w-screen-xl mx-auto px-4 py-6 md:px-6 md:py-8">
           {/* ── Header ──────────────────────────────────────── */}
           <div className="flex items-start justify-between mb-8">
             <div>
@@ -877,7 +877,7 @@ export default function DriverMyTrips() {
           </div>
 
           {/* ── Stats ────────────────────────────────────────── */}
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             {[
               {
                 label: "Total Trips",
@@ -927,8 +927,8 @@ export default function DriverMyTrips() {
           </div>
 
           {/* ── Filters + Sort ────────────────────────────────── */}
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex gap-2 flex-wrap">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-5 gap-4 md:gap-0">
+            <div className="flex gap-2 flex-wrap overflow-x-auto pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
               {filterDefs.map(({ key, label }) => {
                 const count =
                   key === "all"

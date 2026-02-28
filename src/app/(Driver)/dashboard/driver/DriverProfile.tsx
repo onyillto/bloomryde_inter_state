@@ -331,7 +331,7 @@ export default function DriverProfile() {
       `}</style>
 
       <div className="dp-root">
-        <div className="max-w-screen-xl mx-auto px-6 py-8">
+        <div className="max-w-screen-xl mx-auto px-4 py-6 md:px-6 md:py-8">
           {/* ── Header ──────────────────────────────────────── */}
           <div className="flex items-start justify-between mb-8">
             <div>
@@ -395,7 +395,7 @@ export default function DriverProfile() {
               }}
             />
 
-            <div className="flex items-start gap-5 relative">
+            <div className="flex flex-col md:flex-row items-start gap-5 relative">
               {/* Avatar */}
               <div className="relative flex-shrink-0">
                 <div
@@ -445,7 +445,7 @@ export default function DriverProfile() {
                 </div>
 
                 {/* Quick stats row */}
-                <div className="flex gap-5">
+                <div className="flex flex-wrap gap-5">
                   {[
                     {
                       label: "Trips",
@@ -483,7 +483,7 @@ export default function DriverProfile() {
               </div>
 
               {/* Earnings chip */}
-              <div className="flex-shrink-0 text-right">
+              <div className="flex-shrink-0 text-left md:text-right mt-4 md:mt-0">
                 <div className="text-[11px] text-slate-400 mb-0.5">
                   Total Earned
                 </div>
@@ -523,7 +523,7 @@ export default function DriverProfile() {
           </div>
 
           {/* ── Tabs ─────────────────────────────────────────── */}
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0">
             <TabBtn
               icon={<FiUser className="w-3.5 h-3.5" />}
               label="Personal Info"

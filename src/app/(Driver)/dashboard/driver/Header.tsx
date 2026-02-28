@@ -8,13 +8,15 @@ export default function DriverHeader({
   setIsSidebarOpen: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between mb-8">
-      <div className="flex items-center gap-4">
+    <div className="flex items-start justify-between gap-3 mb-8">
+      {/* Left: hamburger + title block */}
+      <div className="flex items-start gap-3 min-w-0 flex-1">
+        {/* Hamburger — mobile only */}
         <button
-          className="md:hidden text-slate-500 hover:text-slate-600"
+          className="md:hidden flex-shrink-0 w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:border-blue-300 hover:text-blue-600 transition-all mt-0.5"
           onClick={() => setIsSidebarOpen(true)}
         >
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24">
             <path
               d="M4 6h16M4 12h16M4 18h16"
               stroke="currentColor"
@@ -23,41 +25,29 @@ export default function DriverHeader({
             />
           </svg>
         </button>
-        <div>
+
+        {/* Title + subtitle */}
+        <div className="min-w-0">
           <h1
-            className="text-[26px] font-black text-slate-900 leading-tight flex items-center gap-3"
+            className="font-black text-slate-900 leading-tight flex flex-wrap items-center gap-2 text-[20px] md:text-[26px]"
             style={{ fontFamily: "'Syne',sans-serif" }}
           >
-            Welcome back, Emeka
-            <span className="inline-flex items-center gap-1.5 text-[12px] font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white">
+            <span>Welcome back, Emeka</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white flex-shrink-0">
               <IconCheck /> Verified
             </span>
           </h1>
-          <p className="text-[14px] text-slate-500 mt-1">
+          <p className="text-[12px] md:text-[14px] text-slate-500 mt-1 leading-snug">
             You're a verified driver — passengers can find your trips.
           </p>
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        <button className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:border-blue-300 hover:text-blue-600 transition-all relative">
-          <IconBell />
-          <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-600 border-2 border-white" />
-        </button>
-        <button
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[14px] px-5 py-2.5 rounded-xl shadow-md shadow-blue-200 hover:-translate-y-0.5 transition-all"
-          style={{ fontFamily: "'Syne',sans-serif" }}
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
-            <path
-              d="M12 5v14M5 12h14"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-          Create New Trip
-        </button>
-      </div>
+
+      {/* Right: bell — always pinned top-right */}
+      <button className="flex-shrink-0 w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:border-blue-300 hover:text-blue-600 transition-all relative mt-0.5">
+        <IconBell />
+        <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-600 border-2 border-white" />
+      </button>
     </div>
   );
 }

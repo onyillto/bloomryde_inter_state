@@ -874,7 +874,7 @@ export default function DriverDocuments() {
       )}
 
       <div className="doc-root">
-        <div className="max-w-screen-xl mx-auto px-6 py-8">
+        <div className="max-w-screen-xl mx-auto px-4 py-6 md:px-6 md:py-8">
           {/* ── Header ──────────────────────────────────────── */}
           <div className="flex items-start justify-between mb-8">
             <div>
@@ -1018,7 +1018,7 @@ export default function DriverDocuments() {
           )}
 
           {/* ── Stats strip ──────────────────────────────────── */}
-          <div className="grid grid-cols-5 gap-3 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
             {[
               {
                 label: "Valid",
@@ -1070,7 +1070,7 @@ export default function DriverDocuments() {
           </div>
 
           {/* ── Filter tabs ──────────────────────────────────── */}
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0">
             {FILTERS.map(({ key, label }) => {
               const count =
                 key === "all"

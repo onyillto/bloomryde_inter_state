@@ -442,7 +442,7 @@ export default function DriverPerformance() {
       `}</style>
 
       <div className="perf-root">
-        <div className="max-w-screen-xl mx-auto px-6 py-8">
+        <div className="max-w-screen-xl mx-auto px-4 py-6 md:px-6 md:py-8">
           {/* ── Header ──────────────────────────────────────── */}
           <div className="flex items-start justify-between mb-8">
             <div>
@@ -493,7 +493,7 @@ export default function DriverPerformance() {
           </div>
 
           {/* ── KPI Stats ────────────────────────────────────── */}
-          <div className="grid grid-cols-4 gap-3 mb-6 fade-in">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 fade-in">
             {[
               {
                 label: "Total Earned",
@@ -565,7 +565,7 @@ export default function DriverPerformance() {
           </div>
 
           {/* ── Earnings Chart + Rating Overview ─────────────── */}
-          <div className="grid grid-cols-[1fr_320px] gap-5 mb-5">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 mb-5">
             {/* Bar chart */}
             <SectionCard
               title="Earnings Overview"
@@ -681,7 +681,7 @@ export default function DriverPerformance() {
           </div>
 
           {/* ── Category Ratings + Top Routes ─────────────────── */}
-          <div className="grid grid-cols-2 gap-5 mb-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
             {/* Category ratings */}
             <SectionCard
               title="Category Ratings"

@@ -473,7 +473,7 @@ function TripSection({
 
       {/* ── Section Header ─────────────────────────────── */}
       <div
-        className="flex items-center gap-4 px-5 py-4 cursor-pointer select-none bg-white"
+        className="flex flex-wrap md:flex-nowrap items-center gap-4 px-5 py-4 cursor-pointer select-none bg-white"
         onClick={onToggle}
       >
         {/* Date block */}
@@ -539,7 +539,7 @@ function TripSection({
         </div>
 
         {/* Payment progress */}
-        <div className="w-[130px] flex-shrink-0">
+        <div className="w-[130px] flex-shrink-0 hidden md:block">
           <div className="flex justify-between text-[11px] text-slate-400 mb-1.5">
             <span>Cash collected</span>
             <span className="font-semibold text-slate-600">
@@ -560,7 +560,7 @@ function TripSection({
         </div>
 
         {/* Passenger count */}
-        <div className="flex-shrink-0 text-right">
+        <div className="flex-shrink-0 text-right hidden md:block">
           <div className="text-[11px] text-slate-400 mb-0.5">Passengers</div>
           <div
             className="font-black text-[20px] text-slate-800 leading-none"
@@ -740,7 +740,7 @@ export default function DriverPassengers() {
       `}</style>
 
       <div className="dp-root">
-        <div className="max-w-screen-xl mx-auto px-6 py-8">
+        <div className="max-w-screen-xl mx-auto px-4 py-6 md:px-6 md:py-8">
           {/* ── Header ──────────────────────────────────────── */}
           <div className="flex items-start justify-between mb-8">
             <div>
@@ -802,7 +802,7 @@ export default function DriverPassengers() {
           </div>
 
           {/* ── Stats ────────────────────────────────────────── */}
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             {[
               {
                 label: "Total Passengers",
@@ -852,7 +852,7 @@ export default function DriverPassengers() {
           </div>
 
           {/* ── Filter tabs ──────────────────────────────────── */}
-          <div className="flex items-center gap-2 mb-5">
+          <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0">
             {[
               {
                 key: "all" as FilterTab,

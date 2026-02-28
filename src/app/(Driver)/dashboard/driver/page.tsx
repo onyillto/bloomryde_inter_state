@@ -73,7 +73,7 @@ export default function DriverDashboardPage() {
           setIsSidebarOpen={setIsSidebarOpen}
         />
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-screen-xl mx-auto px-8 py-8">
+          <div className="max-w-screen-xl mx-auto px-4 py-6 md:px-8 md:py-8">
             <DriverHeader setIsSidebarOpen={setIsSidebarOpen} />
             {renderContent()}
           </div>

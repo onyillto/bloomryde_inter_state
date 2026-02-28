@@ -281,7 +281,7 @@ export default function DriverDashboardContent() {
   return (
     <>
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           {
             label: "Total Trips",
@@ -336,7 +336,7 @@ export default function DriverDashboardContent() {
       </div>
 
       {/* Body grid */}
-      <div className="grid grid-cols-[1fr_295px] gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_295px] gap-6 items-start">
         <div>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
