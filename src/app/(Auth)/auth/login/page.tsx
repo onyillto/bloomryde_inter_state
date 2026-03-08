@@ -5,6 +5,7 @@ import { ShieldCheck, TrendingUp, Star } from "lucide-react";
 import AuthForm from "@/components/AuthForm";
 import ForgotPasswordForm from "../../../../components/Forgotpasswordform";
 import RegisterForm from "../../../../components/Registerform";
+import { loginRider, requestOTP } from "@/lib/api";
 
 const viewMeta = {
   auth: {
