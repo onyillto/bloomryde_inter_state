@@ -18,6 +18,9 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
+import { registerRider } from "@/lib/api";
+import { useAppDispatch } from "../lib/hooks";
+import { setCredentials } from "../lib/authSlice";
 
 // ─────────────────────────────────────────────────────────────
 //  TYPE HELPERS
@@ -25,6 +28,15 @@ import {
 
 /** Error prop is always a string message or undefined — never boolean */
 type ErrorProp = string | undefined;
+
+/** Converts a File to a base64 string for JSON transport */
+const toBase64 = (file: File): Promise<string | ArrayBuffer | null> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
 
 // ─────────────────────────────────────────────────────────────
 //  STEP DATA TYPES
@@ -169,20 +181,37 @@ function Field({ label, error, children }: FieldProps) {
 interface PrimaryBtnProps {
   label?: string;
   onClick: () => void;
+  isLoading?: boolean;
+  disabled?: boolean;
 }
 
-function PrimaryBtn({ label = "Continue", onClick }: PrimaryBtnProps) {
+function PrimaryBtn({
+  label = "Continue",
+  onClick,
+  isLoading,
+  disabled,
+}: PrimaryBtnProps) {
   return (
     <button
       type="button"
+      disabled={isLoading || disabled}
       onClick={onClick}
-      className="group w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black py-4 md:py-5 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 active:scale-[0.98] shadow-xl shadow-blue-600/25 mt-8"
+      className="group w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black py-4 md:py-5 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 active:scale-[0.98] shadow-xl shadow-blue-600/25 mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      <span className="text-base tracking-tight">{label}</span>
-      <ArrowRight
-        size={20}
-        className="group-hover:translate-x-1 transition-transform"
-      />
+      {isLoading ? (
+        <>
+          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          <span>Processing...</span>
+        </>
+      ) : (
+        <>
+          <span className="text-base tracking-tight">{label}</span>
+          <ArrowRight
+            size={20}
+            className="group-hover:translate-x-1 transition-transform"
+          />
+        </>
+      )}
     </button>
   );
 }
@@ -217,7 +246,7 @@ function ProgressBar({ step, total, onBack }: ProgressBarProps) {
         ))}
       </div>
       <div className="hidden md:block text-white/60 font-black text-xs uppercase tracking-widest ml-2">
-        Step {step} of {total}
+        Step {step} / {total}
       </div>
     </div>
   );
@@ -472,9 +501,17 @@ interface StepEmergencyProps {
   data: StepEmergencyData;
   onChange: (key: keyof StepEmergencyData, value: string) => void;
   onNext: () => void;
+  isSubmitting?: boolean;
+  submissionError?: string | null;
 }
 
-function StepEmergency({ data, onChange, onNext }: StepEmergencyProps) {
+function StepEmergency({
+  data,
+  onChange,
+  onNext,
+  isSubmitting,
+  submissionError,
+}: StepEmergencyProps) {
   const [errors, setErrors] = useState<EmergencyErrors>({});
 
   const validate = (): boolean => {
@@ -546,9 +583,17 @@ function StepEmergency({ data, onChange, onNext }: StepEmergencyProps) {
         />
       </Field>
 
+      {submissionError && (
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 animate-in fade-in">
+          <AlertCircle size={16} className="text-red-400 shrink-0" />
+          <p className="text-xs font-bold text-red-400">{submissionError}</p>
+        </div>
+      )}
+
       <PrimaryBtn
         label="Complete Registration"
         onClick={() => validate() && onNext()}
+        isLoading={isSubmitting}
       />
     </div>
   );
@@ -584,6 +629,9 @@ export default function RiderOnboarding({
   const [step, setStep] = useState<number>(1);
   const [done, setDone] = useState<boolean>(false);
   const [visible, setVisible] = useState<boolean>(true);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
   const router = useRouter();
 
   const [account, setAccount] = useState<StepAccountData>({
@@ -611,8 +659,59 @@ export default function RiderOnboarding({
     }, 270);
   };
 
-  const goNext = () => (step < 3 ? animateTo(step + 1) : setDone(true));
-  const goBack = () => (step > 1 ? animateTo(step - 1) : onBackToChoose?.());
+  const handleRegistration = async () => {
+    setIsSubmitting(true);
+    setSubmissionError(null);
+
+    let photoData: string | ArrayBuffer | null = null;
+    if (personal.photo) {
+      try {
+        photoData = await toBase64(personal.photo);
+      } catch (error) {
+        console.error("Error converting image to base64", error);
+        setSubmissionError("Failed to process profile image.");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    const riderData = {
+      phone,
+      email: account.email,
+      password: account.password,
+      fullName: personal.fullName,
+      gender: personal.gender,
+      dob: personal.dob,
+      photo: photoData,
+      emergencyContact: {
+        name: emergency.eName,
+        relationship: emergency.eRel,
+        phone: emergency.ePhone,
+      },
+    };
+
+    try {
+      // Assuming `registerRider` returns { token, data: { rider } } on success
+      const response = await registerRider(riderData);
+      dispatch(
+        setCredentials({ token: response.token, user: response.data.rider })
+      );
+      setDone(true);
+    } catch (err) {
+      console.error("Rider registration failed", err);
+      const message =
+        err instanceof Error ? err.message : "An unknown error occurred.";
+      setSubmissionError(
+        `Registration failed: ${message}. An account may already exist.`
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const goNext = () => (step < 3 ? animateTo(step + 1) : handleRegistration());
+  const goBack = () =>
+    step > 1 ? animateTo(step - 1) : onBackToChoose && onBackToChoose();
 
   // ── Success screen ──
   if (done) {
@@ -702,6 +801,8 @@ export default function RiderOnboarding({
                   data={emergency}
                   onChange={makeUpdater(setEmergency)}
                   onNext={goNext}
+                  isSubmitting={isSubmitting}
+                  submissionError={submissionError}
                 />
               )}
             </div>

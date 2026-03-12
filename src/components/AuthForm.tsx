@@ -19,11 +19,15 @@ const MAX_ATTEMPTS = 3;
 interface AuthFormProps {
   onForgotPassword: () => void;
   onRegister: () => void;
+  onRequestOTP: (phoneNumber: string) => Promise<void>;
+  onVerifyOTP: (phoneNumber: string, otp: string) => Promise<any>;
 }
 
 export default function AuthForm({
   onForgotPassword,
   onRegister,
+  onRequestOTP,
+  onVerifyOTP,
 }: AuthFormProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("login"); // "login" | "register"
@@ -31,6 +35,7 @@ export default function AuthForm({
   // Register sub-step: 0 = phone input, 1 = otp
   const [regStep, setRegStep] = useState(0);
   const [phone, setPhone] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // OTP state
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -107,9 +112,19 @@ export default function AuthForm({
     }, 1000);
   };
 
-  const handlePhoneSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handlePhoneSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (phone.length >= 10) setRegStep(1);
+    if (phone.length < 10 || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await onRequestOTP(phone);
+      setRegStep(1);
+    } catch (error) {
+      console.error("Failed to request OTP in AuthForm", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   interface OtpChangeEvent {
@@ -132,7 +147,10 @@ export default function AuthForm({
     }
   };
 
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleOtpKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       otpRefs.current[index - 1]?.focus();
     }
@@ -151,28 +169,28 @@ export default function AuthForm({
     }
   };
 
-  const verifyOtp = (digits: string[]) => {
+  const verifyOtp = async (digits: string[]) => {
     const code = digits.join("");
     setVerifying(true);
     setOtpStatus("idle");
-    setTimeout(() => {
+
+    try {
+      await onVerifyOTP(phone, code);
       setVerifying(false);
-      // Demo: "123456" passes — replace with real API call
-      if (code === "123456") {
-        setOtpStatus("success");
-        setTimeout(() => router.push("/onboarding"), 700);
-      } else {
-        const newAttempts = attempts + 1;
-        setAttempts(newAttempts);
-        setOtpStatus("error");
-        setOtp(["", "", "", "", "", ""]);
-        setTimeout(() => otpRefs.current[0]?.focus(), 100);
-        if (newAttempts >= MAX_ATTEMPTS) {
-          setOtpStatus("locked");
-          startLockout();
-        }
+      setOtpStatus("success");
+      setTimeout(() => router.push("/onboarding"), 700);
+    } catch (error) {
+      setVerifying(false);
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+      setOtpStatus("error");
+      setOtp(["", "", "", "", "", ""]);
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+      if (newAttempts >= MAX_ATTEMPTS) {
+        setOtpStatus("locked");
+        startLockout();
       }
-    }, 1200);
+    }
   };
 
   const handleResend = () => {
@@ -370,14 +388,23 @@ export default function AuthForm({
 
                   <button
                     type="submit"
-                    disabled={phone.length < 10}
+                    disabled={phone.length < 10 || isSubmitting}
                     className="group w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
                   >
-                    Send OTP
-                    <ArrowRight
-                      size={20}
-                      className="group-hover:translate-x-1 transition-transform"
-                    />
+                    {isSubmitting ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Sending...</span>
+                      </div>
+                    ) : (
+                      <>
+                        Send OTP
+                        <ArrowRight
+                          size={20}
+                          className="group-hover:translate-x-1 transition-transform"
+                        />
+                      </>
+                    )}
                   </button>
                 </form>
               </div>

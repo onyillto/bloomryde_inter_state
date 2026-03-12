@@ -10,6 +10,7 @@ import {
   Eye,
   EyeOff,
   CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────
@@ -18,6 +19,8 @@ import {
 
 interface ForgotPasswordFormProps {
   onBack?: () => void;
+  onRequestOTP: (phoneNumber: string) => Promise<void>;
+  onVerifyOTP: (phoneNumber: string, otp: string) => Promise<any>;
 }
 
 type AnimDir = "forward" | "back";
@@ -54,6 +57,8 @@ function getPasswordStrength(pw: string): 0 | 1 | 2 | 3 {
 
 export default function ForgotPasswordForm({
   onBack,
+  onRequestOTP,
+  onVerifyOTP,
 }: ForgotPasswordFormProps) {
   const [step, setStep] = useState<number>(0);
   const [phone, setPhone] = useState<string>("");
@@ -63,9 +68,12 @@ export default function ForgotPasswordForm({
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
   const [done, setDone] = useState<boolean>(false);
+  const [isSubmittingPhone, setIsSubmittingPhone] = useState<boolean>(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState<boolean>(false);
   const [resendTimer, setResendTimer] = useState<number>(30);
   // animDir is declared but drives animation class — kept for future direction-aware transitions
   const [animDir, setAnimDir] = useState<AnimDir>("forward");
+  const [error, setError] = useState<string | null>(null);
 
   /** Typed ref array — each slot holds an input element or null */
   const otpRefs = useRef<Array<HTMLInputElement | null>>(Array(6).fill(null));
@@ -98,13 +106,25 @@ export default function ForgotPasswordForm({
   };
 
   // ── Step 0: Phone ──
-  const handlePhoneSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handlePhoneSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (phone.length >= 10) goNext();
+    setError(null);
+    if (phone.length < 10 || isSubmittingPhone) return;
+    setIsSubmittingPhone(true);
+    try {
+      await onRequestOTP(phone);
+      goNext();
+    } catch (error) {
+      console.error("Failed to request OTP for password reset", error);
+      setError("Failed to send OTP. Please check the number and try again.");
+    } finally {
+      setIsSubmittingPhone(false);
+    }
   };
 
   // ── Step 1: OTP ──
   const handleOtpChange = (index: number, value: string) => {
+    setError(null);
     if (!/^\d*$/.test(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value.slice(-1);
@@ -134,9 +154,22 @@ export default function ForgotPasswordForm({
 
   const otpComplete = otp.every((d) => d !== "");
 
-  const handleOtpSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleOtpSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (otpComplete) goNext();
+    setError(null);
+    if (!otpComplete || isVerifyingOtp) return;
+    setIsVerifyingOtp(true);
+    try {
+      await onVerifyOTP(phone, otp.join(""));
+      goNext();
+    } catch (error) {
+      console.error("Failed to verify OTP for password reset", error);
+      setError("The code you entered is incorrect. Please try again.");
+      setOtp(["", "", "", "", "", ""]);
+      otpRefs.current[0]?.focus();
+    } finally {
+      setIsVerifyingOtp(false);
+    }
   };
 
   // ── Step 2: Password ──
@@ -257,9 +290,10 @@ export default function ForgotPasswordForm({
                   <input
                     type="tel"
                     value={phone}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setPhone(e.target.value)
-                    }
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setPhone(e.target.value);
+                      setError(null);
+                    }}
                     className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/40 focus:border-blue-600 transition-all"
                     placeholder="080 0000 0000"
                     autoFocus
@@ -267,16 +301,32 @@ export default function ForgotPasswordForm({
                 </div>
               </div>
 
+              {error && (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 animate-in fade-in">
+                  <AlertTriangle size={16} className="text-red-400 shrink-0" />
+                  <p className="text-xs font-bold text-red-400">{error}</p>
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={phone.length < 10}
+                disabled={phone.length < 10 || isSubmittingPhone}
                 className="group w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
               >
-                Send OTP{" "}
-                <ArrowRight
-                  size={20}
-                  className="group-hover:translate-x-1 transition-transform"
-                />
+                {isSubmittingPhone ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    Send Code
+                    <ArrowRight
+                      size={20}
+                      className="group-hover:translate-x-1 transition-transform"
+                    />
+                  </>
+                )}
               </button>
             </form>
 
@@ -324,9 +374,10 @@ export default function ForgotPasswordForm({
                     inputMode="numeric"
                     maxLength={1}
                     value={digit}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      handleOtpChange(i, e.target.value)
-                    }
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      handleOtpChange(i, e.target.value);
+                      setError(null);
+                    }}
                     onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
                       handleOtpKeyDown(i, e)
                     }
@@ -360,16 +411,32 @@ export default function ForgotPasswordForm({
                 )}
               </div>
 
+              {error && (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 animate-in fade-in">
+                  <AlertTriangle size={16} className="text-red-400 shrink-0" />
+                  <p className="text-xs font-bold text-red-400">{error}</p>
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={!otpComplete}
+                disabled={!otpComplete || isVerifyingOtp}
                 className="group w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
               >
-                Verify Code{" "}
-                <ArrowRight
-                  size={20}
-                  className="group-hover:translate-x-1 transition-transform"
-                />
+                {isVerifyingOtp ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Verifying...</span>
+                  </>
+                ) : (
+                  <>
+                    Verify Code
+                    <ArrowRight
+                      size={20}
+                      className="group-hover:translate-x-1 transition-transform"
+                    />
+                  </>
+                )}
               </button>
             </form>
 
@@ -378,11 +445,10 @@ export default function ForgotPasswordForm({
               onClick={goBack}
               className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-white transition-colors mx-auto"
             >
-              <ArrowLeft size={14} /> Change Number
+              <ArrowLeft size={14} /> Back
             </button>
           </div>
         )}
-
         {/* ── STEP 2: New Password ── */}
         {step === 2 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-400">

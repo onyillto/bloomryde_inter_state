@@ -5,7 +5,8 @@ import { ShieldCheck, TrendingUp, Star } from "lucide-react";
 import AuthForm from "@/components/AuthForm";
 import ForgotPasswordForm from "../../../../components/Forgotpasswordform";
 import RegisterForm from "../../../../components/Registerform";
-import { loginRider, requestOTP } from "@/lib/api";
+import Notification, { NotificationType } from "@/components/Notification";
+import { requestOTP, verifyOTP } from "@/lib/api";
 
 const viewMeta = {
   auth: {
@@ -44,6 +45,10 @@ export default function BloomRydesAuthPage() {
   const [animating, setAnimating] = useState(false);
   const [slideOut, setSlideOut] = useState(false);
   const [slideDir, setSlideDir] = useState("forward");
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: NotificationType;
+  } | null>(null);
 
   const switchTo = (target: ViewType, dir = "forward") => {
     if (animating) return;
@@ -58,6 +63,41 @@ export default function BloomRydesAuthPage() {
   };
 
   const meta = viewMeta[view];
+
+  const handleRequestOtp = async (phoneNumber: string) => {
+    try {
+      console.log(`Requesting OTP for ${phoneNumber}...`);
+      const result = await requestOTP(phoneNumber);
+      console.log("OTP request successful", result);
+      setNotification({
+        message: "OTP has been sent to your phone!",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("OTP request failed", error);
+      setNotification({
+        message: "Failed to send OTP. Please try again.",
+        type: "error",
+      });
+      throw error;
+    }
+  };
+
+  const handleVerifyOtp = async (phoneNumber: string, otp: string) => {
+    try {
+      console.log(`Verifying OTP for ${phoneNumber}...`);
+      const result = await verifyOTP(phoneNumber, otp);
+      console.log("OTP verification successful", result);
+      return result;
+    } catch (error) {
+      console.error("OTP verification failed", error);
+      setNotification({
+        message: "OTP verification failed. Please try again.",
+        type: "error",
+      });
+      throw error;
+    }
+  };
 
   const formSlideStyle = {
     transition: "opacity 300ms ease, transform 300ms ease",
@@ -74,6 +114,14 @@ export default function BloomRydesAuthPage() {
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
 
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
+
       <main className="relative z-10 max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-12 lg:gap-16 py-12 items-center">
         {/* RIGHT: Form */}
         <div className="lg:col-span-5 order-first lg:order-last">
@@ -82,14 +130,22 @@ export default function BloomRydesAuthPage() {
               <AuthForm
                 onForgotPassword={() => switchTo("forgot", "forward")}
                 onRegister={() => switchTo("register", "forward")}
+                onRequestOTP={handleRequestOtp}
+                onVerifyOTP={handleVerifyOtp}
               />
             )}
             {view === "forgot" && (
-              <ForgotPasswordForm onBack={() => switchTo("auth", "back")} />
+              <ForgotPasswordForm
+                onBack={() => switchTo("auth", "back")}
+                onRequestOTP={handleRequestOtp}
+                onVerifyOTP={handleVerifyOtp}
+              />
             )}
             {view === "register" && (
               <RegisterForm
                 onBack={() => switchTo("auth", "back")}
+                onRequestOTP={handleRequestOtp}
+                onVerifyOTP={handleVerifyOtp}
               />
             )}
           </div>

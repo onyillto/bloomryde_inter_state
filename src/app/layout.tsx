@@ -3,6 +3,7 @@ import React from "react";
 import "./globals.css";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
+import { ReduxProvider } from "./providers";
 
 export const metadata: Metadata = {
   title: "BloomRyde | Premium Interstate Travel",
@@ -20,26 +21,30 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className="bg-white antialiased text-slate-900">
-        {/* Simple, Static Premium Background - Optimized for Performance */}
-        <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-          {/* Top Left Soft Blue Glow */}
-          <div
-            className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] rounded-full bg-blue-50/50 blur-[100px]"
-            style={{ willChange: "transform" }}
-          />
-          {/* Bottom Right Soft Indigo Glow */}
-          <div
-            className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] rounded-full bg-indigo-50/30 blur-[100px]"
-            style={{ willChange: "transform" }}
-          />
-        </div>
+        <ReduxProvider>
+          {/* Simple, Static Premium Background - Optimized for Performance */}
+          <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+            {/* Top Left Soft Blue Glow */}
+            <div
+              className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] rounded-full bg-blue-50/50 blur-[100px]"
+              style={{ willChange: "transform" }}
+            />
+            {/* Bottom Right Soft Indigo Glow */}
+            <div
+              className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] rounded-full bg-indigo-50/30 blur-[100px]"
+              style={{ willChange: "transform" }}
+            />
+          </div>
 
-        <Navbar />
+          <Navbar />
 
-        {/* Main Content Area */}
-        <main className="relative flex flex-col min-h-screen">{children}</main>
+          {/* Main Content Area */}
+          <main className="relative flex flex-col min-h-screen">
+            {children}
+          </main>
 
-        <Footer />
+          <Footer />
+        </ReduxProvider>
       </body>
     </html>
   );

@@ -18,6 +18,8 @@ import {
 
 interface RegisterFormProps {
   onBack?: () => void;
+  onRequestOTP: (phoneNumber: string) => Promise<void>;
+  onVerifyOTP: (phoneNumber: string, otp: string) => Promise<any>;
 }
 
 /** Discriminated union — makes every status value explicit and exhaustive */
@@ -36,10 +38,15 @@ const STEPS = ["Phone", "Verify", "Done"] as const;
 //  COMPONENT
 // ─────────────────────────────────────────────────────────────
 
-export default function RegisterForm({ onBack }: RegisterFormProps) {
+export default function RegisterForm({
+  onBack,
+  onRequestOTP,
+  onVerifyOTP,
+}: RegisterFormProps) {
   const router = useRouter();
 
   const [step, setStep] = useState<number>(0);
+  const [isSubmittingPhone, setIsSubmittingPhone] = useState<boolean>(false);
   const [phone, setPhone] = useState<string>("");
 
   // OTP state
@@ -109,9 +116,19 @@ export default function RegisterForm({ onBack }: RegisterFormProps) {
   const goBack = () => setStep((s) => s - 1);
 
   // ── Step 0: Phone ──
-  const handlePhoneSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handlePhoneSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (phone.length >= 10) goNext();
+    if (phone.length < 10 || isSubmittingPhone) return;
+
+    setIsSubmittingPhone(true);
+    try {
+      await onRequestOTP(phone);
+      goNext();
+    } catch (error) {
+      console.error("Failed to request OTP from RegisterForm", error);
+    } finally {
+      setIsSubmittingPhone(false);
+    }
   };
 
   // ── Step 1: OTP ──
@@ -156,27 +173,28 @@ export default function RegisterForm({ onBack }: RegisterFormProps) {
 
   /** Replace the setTimeout mock with a real API call in production.
    *  Demo: "123456" passes, anything else fails. */
-  const verifyOtp = (digits: string[]) => {
+  const verifyOtp = async (digits: string[]) => {
     const code = digits.join("");
     setVerifying(true);
     setOtpStatus("idle");
 
-    setTimeout(() => {
+    try {
+      await onVerifyOTP(phone, code);
       setVerifying(false);
-      if (code === "123456") {
-        setOtpStatus("success");
-        setTimeout(() => router.push("/onboarding/choose-type"), 700);
-      } else {
-        setAttempts((prev) => {
-          const newAttempts = prev + 1;
-          setOtpStatus(newAttempts >= MAX_ATTEMPTS ? "locked" : "error");
-          if (newAttempts >= MAX_ATTEMPTS) startLockout();
-          return newAttempts;
-        });
-        setOtp(["", "", "", "", "", ""]);
-        setTimeout(() => otpRefs.current[0]?.focus(), 100);
-      }
-    }, 1200);
+      setOtpStatus("success");
+      setTimeout(() => router.push("/onboarding/choose-type"), 700);
+      setTimeout(() => router.push(`/onboarding?phone=${encodeURIComponent(phone)}`), 700);
+    } catch (error) {
+      setVerifying(false);
+      setAttempts((prev) => {
+        const newAttempts = prev + 1;
+        setOtpStatus(newAttempts >= MAX_ATTEMPTS ? "locked" : "error");
+        if (newAttempts >= MAX_ATTEMPTS) startLockout();
+        return newAttempts;
+      });
+      setOtp(["", "", "", "", "", ""]);
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    }
   };
 
   const handleResend = () => {
@@ -276,14 +294,23 @@ export default function RegisterForm({ onBack }: RegisterFormProps) {
 
               <button
                 type="submit"
-                disabled={phone.length < 10}
+                disabled={phone.length < 10 || isSubmittingPhone}
                 className="group w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
               >
-                Send OTP
-                <ArrowRight
-                  size={20}
-                  className="group-hover:translate-x-1 transition-transform"
-                />
+                {isSubmittingPhone ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    Send OTP
+                    <ArrowRight
+                      size={20}
+                      className="group-hover:translate-x-1 transition-transform"
+                    />
+                  </>
+                )}
               </button>
             </form>
 
