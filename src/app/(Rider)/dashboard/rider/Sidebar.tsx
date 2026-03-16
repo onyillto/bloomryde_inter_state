@@ -1,4 +1,5 @@
 import { Icons } from "./Icons";
+import { useAppSelector } from "@/lib/hooks";
 
 const navItems = [
   { icon: "Home", label: "Dashboard", section: "MAIN" },
@@ -23,6 +24,7 @@ export default function Sidebar({
   activeNav,
   setActiveNav,
 }: SidebarProps) {
+  const { user } = useAppSelector((state) => state.auth);
   return (
     <aside
       className={`fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 flex flex-col border-r border-white/5 bg-slate-900/95 backdrop-blur-xl md:bg-slate-900/80 md:backdrop-blur-none sidebar-scrollbar overflow-y-auto transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
@@ -91,13 +93,15 @@ export default function Sidebar({
       <div className="p-4 border-t border-white/5">
         <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-sm font-bold">
-            A
+            {user?.fullName?.charAt(0).toUpperCase() || "U"}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-sm font-semibold truncate">
-              Amara Okonkwo
+              {user?.fullName || "User"}
             </p>
-            <p className="text-slate-400 text-xs truncate">Passenger</p>
+            <p className="text-slate-400 text-xs truncate capitalize">
+              {user?.role || "Passenger"}
+            </p>
           </div>
         </div>
       </div>

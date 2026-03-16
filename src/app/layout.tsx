@@ -3,7 +3,7 @@ import React from "react";
 import "./globals.css";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
-import { ReduxProvider } from "./providers";
+import ReduxProvider from "../store/ReduxProvider"; 
 
 export const metadata: Metadata = {
   title: "BloomRyde | Premium Interstate Travel",
