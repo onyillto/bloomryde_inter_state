@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useAppSelector } from "@/store/hooks";
+import { selectDriverUser, selectToken } from "@/store/slices/authSlice";
 import {
   FiUser,
   FiCamera,
@@ -33,30 +35,16 @@ type TabKey = "personal" | "stats" | "security";
 type DriverForm = {
   firstName: string;
   lastName: string;
+  middleName: string;
   email: string;
   phone: string;
-  whatsapp: string;
-  gender: string;
   dob: string;
+  address: string;
   city: string;
   state: string;
-  bio: string;
 };
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const INITIAL_FORM: DriverForm = {
-  firstName: "Emeka",
-  lastName: "Okonkwo",
-  email: "emeka.okonkwo@gmail.com",
-  phone: "+234 803 456 7890",
-  whatsapp: "+234 803 456 7890",
-  gender: "Male",
-  dob: "1990-03-22",
-  city: "Lagos",
-  state: "Lagos State",
-  bio: "Professional interstate driver with 6+ years experience. Always punctual, vehicle always clean.",
-};
+// ─── Mock stats (no endpoint yet) ────────────────────────────────────────────
 
 const TRIP_ACTIVITY = [
   { month: "Sep", trips: 5 },
@@ -75,9 +63,9 @@ const TOP_ROUTES = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatDate(iso: string) {
+function formatDate(iso?: string) {
   if (!iso || iso === "—") return "—";
-  return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", {
+  return new Date(iso).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -109,19 +97,7 @@ function Field({
         {icon} {label}
       </label>
       {editing ? (
-        type === "select-gender" ? (
-          <select
-            value={value}
-            onChange={(e) => onChange?.(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[14px] text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all appearance-none"
-          >
-            {["Male", "Female", "Prefer not to say"].map((o) => (
-              <option key={o} value={o}>
-                {o}
-              </option>
-            ))}
-          </select>
-        ) : type === "textarea" ? (
+        type === "textarea" ? (
           <textarea
             value={value}
             placeholder={placeholder}
@@ -165,12 +141,11 @@ function TabBtn({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-all
-        ${
-          active
-            ? "bg-blue-600 text-white shadow-md shadow-blue-200"
-            : "bg-white text-slate-500 border border-slate-200 hover:border-blue-300 hover:text-blue-600"
-        }`}
+      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-all ${
+        active
+          ? "bg-blue-600 text-white shadow-md shadow-blue-200"
+          : "bg-white text-slate-500 border border-slate-200 hover:border-blue-300 hover:text-blue-600"
+      }`}
     >
       {icon}
       {label}
@@ -221,16 +196,14 @@ function ActionRow({
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left group
-        ${
-          danger
-            ? "border-red-100 bg-red-50/50 hover:bg-red-50"
-            : "border-slate-100 bg-slate-50/60 hover:bg-slate-100"
-        }`}
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left group ${
+        danger
+          ? "border-red-100 bg-red-50/50 hover:bg-red-50"
+          : "border-slate-100 bg-slate-50/60 hover:bg-slate-100"
+      }`}
     >
       <div
-        className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors
-        ${
+        className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
           danger
             ? "bg-red-100 text-red-400"
             : "bg-white border border-slate-200 text-slate-500 group-hover:text-blue-600 group-hover:border-blue-200"
@@ -257,7 +230,7 @@ function ActionRow({
   );
 }
 
-// ─── Activity bar chart ───────────────────────────────────────────────────────
+// ─── Activity bar ─────────────────────────────────────────────────────────────
 
 function ActivityBar({
   month,
@@ -291,18 +264,44 @@ function ActivityBar({
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function DriverProfile() {
+  const driverUser = useAppSelector(selectDriverUser);
+  const token = useAppSelector(selectToken);
+  const p = driverUser?.personalInfo;
+  const contacts = driverUser?.contacts;
+  const vehicleInfo = driverUser?.vehicleInfo;
+
   const [activeTab, setActiveTab] = useState<TabKey>("personal");
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
   const [dirty, setDirty] = useState(false);
-  const [form, setForm] = useState<DriverForm>(INITIAL_FORM);
+
+  // Seed form from Redux on mount
+  const [form, setForm] = useState<DriverForm>({
+    firstName: p?.firstName ?? "",
+    lastName: p?.lastName ?? "",
+    middleName: p?.middleName ?? "",
+    email: p?.email ?? "",
+    phone: p?.phoneNumber ?? "",
+    dob: p?.dateOfBirth ?? "",
+    address: p?.address ?? "",
+    city: p?.city ?? "",
+    state: p?.state ?? "",
+  });
 
   const set = (k: keyof DriverForm) => (v: string) => {
     setForm((f) => ({ ...f, [k]: v }));
     setDirty(true);
   };
 
+  const initials = `${form.firstName[0] ?? ""}${
+    form.lastName[0] ?? ""
+  }`.toUpperCase();
+  const fullName = [form.firstName, form.middleName, form.lastName]
+    .filter(Boolean)
+    .join(" ");
+
   function handleSave() {
+    // TODO: call updateDriverProfile API when endpoint is ready
     setSaved(true);
     setEditing(false);
     setDirty(false);
@@ -310,12 +309,23 @@ export default function DriverProfile() {
   }
 
   function handleDiscard() {
-    setForm(INITIAL_FORM);
+    setForm({
+      firstName: p?.firstName ?? "",
+      lastName: p?.lastName ?? "",
+      middleName: p?.middleName ?? "",
+      email: p?.email ?? "",
+      phone: p?.phoneNumber ?? "",
+      dob: p?.dateOfBirth ?? "",
+      address: p?.address ?? "",
+      city: p?.city ?? "",
+      state: p?.state ?? "",
+    });
     setEditing(false);
     setDirty(false);
   }
 
   const maxTrips = Math.max(...TRIP_ACTIVITY.map((d) => d.trips));
+  const approvalStatus = driverUser?.approvalStatus;
 
   return (
     <>
@@ -332,7 +342,7 @@ export default function DriverProfile() {
 
       <div className="dp-root">
         <div className="max-w-screen-xl mx-auto px-4 py-6 md:px-6 md:py-8">
-          {/* ── Header ──────────────────────────────────────── */}
+          {/* ── Header ── */}
           <div className="flex items-start justify-between mb-8">
             <div>
               <h1
@@ -375,7 +385,7 @@ export default function DriverProfile() {
             </div>
           </div>
 
-          {/* ── Saved toast ──────────────────────────────────── */}
+          {/* ── Saved toast ── */}
           {saved && (
             <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-6 sec-in">
               <FiCheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
@@ -385,7 +395,7 @@ export default function DriverProfile() {
             </div>
           )}
 
-          {/* ── Hero card ────────────────────────────────────── */}
+          {/* ── Hero card ── */}
           <div className="relative rounded-2xl border border-slate-200 bg-white p-6 mb-6 overflow-hidden shadow-sm">
             <div
               className="absolute top-0 right-0 w-72 h-72 opacity-[0.025] pointer-events-none"
@@ -402,15 +412,13 @@ export default function DriverProfile() {
                   className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-black text-[26px] shadow-lg shadow-blue-200 border-2 border-blue-400/30"
                   style={{ fontFamily: "'Syne',sans-serif" }}
                 >
-                  {form.firstName[0]}
-                  {form.lastName[0]}
+                  {initials || "DR"}
                 </div>
                 {editing && (
                   <button className="absolute -bottom-1 -right-1 w-7 h-7 rounded-xl bg-blue-600 border-2 border-white flex items-center justify-center shadow-md hover:bg-blue-700 transition-colors">
                     <FiCamera className="w-3.5 h-3.5 text-white" />
                   </button>
                 )}
-                {/* verified ring */}
                 <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center">
                   <FiCheckCircle className="w-3 h-3 text-white" />
                 </div>
@@ -422,49 +430,70 @@ export default function DriverProfile() {
                     className="text-[22px] font-black text-slate-900 tracking-tight"
                     style={{ fontFamily: "'Syne',sans-serif" }}
                   >
-                    {form.firstName} {form.lastName}
+                    {fullName || "Driver"}
                   </h2>
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white">
-                    <FiCheckCircle className="w-3 h-3" /> Verified Driver
-                  </span>
+                  {approvalStatus === "approved" ? (
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white">
+                      <FiCheckCircle className="w-3 h-3" /> Verified Driver
+                    </span>
+                  ) : approvalStatus === "pending" ? (
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500 text-white">
+                      ⏳ Pending Approval
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-500 text-white">
+                      ✕ Not Approved
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px] text-slate-500 mb-3">
-                  <span className="flex items-center gap-1.5">
-                    <FiMail className="w-3.5 h-3.5 text-slate-400" />
-                    {form.email}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <FiPhone className="w-3.5 h-3.5 text-slate-400" />
-                    {form.phone}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <FiMapPin className="w-3.5 h-3.5 text-slate-400" />
-                    {form.city}, {form.state}
-                  </span>
+                  {form.email && (
+                    <span className="flex items-center gap-1.5">
+                      <FiMail className="w-3.5 h-3.5 text-slate-400" />
+                      {form.email}
+                    </span>
+                  )}
+                  {form.phone && (
+                    <span className="flex items-center gap-1.5">
+                      <FiPhone className="w-3.5 h-3.5 text-slate-400" />
+                      {form.phone}
+                    </span>
+                  )}
+                  {(form.city || form.state) && (
+                    <span className="flex items-center gap-1.5">
+                      <FiMapPin className="w-3.5 h-3.5 text-slate-400" />
+                      {[form.city, form.state].filter(Boolean).join(", ")}
+                    </span>
+                  )}
                 </div>
 
-                {/* Quick stats row */}
+                {/* Quick stats — placeholder until trip endpoints ready */}
                 <div className="flex flex-wrap gap-5">
                   {[
                     {
                       label: "Trips",
-                      value: "48",
+                      value: "—",
                       icon: <TbRoute className="w-3.5 h-3.5" />,
                     },
                     {
                       label: "Rating",
-                      value: "4.9★",
+                      value: "—",
                       icon: <FiStar className="w-3.5 h-3.5" />,
                     },
                     {
                       label: "Passengers",
-                      value: "254",
+                      value: "—",
                       icon: <TbUsers className="w-3.5 h-3.5" />,
                     },
                     {
                       label: "Since",
-                      value: "Jan 2024",
+                      value: driverUser?.createdAt
+                        ? new Date(driverUser.createdAt).toLocaleDateString(
+                            "en-GB",
+                            { month: "short", year: "numeric" }
+                          )
+                        : "—",
                       icon: <FiCalendar className="w-3.5 h-3.5" />,
                     },
                   ].map((s) => (
@@ -482,47 +511,25 @@ export default function DriverProfile() {
                 </div>
               </div>
 
-              {/* Earnings chip */}
+              {/* Earnings — placeholder until endpoint ready */}
               <div className="flex-shrink-0 text-left md:text-right mt-4 md:mt-0">
                 <div className="text-[11px] text-slate-400 mb-0.5">
                   Total Earned
                 </div>
                 <div
-                  className="font-black text-[24px] text-emerald-600 leading-none flex items-center justify-end"
+                  className="font-black text-[24px] text-slate-400 leading-none flex items-center justify-end"
                   style={{ fontFamily: "'Syne',sans-serif" }}
                 >
-                  <PiCurrencyNgnBold className="w-5 h-5" />
-                  161,000
+                  <PiCurrencyNgnBold className="w-5 h-5" />—
                 </div>
                 <div className="text-[11px] text-slate-400 mt-0.5">
                   All time
                 </div>
               </div>
             </div>
-
-            {/* Bio */}
-            {(form.bio || editing) && (
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                {editing ? (
-                  <Field
-                    label="Bio"
-                    value={form.bio}
-                    onChange={set("bio")}
-                    editing
-                    type="textarea"
-                    icon={<FiEdit3 className="w-3 h-3" />}
-                    placeholder="Tell passengers about yourself…"
-                  />
-                ) : (
-                  <p className="text-[13px] text-slate-500 italic">
-                    "{form.bio}"
-                  </p>
-                )}
-              </div>
-            )}
           </div>
 
-          {/* ── Tabs ─────────────────────────────────────────── */}
+          {/* ── Tabs ── */}
           <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0">
             <TabBtn
               icon={<FiUser className="w-3.5 h-3.5" />}
@@ -544,7 +551,7 @@ export default function DriverProfile() {
             />
           </div>
 
-          {/* ── Unsaved changes banner ────────────────────────── */}
+          {/* ── Unsaved changes banner ── */}
           {dirty && editing && (
             <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-5 sec-in">
               <FiAlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
@@ -583,22 +590,25 @@ export default function DriverProfile() {
                     editing={editing}
                     icon={<FiUser className="w-3 h-3" />}
                   />
-                  <Field
-                    label="Gender"
-                    value={form.gender}
-                    onChange={set("gender")}
-                    editing={editing}
-                    type="select-gender"
-                    icon={<FiUser className="w-3 h-3" />}
-                  />
-                  <Field
-                    label="Date of Birth"
-                    value={form.dob}
-                    onChange={set("dob")}
-                    editing={editing}
-                    type="date"
-                    icon={<FiCalendar className="w-3 h-3" />}
-                  />
+                  <div className="col-span-2">
+                    <Field
+                      label="Middle Name"
+                      value={form.middleName}
+                      onChange={set("middleName")}
+                      editing={editing}
+                      icon={<FiUser className="w-3 h-3" />}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Field
+                      label="Date of Birth"
+                      value={form.dob}
+                      onChange={set("dob")}
+                      editing={editing}
+                      type="date"
+                      icon={<FiCalendar className="w-3 h-3" />}
+                    />
+                  </div>
                 </div>
               </SectionCard>
 
@@ -625,12 +635,11 @@ export default function DriverProfile() {
                     icon={<FiPhone className="w-3 h-3" />}
                   />
                   <Field
-                    label="WhatsApp Number"
-                    value={form.whatsapp}
-                    onChange={set("whatsapp")}
+                    label="Address"
+                    value={form.address}
+                    onChange={set("address")}
                     editing={editing}
-                    type="tel"
-                    icon={<BsWhatsapp className="w-3 h-3" />}
+                    icon={<FiMapPin className="w-3 h-3" />}
                   />
                   <div className="grid grid-cols-2 gap-3">
                     <Field
@@ -651,45 +660,132 @@ export default function DriverProfile() {
                 </div>
               </SectionCard>
 
-              {/* Vehicle summary */}
-              <SectionCard
-                title="Vehicle on File"
-                icon={<MdOutlineDirectionsCar className="w-4 h-4" />}
-              >
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: "Make & Model", value: "Toyota Hiace" },
-                    { label: "Year", value: "2019" },
-                    { label: "Colour", value: "Black" },
-                    { label: "Plate", value: "LSD-432-AE" },
-                    { label: "Seats", value: "8 passengers" },
-                    { label: "Fuel", value: "Petrol" },
-                  ].map(({ label, value }) => (
-                    <div
-                      key={label}
-                      className="bg-slate-50 rounded-xl border border-slate-100 px-3.5 py-2.5"
-                    >
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">
-                        {label}
+              {/* Emergency contact */}
+              {contacts?.emergency && (
+                <SectionCard
+                  title="Emergency Contact"
+                  icon={<FiShield className="w-4 h-4" />}
+                >
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      {
+                        label: "Full Name",
+                        value: contacts.emergency.fullName,
+                      },
+                      {
+                        label: "Relationship",
+                        value: contacts.emergency.relationship,
+                      },
+                      {
+                        label: "Phone Number",
+                        value: contacts.emergency.phoneNumber,
+                      },
+                    ].map(({ label, value }) => (
+                      <div
+                        key={label}
+                        className="bg-slate-50 rounded-xl border border-slate-100 px-3.5 py-2.5"
+                      >
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">
+                          {label}
+                        </div>
+                        <div className="text-[13px] font-semibold text-slate-700">
+                          {value || "—"}
+                        </div>
                       </div>
-                      <div className="text-[13px] font-semibold text-slate-700">
-                        {value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <button className="mt-3 w-full flex items-center justify-center gap-1.5 text-[12px] font-semibold text-blue-600 hover:text-blue-700 transition-colors">
-                  Go to My Vehicle page{" "}
-                  <FiChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </SectionCard>
+                    ))}
+                  </div>
+                </SectionCard>
+              )}
 
-              {/* Driver since card */}
+              {/* Guarantor */}
+              {contacts?.guarantor && (
+                <SectionCard
+                  title="Guarantor"
+                  icon={<FiShield className="w-4 h-4" />}
+                >
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      {
+                        label: "Full Name",
+                        value: contacts.guarantor.fullName,
+                      },
+                      {
+                        label: "Phone Number",
+                        value: contacts.guarantor.phoneNumber,
+                      },
+                      { label: "Address", value: contacts.guarantor.address },
+                      {
+                        label: "Relationship & Occupation",
+                        value: contacts.guarantor.relationshipAndOccupation,
+                      },
+                    ].map(({ label, value }) => (
+                      <div
+                        key={label}
+                        className="bg-slate-50 rounded-xl border border-slate-100 px-3.5 py-2.5"
+                      >
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">
+                          {label}
+                        </div>
+                        <div className="text-[13px] font-semibold text-slate-700">
+                          {value || "—"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </SectionCard>
+              )}
+
+              {/* Vehicle summary */}
+              {vehicleInfo && (
+                <SectionCard
+                  title="Vehicle on File"
+                  icon={<MdOutlineDirectionsCar className="w-4 h-4" />}
+                >
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      {
+                        label: "Make & Model",
+                        value: `${vehicleInfo.make} ${vehicleInfo.model}`,
+                      },
+                      { label: "Year", value: vehicleInfo.year },
+                      { label: "Colour", value: vehicleInfo.color },
+                      { label: "Plate", value: vehicleInfo.plateNumber },
+                      {
+                        label: "Seats",
+                        value: `${vehicleInfo.passengerSeats} passengers`,
+                      },
+                      { label: "VIN", value: vehicleInfo.vin },
+                    ].map(({ label, value }) => (
+                      <div
+                        key={label}
+                        className="bg-slate-50 rounded-xl border border-slate-100 px-3.5 py-2.5"
+                      >
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">
+                          {label}
+                        </div>
+                        <div className="text-[13px] font-semibold text-slate-700">
+                          {value || "—"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </SectionCard>
+              )}
+
+              {/* Driver account card */}
               <SectionCard
                 title="Driver Account"
                 icon={<FiShield className="w-4 h-4" />}
               >
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 mb-4 shadow-lg shadow-blue-200">
+                <div
+                  className={`flex items-center gap-4 p-4 rounded-2xl mb-4 shadow-lg ${
+                    approvalStatus === "approved"
+                      ? "bg-gradient-to-br from-blue-600 to-blue-700 shadow-blue-200"
+                      : approvalStatus === "pending"
+                      ? "bg-gradient-to-br from-amber-500 to-amber-600 shadow-amber-200"
+                      : "bg-gradient-to-br from-red-500 to-red-600 shadow-red-200"
+                  }`}
+                >
                   <div className="w-12 h-12 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center flex-shrink-0">
                     <FiShield className="w-6 h-6 text-white" />
                   </div>
@@ -698,19 +794,44 @@ export default function DriverProfile() {
                       className="font-black text-white text-[15px] flex items-center gap-1.5"
                       style={{ fontFamily: "'Syne',sans-serif" }}
                     >
-                      <FiCheckCircle className="w-4 h-4" /> Verified Driver
+                      <FiCheckCircle className="w-4 h-4" />
+                      {approvalStatus === "approved"
+                        ? "Verified Driver"
+                        : approvalStatus === "pending"
+                        ? "Pending Approval"
+                        : "Not Approved"}
                     </div>
-                    <div className="text-blue-200 text-[12px] mt-0.5">
-                      Badge active since January 2026
+                    <div className="text-white/70 text-[12px] mt-0.5">
+                      {approvalStatus === "approved"
+                        ? `Verified on ${formatDate(driverUser?.updatedAt)}`
+                        : approvalStatus === "pending"
+                        ? "Your account is under review"
+                        : "Please contact support"}
                     </div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: "Member Since", value: "Jan 2024" },
-                    { label: "Verification", value: "Jan 2026" },
+                    {
+                      label: "Member Since",
+                      value: driverUser?.createdAt
+                        ? formatDate(driverUser.createdAt)
+                        : "—",
+                    },
+                    {
+                      label: "Last Updated",
+                      value: driverUser?.updatedAt
+                        ? formatDate(driverUser.updatedAt)
+                        : "—",
+                    },
                     { label: "Account Type", value: "Driver" },
-                    { label: "Status", value: "Active" },
+                    {
+                      label: "Approval Status",
+                      value: approvalStatus
+                        ? approvalStatus.charAt(0).toUpperCase() +
+                          approvalStatus.slice(1)
+                        : "—",
+                    },
                   ].map(({ label, value }) => (
                     <div
                       key={label}
@@ -732,37 +853,44 @@ export default function DriverProfile() {
           {/* ══ STATS TAB ════════════════════════════════════ */}
           {activeTab === "stats" && (
             <div className="sec-in space-y-5">
-              {/* Stat cards */}
+              {/* Placeholder notice */}
+              <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-3">
+                <FiAlertCircle className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                <p className="text-[12px] text-blue-600">
+                  Trip stats will populate once the trips endpoint is connected.
+                </p>
+              </div>
+
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
                   {
                     label: "Total Trips",
-                    value: "48",
-                    sub: "+4 this month",
-                    color: "from-blue-50    to-white border-blue-100",
+                    value: "—",
+                    sub: "No data yet",
+                    color: "from-blue-50 to-white border-blue-100",
                     vcolor: "text-blue-600",
                     icon: <TbRoute className="w-4 h-4" />,
                   },
                   {
                     label: "Total Passengers",
-                    value: "254",
-                    sub: "Across all trips",
-                    color: "from-violet-50  to-white border-violet-100",
+                    value: "—",
+                    sub: "No data yet",
+                    color: "from-violet-50 to-white border-violet-100",
                     vcolor: "text-violet-600",
                     icon: <TbUsers className="w-4 h-4" />,
                   },
                   {
                     label: "Average Rating",
-                    value: "4.9★",
-                    sub: "From 46 ratings",
-                    color: "from-amber-50   to-white border-amber-100",
+                    value: "—",
+                    sub: "No ratings yet",
+                    color: "from-amber-50 to-white border-amber-100",
                     vcolor: "text-amber-600",
                     icon: <FiStar className="w-4 h-4" />,
                   },
                   {
                     label: "Total Earned",
-                    value: "₦161k",
-                    sub: "All time",
+                    value: "—",
+                    sub: "No data yet",
                     color: "from-emerald-50 to-white border-emerald-100",
                     vcolor: "text-emerald-600",
                     icon: <PiCurrencyNgnBold className="w-4 h-4" />,
@@ -791,7 +919,6 @@ export default function DriverProfile() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                {/* Trip activity chart */}
                 <SectionCard
                   title="Trip Activity"
                   icon={<FiTrendingUp className="w-4 h-4" />}
@@ -807,14 +934,11 @@ export default function DriverProfile() {
                     ))}
                   </div>
                   <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[12px] text-slate-400">
-                    <span>Last 6 months</span>
-                    <span className="font-semibold text-slate-600">
-                      45 trips total
-                    </span>
+                    <span>Placeholder data</span>
+                    <span className="font-semibold text-slate-600">—</span>
                   </div>
                 </SectionCard>
 
-                {/* Top routes */}
                 <SectionCard
                   title="Favourite Routes"
                   icon={<TbRoute className="w-4 h-4" />}
@@ -859,7 +983,7 @@ export default function DriverProfile() {
                     })}
                   </div>
                   <div className="mt-4 pt-3 border-t border-slate-100 text-[12px] text-slate-400">
-                    Based on all completed trips
+                    Placeholder data
                   </div>
                 </SectionCard>
               </div>
@@ -871,23 +995,80 @@ export default function DriverProfile() {
             <div className="sec-in grid grid-cols-1 lg:grid-cols-2 gap-5">
               {/* Account status */}
               <div className="lg:col-span-2">
-                <div className="flex items-center gap-4 bg-gradient-to-r from-blue-50 to-white border border-blue-200 rounded-2xl px-5 py-4">
-                  <div className="w-11 h-11 rounded-xl bg-blue-100 border border-blue-200 flex items-center justify-center flex-shrink-0">
-                    <FiCheckCircle className="w-5 h-5 text-blue-600" />
+                <div
+                  className={`flex items-center gap-4 border rounded-2xl px-5 py-4 ${
+                    approvalStatus === "approved"
+                      ? "bg-gradient-to-r from-blue-50 to-white border-blue-200"
+                      : approvalStatus === "pending"
+                      ? "bg-gradient-to-r from-amber-50 to-white border-amber-200"
+                      : "bg-gradient-to-r from-red-50 to-white border-red-200"
+                  }`}
+                >
+                  <div
+                    className={`w-11 h-11 rounded-xl border flex items-center justify-center flex-shrink-0 ${
+                      approvalStatus === "approved"
+                        ? "bg-blue-100 border-blue-200"
+                        : approvalStatus === "pending"
+                        ? "bg-amber-100 border-amber-200"
+                        : "bg-red-100 border-red-200"
+                    }`}
+                  >
+                    <FiCheckCircle
+                      className={`w-5 h-5 ${
+                        approvalStatus === "approved"
+                          ? "text-blue-600"
+                          : approvalStatus === "pending"
+                          ? "text-amber-600"
+                          : "text-red-500"
+                      }`}
+                    />
                   </div>
                   <div className="flex-1">
                     <div
-                      className="font-bold text-[14px] text-blue-700"
+                      className={`font-bold text-[14px] ${
+                        approvalStatus === "approved"
+                          ? "text-blue-700"
+                          : approvalStatus === "pending"
+                          ? "text-amber-700"
+                          : "text-red-600"
+                      }`}
                       style={{ fontFamily: "'Syne',sans-serif" }}
                     >
-                      Account Verified
+                      {approvalStatus === "approved"
+                        ? "Account Verified"
+                        : approvalStatus === "pending"
+                        ? "Pending Verification"
+                        : "Account Not Approved"}
                     </div>
-                    <div className="text-[12px] text-blue-500 mt-0.5">
-                      Identity confirmed · Phone linked · Documents approved
+                    <div
+                      className={`text-[12px] mt-0.5 ${
+                        approvalStatus === "approved"
+                          ? "text-blue-500"
+                          : approvalStatus === "pending"
+                          ? "text-amber-500"
+                          : "text-red-400"
+                      }`}
+                    >
+                      {approvalStatus === "approved"
+                        ? "Identity confirmed · Phone linked · Documents approved"
+                        : approvalStatus === "pending"
+                        ? "Your account is currently under review by BloomRydes"
+                        : "Please contact support to resolve your account status"}
                     </div>
                   </div>
-                  <span className="text-[11px] font-bold text-blue-600 bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-full flex-shrink-0">
-                    Since Jan 2026
+                  <span
+                    className={`text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 border ${
+                      approvalStatus === "approved"
+                        ? "text-blue-600 bg-blue-100 border-blue-200"
+                        : approvalStatus === "pending"
+                        ? "text-amber-600 bg-amber-100 border-amber-200"
+                        : "text-red-500 bg-red-100 border-red-200"
+                    }`}
+                  >
+                    {approvalStatus
+                      ? approvalStatus.charAt(0).toUpperCase() +
+                        approvalStatus.slice(1)
+                      : "—"}
                   </span>
                 </div>
               </div>
@@ -901,17 +1082,17 @@ export default function DriverProfile() {
                   <ActionRow
                     icon={<FiPhone className="w-4 h-4" />}
                     label="Change Phone Number"
-                    sub="Current: +234 803 456 7890"
+                    sub={form.phone ? `Current: ${form.phone}` : undefined}
                   />
                   <ActionRow
                     icon={<FiMail className="w-4 h-4" />}
                     label="Change Email Address"
-                    sub="Current: emeka.okonkwo@gmail.com"
+                    sub={form.email ? `Current: ${form.email}` : undefined}
                   />
                   <ActionRow
                     icon={<FiLock className="w-4 h-4" />}
                     label="Change PIN / Password"
-                    sub="Last changed 3 months ago"
+                    sub="Update your account password"
                   />
                   <ActionRow
                     icon={<FiBell className="w-4 h-4" />}
@@ -921,7 +1102,7 @@ export default function DriverProfile() {
                 </div>
               </SectionCard>
 
-              {/* Danger zone */}
+              {/* Account actions */}
               <SectionCard
                 title="Account Actions"
                 icon={<FiShield className="w-4 h-4" />}

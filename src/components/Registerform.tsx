@@ -11,6 +11,12 @@ import {
   AlertTriangle,
   XCircle,
 } from "lucide-react";
+import { useAppDispatch } from "@/store/hooks";
+import {
+  setCredentials,
+  setAuthLoading,
+  setAuthError,
+} from "@/store/slices/authSlice";
 
 // ─────────────────────────────────────────────────────────────
 //  TYPES
@@ -22,7 +28,6 @@ interface RegisterFormProps {
   onVerifyOTP: (phoneNumber: string, otp: string) => Promise<any>;
 }
 
-/** Discriminated union — makes every status value explicit and exhaustive */
 type OtpStatus = "idle" | "success" | "error" | "locked";
 
 // ─────────────────────────────────────────────────────────────
@@ -31,7 +36,6 @@ type OtpStatus = "idle" | "success" | "error" | "locked";
 
 const RESEND_SECONDS = 60;
 const MAX_ATTEMPTS = 3;
-
 const STEPS = ["Phone", "Verify", "Done"] as const;
 
 // ─────────────────────────────────────────────────────────────
@@ -44,6 +48,7 @@ export default function RegisterForm({
   onVerifyOTP,
 }: RegisterFormProps) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
   const [step, setStep] = useState<number>(0);
   const [isSubmittingPhone, setIsSubmittingPhone] = useState<boolean>(false);
@@ -57,9 +62,7 @@ export default function RegisterForm({
   const [verifying, setVerifying] = useState<boolean>(false);
   const [lockoutTimer, setLockoutTimer] = useState<number>(0);
 
-  /** Typed ref array — each slot holds an input element or null */
   const otpRefs = useRef<Array<HTMLInputElement | null>>(Array(6).fill(null));
-  /** NodeJS.Timeout | null — avoids the implicit `any` from useRef([]) */
   const resendIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lockoutIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
     null
@@ -112,26 +115,29 @@ export default function RegisterForm({
   };
 
   // ── Navigation ──
-  const goNext = () => setStep((s) => s + 1);
   const goBack = () => setStep((s) => s - 1);
 
-  // ── Step 0: Phone ──
+  // ── Step 0: Phone submit ──
   const handlePhoneSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (phone.length < 10 || isSubmittingPhone) return;
 
     setIsSubmittingPhone(true);
+    dispatch(setAuthLoading(true));
+
     try {
       await onRequestOTP(phone);
-      goNext();
-    } catch (error) {
-      console.error("Failed to request OTP from RegisterForm", error);
+      setStep(1);
+    } catch (error: any) {
+      const msg = error?.message || "Failed to send OTP. Please try again.";
+      dispatch(setAuthError(msg));
     } finally {
       setIsSubmittingPhone(false);
+      dispatch(setAuthLoading(false));
     }
   };
 
-  // ── Step 1: OTP ──
+  // ── Step 1: OTP handlers ──
   const handleOtpChange = (index: number, value: string) => {
     if (otpStatus === "locked" || verifying) return;
     if (!/^\d*$/.test(value)) return;
@@ -143,7 +149,6 @@ export default function RegisterForm({
 
     if (value && index < 5) otpRefs.current[index + 1]?.focus();
 
-    // Auto-submit when the last box is filled
     if (value && index === 5 && next.every((d) => d !== "")) {
       setTimeout(() => verifyOtp(next), 200);
     }
@@ -171,42 +176,57 @@ export default function RegisterForm({
     }
   };
 
-  /** Replace the setTimeout mock with a real API call in production.
-   *  Demo: "123456" passes, anything else fails. */
   const verifyOtp = async (digits: string[]) => {
     const code = digits.join("");
     setVerifying(true);
     setOtpStatus("idle");
+    dispatch(setAuthLoading(true));
 
     try {
-      await onVerifyOTP(phone, code);
+      const result = await onVerifyOTP(phone, code);
+
+      // Dispatch credentials to Redux store
+      // Adjust result.data.user / result.data.token to match your backend shape
+      dispatch(
+        setCredentials({
+          user: result.data.user,
+          token: result.data.token,
+        })
+      );
+
       setVerifying(false);
       setOtpStatus("success");
-      setTimeout(() => router.push("/onboarding/choose-type"), 700);
-      setTimeout(() => router.push(`/onboarding?phone=${encodeURIComponent(phone)}`), 700);
-    } catch (error) {
+
+      // Redirect to onboarding with phone as query param
+      setTimeout(
+        () => router.push(`/onboarding?phone=${encodeURIComponent(phone)}`),
+        700
+      );
+    } catch (error: any) {
       setVerifying(false);
-      setAttempts((prev) => {
-        const newAttempts = prev + 1;
-        setOtpStatus(newAttempts >= MAX_ATTEMPTS ? "locked" : "error");
-        if (newAttempts >= MAX_ATTEMPTS) startLockout();
-        return newAttempts;
-      });
+      dispatch(setAuthLoading(false));
+
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+      setOtpStatus(newAttempts >= MAX_ATTEMPTS ? "locked" : "error");
+      if (newAttempts >= MAX_ATTEMPTS) startLockout();
+
       setOtp(["", "", "", "", "", ""]);
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     if (resendTimer > 0 || otpStatus === "locked") return;
     setOtp(["", "", "", "", "", ""]);
     setOtpStatus("idle");
     setAttempts(0);
+    try {
+      await onRequestOTP(phone);
+    } catch (_) {}
     startResendCountdown();
     setTimeout(() => otpRefs.current[0]?.focus(), 100);
   };
-
-  const otpComplete = otp.every((d) => d !== "");
 
   // ─────────────────────────────────────────────────────────────
   //  RENDER
@@ -282,9 +302,7 @@ export default function RegisterForm({
                   <input
                     type="tel"
                     value={phone}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setPhone(e.target.value)
-                    }
+                    onChange={(e) => setPhone(e.target.value)}
                     className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/40 focus:border-blue-600 transition-all"
                     placeholder="080 0000 0000"
                     autoFocus
@@ -394,18 +412,14 @@ export default function RegisterForm({
                     key={i}
                     ref={(el) => {
                       otpRefs.current[i] = el;
-                    }} // ✅ void ref callback
+                    }}
                     type="text"
                     inputMode="numeric"
                     maxLength={1}
                     value={digit}
                     disabled={otpStatus === "locked" || verifying}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      handleOtpChange(i, e.target.value)
-                    }
-                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                      handleOtpKeyDown(i, e)
-                    }
+                    onChange={(e) => handleOtpChange(i, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
                     className={`w-full aspect-square max-w-[52px] text-center text-xl font-black bg-black/40 border rounded-2xl text-white focus:outline-none transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
                       otpStatus === "success"
                         ? "border-green-500 ring-2 ring-green-600/30 bg-green-600/10 text-green-400"
@@ -422,7 +436,6 @@ export default function RegisterForm({
                 ))}
               </div>
 
-              {/* Status feedback */}
               {verifying && (
                 <div className="flex items-center justify-center gap-2 py-1">
                   <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />

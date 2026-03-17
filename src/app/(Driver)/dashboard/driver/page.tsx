@@ -1,6 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAppSelector } from "@/store/hooks";
+import {
+  selectDriverUser,
+  selectToken,
+  selectIsAuthenticated,
+} from "@/store/slices/authSlice";
 import DriverSidebar from "./Sidebar";
 import DriverHeader from "./Header";
 import DriverDashboardContent from "./DashboardContent";
@@ -15,31 +22,53 @@ import DriverProfile from "./DriverProfile";
 import DriverSettings from "./Driversettings";
 
 export default function DriverDashboardPage() {
+  const router = useRouter();
+
+  // ── Redux state ──────────────────────────────────────────────
+  const driverUser = useAppSelector(selectDriverUser);
+  const token = useAppSelector(selectToken);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+
+  // ── Local UI state ───────────────────────────────────────────
   const [activeNav, setActiveNav] = useState("dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // ── Auth guard ───────────────────────────────────────────────
+  useEffect(() => {
+    if (!isAuthenticated || !driverUser) {
+      router.replace("/auth");
+    }
+  }, [isAuthenticated, driverUser, router]);
+
+  // Don't render anything until auth is confirmed
+  if (!isAuthenticated || !driverUser) return null;
+
+  // ── Derived values ───────────────────────────────────────────
+  const driverName = `${driverUser.personalInfo.firstName} ${driverUser.personalInfo.lastName}`;
+
+  // ── Content renderer ─────────────────────────────────────────
   const renderContent = () => {
     switch (activeNav) {
       case "dashboard":
-        return <DriverDashboardContent />;
+        return <DriverDashboardContent driverUser={driverUser} />;
       case "create":
-        return <CreateTrip />;
+        return <CreateTrip token={token} />;
       case "trips":
-        return <MyTrips />;
+        return <MyTrips token={token} />;
       case "passengers":
-        return <Passengers />;
+        return <Passengers token={token} />;
       case "performance":
-        return <Performance />;
+        return <Performance driverUser={driverUser} />;
       case "vehicle":
-        return <Vehicle />;
+        return <Vehicle vehicleInfo={driverUser.vehicleInfo} />;
       case "documents":
-        return <DriverDocument />;
+        return <DriverDocument documents={driverUser.verificationDocuments} />;
       case "profile":
-        return <DriverProfile />;
+        return <DriverProfile driverUser={driverUser} token={token} />;
       case "settings":
-        return <DriverSettings />;
+        return <DriverSettings token={token} />;
       default:
-        return <DriverDashboardContent />;
+        return <DriverDashboardContent driverUser={driverUser} />;
     }
   };
 
@@ -57,7 +86,7 @@ export default function DriverDashboardPage() {
         .sb::-webkit-scrollbar-thumb { background:#dbeafe; border-radius:4px; }
       `}</style>
 
-      {/* Mobile Overlay */}
+      {/* Mobile sidebar overlay */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
@@ -71,10 +100,15 @@ export default function DriverDashboardPage() {
           setActiveNav={setActiveNav}
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
+          driverName={driverName}
+          approvalStatus={driverUser.approvalStatus}
         />
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-screen-xl mx-auto px-4 py-6 md:px-8 md:py-8">
-            <DriverHeader setIsSidebarOpen={setIsSidebarOpen} />
+            <DriverHeader
+              setIsSidebarOpen={setIsSidebarOpen}
+              driverName={driverName}
+            />
             {renderContent()}
           </div>
         </main>

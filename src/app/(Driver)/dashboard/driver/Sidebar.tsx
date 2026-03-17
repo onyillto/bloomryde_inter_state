@@ -1,5 +1,8 @@
 "use client";
 
+import { useAppDispatch } from "@/store/hooks";
+import { logout } from "@/store/slices/authSlice";
+import { useRouter } from "next/navigation";
 import {
   IconGrid,
   IconPlus,
@@ -58,17 +61,39 @@ function NavItem({
   );
 }
 
+interface DriverSidebarProps {
+  activeNav: string;
+  setActiveNav: (v: string) => void;
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (v: boolean) => void;
+  driverName: string;
+  approvalStatus?: "pending" | "approved" | "rejected";
+}
+
 export default function DriverSidebar({
   activeNav,
   setActiveNav,
   isSidebarOpen,
   setIsSidebarOpen,
-}: {
-  activeNav: string;
-  setActiveNav: (v: string) => void;
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: (v: boolean) => void;
-}) {
+  driverName,
+  approvalStatus,
+}: DriverSidebarProps) {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+
+  // Derive initials from driverName e.g. "John Doe" → "JD"
+  const initials = driverName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    router.replace("/auth");
+  };
+
   return (
     <aside
       className={`sb w-[228px] flex-shrink-0 bg-white border-r border-slate-200 flex flex-col overflow-y-auto
@@ -111,6 +136,7 @@ export default function DriverSidebar({
         </div>
       </div>
 
+      {/* Main nav */}
       <div className="px-3 pt-4">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-2">
           Main
@@ -183,37 +209,73 @@ export default function DriverSidebar({
         </div>
       </div>
 
-      {/* Verified card */}
+      {/* Verified / Pending card */}
       <div className="px-3 pt-4">
-        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-4 shadow-lg shadow-blue-100">
-          <div className="flex items-center gap-1.5 mb-1">
-            <IconCheck />
-            <span
-              className="text-[11px] font-black text-white uppercase tracking-wider"
-              style={{ fontFamily: "'Syne',sans-serif" }}
-            >
-              Verified Driver
-            </span>
+        {approvalStatus === "approved" ? (
+          <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-4 shadow-lg shadow-blue-100">
+            <div className="flex items-center gap-1.5 mb-1">
+              <IconCheck />
+              <span
+                className="text-[11px] font-black text-white uppercase tracking-wider"
+                style={{ fontFamily: "'Syne',sans-serif" }}
+              >
+                Verified Driver
+              </span>
+            </div>
+            <div className="text-[11px] text-blue-200">
+              Badge active since Jan 2026
+            </div>
           </div>
-          <div className="text-[11px] text-blue-200">
-            Badge active since Jan 2026
+        ) : approvalStatus === "pending" ? (
+          <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-4 shadow-lg shadow-amber-100">
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="text-white text-[14px]">⏳</span>
+              <span
+                className="text-[11px] font-black text-white uppercase tracking-wider"
+                style={{ fontFamily: "'Syne',sans-serif" }}
+              >
+                Pending Approval
+              </span>
+            </div>
+            <div className="text-[11px] text-amber-100">
+              Your account is under review
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-4 shadow-lg shadow-red-100">
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="text-white text-[14px]">❌</span>
+              <span
+                className="text-[11px] font-black text-white uppercase tracking-wider"
+                style={{ fontFamily: "'Syne',sans-serif" }}
+              >
+                Not Approved
+              </span>
+            </div>
+            <div className="text-[11px] text-red-100">
+              Please contact support
+            </div>
+          </div>
+        )}
       </div>
 
       {/* User footer */}
       <div className="mt-auto px-4 py-4 border-t border-slate-100 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-[13px] flex-shrink-0 shadow-sm">
-            EO
+            {initials}
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-[13px] font-semibold text-slate-800 truncate">
-              Emeka Okonkwo
+              {driverName}
             </div>
             <div className="text-[11px] text-slate-400">Driver</div>
           </div>
-          <button className="text-slate-400 hover:text-blue-600 transition-colors">
+          <button
+            onClick={handleLogout}
+            title="Logout"
+            className="text-slate-400 hover:text-red-500 transition-colors"
+          >
             <IconLogout />
           </button>
         </div>

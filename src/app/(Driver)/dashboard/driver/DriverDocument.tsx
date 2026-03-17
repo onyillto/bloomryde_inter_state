@@ -1,154 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import { useAppSelector } from "@/store/hooks";
+import { selectDriverUser } from "@/store/slices/authSlice";
+import { DriverUser } from "@/lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type DocStatus = "valid" | "expiring" | "expired" | "pending" | "missing";
+type DocStatus = "valid" | "expiring" | "expired" | "missing";
 
 type Document = {
-  id: number;
+  id: string;
   name: string;
   icon: string;
-  category: "personal" | "vehicle" | "insurance";
   status: DocStatus;
-  issueDate: string;
-  expiryDate: string;
-  issuedBy: string;
-  fileType: string;
-  fileSize: string;
+  expiryDate?: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: string;
+  number?: string;
   required: boolean;
-  notes?: string;
 };
 
-type FilterTab = "all" | "personal" | "vehicle" | "insurance";
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const DOCUMENTS: Document[] = [
-  {
-    id: 1,
-    name: "Driver's Licence",
-    icon: "🪪",
-    category: "personal",
-    status: "valid",
-    issueDate: "Jun 2022",
-    expiryDate: "Jun 2028",
-    issuedBy: "Federal Road Safety Corps",
-    fileType: "PDF",
-    fileSize: "1.2 MB",
-    required: true,
-  },
-  {
-    id: 2,
-    name: "National ID Card",
-    icon: "🆔",
-    category: "personal",
-    status: "valid",
-    issueDate: "Mar 2020",
-    expiryDate: "Mar 2030",
-    issuedBy: "National Identity Management Commission",
-    fileType: "JPG",
-    fileSize: "820 KB",
-    required: true,
-  },
-  {
-    id: 3,
-    name: "Proof of Address",
-    icon: "🏠",
-    category: "personal",
-    status: "expiring",
-    issueDate: "Feb 2025",
-    expiryDate: "Feb 2026",
-    issuedBy: "EKEDC (Utility Bill)",
-    fileType: "PDF",
-    fileSize: "560 KB",
-    required: true,
-    notes: "Expires in 3 days. Upload a newer utility bill.",
-  },
-  {
-    id: 4,
-    name: "Vehicle Registration",
-    icon: "📋",
-    category: "vehicle",
-    status: "valid",
-    issueDate: "Jan 2024",
-    expiryDate: "Jan 2027",
-    issuedBy: "Lagos State Motor Vehicle Admin",
-    fileType: "PDF",
-    fileSize: "980 KB",
-    required: true,
-  },
-  {
-    id: 5,
-    name: "Road Worthiness Certificate",
-    icon: "🔧",
-    category: "vehicle",
-    status: "expiring",
-    issueDate: "Apr 2025",
-    expiryDate: "Apr 2026",
-    issuedBy: "FRSC Vehicle Inspection",
-    fileType: "PDF",
-    fileSize: "740 KB",
-    required: true,
-    notes: "Expires in ~2 months. Schedule a re-inspection.",
-  },
-  {
-    id: 6,
-    name: "Hackney Permit",
-    icon: "🚖",
-    category: "vehicle",
-    status: "expired",
-    issueDate: "Jan 2025",
-    expiryDate: "Jan 2026",
-    issuedBy: "Lagos State Govt Transport",
-    fileType: "PDF",
-    fileSize: "610 KB",
-    required: true,
-    notes: "Expired. Your trips are paused until this is renewed.",
-  },
-  {
-    id: 7,
-    name: "Third-Party Insurance",
-    icon: "🛡️",
-    category: "insurance",
-    status: "valid",
-    issueDate: "Dec 2025",
-    expiryDate: "Dec 2026",
-    issuedBy: "AXA Mansard Insurance",
-    fileType: "PDF",
-    fileSize: "1.1 MB",
-    required: true,
-  },
-  {
-    id: 8,
-    name: "Comprehensive Insurance",
-    icon: "📄",
-    category: "insurance",
-    status: "pending",
-    issueDate: "—",
-    expiryDate: "—",
-    issuedBy: "Leadway Assurance",
-    fileType: "—",
-    fileSize: "—",
-    required: false,
-    notes: "Document submitted on 20 Feb 2026. Under review.",
-  },
-  {
-    id: 9,
-    name: "Passengers Liability Cover",
-    icon: "👥",
-    category: "insurance",
-    status: "missing",
-    issueDate: "—",
-    expiryDate: "—",
-    issuedBy: "—",
-    fileType: "—",
-    fileSize: "—",
-    required: false,
-    notes: "Not uploaded yet. Strongly recommended for interstate trips.",
-  },
-];
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const STATUS_META: Record<
   DocStatus,
@@ -169,8 +43,8 @@ const STATUS_META: Record<
     cardBg: "bg-white",
   },
   expiring: {
-    label: "Expiring",
-    badgeCls: "bg-amber-50  text-amber-600  border-amber-200",
+    label: "Expiring Soon",
+    badgeCls: "bg-amber-50 text-amber-600 border-amber-200",
     dotCls: "bg-amber-400",
     cardBorder: "border-amber-300",
     cardBg: "bg-amber-50/30",
@@ -178,33 +52,95 @@ const STATUS_META: Record<
   },
   expired: {
     label: "Expired",
-    badgeCls: "bg-red-50    text-red-500    border-red-200",
+    badgeCls: "bg-red-50 text-red-500 border-red-200",
     dotCls: "bg-red-500",
     cardBorder: "border-red-300",
     cardBg: "bg-red-50/30",
     pulse: true,
   },
-  pending: {
-    label: "Pending",
-    badgeCls: "bg-blue-50   text-blue-600   border-blue-200",
-    dotCls: "bg-blue-400",
-    cardBorder: "border-blue-200",
-    cardBg: "bg-blue-50/20",
-  },
   missing: {
     label: "Missing",
-    badgeCls: "bg-slate-100 text-slate-500  border-slate-200",
+    badgeCls: "bg-slate-100 text-slate-500 border-slate-200",
     dotCls: "bg-slate-400",
     cardBorder: "border-dashed border-slate-300",
     cardBg: "bg-slate-50/60",
   },
 };
 
-const CATEGORY_LABEL: Record<string, string> = {
-  personal: "Personal",
-  vehicle: "Vehicle",
-  insurance: "Insurance",
-};
+function deriveStatus(expiryDate?: string): DocStatus {
+  if (!expiryDate) return "missing";
+  const expiry = new Date(expiryDate);
+  const now = new Date();
+  const diffDays = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+  if (diffDays < 0) return "expired";
+  if (diffDays < 60) return "expiring";
+  return "valid";
+}
+
+function formatDate(iso?: string) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function buildDocuments(
+  docs: DriverUser["verificationDocuments"] | undefined
+): Document[] {
+  if (!docs) return [];
+
+  return [
+    {
+      id: "drivers-license-front",
+      name: "Driver's Licence (Front)",
+      icon: "🪪",
+      status: deriveStatus(docs.driversLicense?.expiryDate),
+      expiryDate: docs.driversLicense?.expiryDate,
+      fileUrl: docs.driversLicense?.front?.url,
+      fileName: docs.driversLicense?.front?.fileName,
+      fileSize: docs.driversLicense?.front?.fileSize,
+      number: docs.driversLicense?.number,
+      required: true,
+    },
+    {
+      id: "drivers-license-back",
+      name: "Driver's Licence (Back)",
+      icon: "🪪",
+      status: docs.driversLicense?.back?.url
+        ? deriveStatus(docs.driversLicense?.expiryDate)
+        : "missing",
+      expiryDate: docs.driversLicense?.expiryDate,
+      fileUrl: docs.driversLicense?.back?.url,
+      fileName: docs.driversLicense?.back?.fileName,
+      fileSize: docs.driversLicense?.back?.fileSize,
+      number: docs.driversLicense?.number,
+      required: true,
+    },
+    {
+      id: "national-id",
+      name: "National ID (NIN)",
+      icon: "🆔",
+      status: docs.nationalId?.document?.url ? "valid" : "missing",
+      fileUrl: docs.nationalId?.document?.url,
+      fileName: docs.nationalId?.document?.fileName,
+      fileSize: docs.nationalId?.document?.fileSize,
+      number: docs.nationalId?.number,
+      required: true,
+    },
+    {
+      id: "selfie",
+      name: "Verification Selfie",
+      icon: "🤳",
+      status: docs.verificationSelfie?.url ? "valid" : "missing",
+      fileUrl: docs.verificationSelfie?.url,
+      fileName: docs.verificationSelfie?.fileName,
+      fileSize: docs.verificationSelfie?.fileSize,
+      required: true,
+    },
+  ];
+}
 
 // ─── Upload Modal ─────────────────────────────────────────────────────────────
 
@@ -227,7 +163,6 @@ function UploadModal({
         onClick={onClose}
       />
       <div className="relative bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md tab-enter">
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <div>
             <div
@@ -264,7 +199,6 @@ function UploadModal({
         <div className="px-5 py-4">
           {!uploaded ? (
             <>
-              {/* Drop zone */}
               <div
                 onDragOver={(e) => {
                   e.preventDefault();
@@ -276,12 +210,11 @@ function UploadModal({
                   setDragging(false);
                   setUploaded(true);
                 }}
-                className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 text-center transition-all cursor-pointer mb-4
-                  ${
-                    dragging
-                      ? "border-blue-400 bg-blue-50"
-                      : "border-slate-200 hover:border-blue-300 hover:bg-slate-50"
-                  }`}
+                className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 text-center transition-all cursor-pointer mb-4 ${
+                  dragging
+                    ? "border-blue-400 bg-blue-50"
+                    : "border-slate-200 hover:border-blue-300 hover:bg-slate-50"
+                }`}
               >
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
@@ -319,31 +252,33 @@ function UploadModal({
                 </div>
               </div>
 
-              {/* Expiry date */}
-              <div className="mb-4">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 block">
-                  Document Expiry Date
-                </label>
-                <input
-                  type="date"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[14px] text-slate-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
-                />
-              </div>
+              {/* Only show expiry for licence docs */}
+              {doc.id.startsWith("drivers-license") && (
+                <div className="mb-4">
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 block">
+                    Licence Expiry Date
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[14px] text-slate-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                  />
+                </div>
+              )}
 
-              <div className="mb-4">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 block">
-                  Issued By
-                </label>
-                <input
-                  type="text"
-                  placeholder={
-                    doc.issuedBy !== "—"
-                      ? doc.issuedBy
-                      : "Authority or organisation name"
-                  }
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
-                />
-              </div>
+              {/* Only show number for licence and national ID */}
+              {(doc.id.startsWith("drivers-license") ||
+                doc.id === "national-id") && (
+                <div className="mb-4">
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 block">
+                    {doc.id === "national-id" ? "NIN Number" : "Licence Number"}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={doc.number ?? "Enter document number"}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                  />
+                </div>
+              )}
 
               <button
                 onClick={() => setUploaded(true)}
@@ -393,295 +328,7 @@ function UploadModal({
   );
 }
 
-// ─── Document Card ────────────────────────────────────────────────────────────
-
-function DocumentCard({
-  doc,
-  onUpload,
-  onView,
-}: {
-  doc: Document;
-  onUpload: (d: Document) => void;
-  onView: (d: Document) => void;
-}) {
-  const s = STATUS_META[doc.status];
-  const isMissing = doc.status === "missing";
-  const isPending = doc.status === "pending";
-  const isExpired = doc.status === "expired";
-  const isExpiring = doc.status === "expiring";
-
-  return (
-    <div
-      className={`rounded-2xl border p-5 transition-all duration-200 hover:shadow-md ${s.cardBorder} ${s.cardBg}`}
-    >
-      {/* Top accent for expired / expiring */}
-      {(isExpired || isExpiring) && (
-        <div
-          className={`h-[3px] -mx-5 -mt-5 mb-4 rounded-t-2xl ${
-            isExpired ? "bg-red-400" : "bg-amber-400"
-          }`}
-        />
-      )}
-
-      <div className="flex items-start gap-3 mb-3">
-        {/* Icon */}
-        <div
-          className={`w-11 h-11 rounded-xl flex items-center justify-center text-[20px] flex-shrink-0 border
-          ${
-            isMissing
-              ? "bg-slate-100 border-slate-200 border-dashed opacity-60"
-              : "bg-white border-slate-200 shadow-sm"
-          }`}
-        >
-          {doc.icon}
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2 mb-0.5">
-            <span
-              className={`font-semibold text-[14px] leading-snug ${
-                isMissing ? "text-slate-400 italic" : "text-slate-800"
-              }`}
-            >
-              {doc.name}
-            </span>
-            {doc.required && (
-              <span className="text-[10px] font-bold text-blue-500 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-full flex-shrink-0">
-                Required
-              </span>
-            )}
-          </div>
-          <div className="text-[11px] text-slate-400 truncate">
-            {isMissing ? "Not uploaded" : doc.issuedBy}
-          </div>
-        </div>
-      </div>
-
-      {/* Status badge */}
-      <div className="flex items-center justify-between mb-3">
-        <span
-          className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${s.badgeCls}`}
-        >
-          <span
-            className={`w-1.5 h-1.5 rounded-full inline-block ${s.dotCls} ${
-              s.pulse ? "animate-pulse" : ""
-            }`}
-          />
-          {s.label}
-        </span>
-        <span className="text-[11px] text-slate-400">
-          {doc.fileType !== "—"
-            ? `${doc.fileType} · ${doc.fileSize}`
-            : CATEGORY_LABEL[doc.category]}
-        </span>
-      </div>
-
-      {/* Dates grid */}
-      {!isMissing && !isPending && (
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-white/80 rounded-xl border border-slate-100 px-3 py-2">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">
-              Issued
-            </div>
-            <div className="text-[12px] font-semibold text-slate-700">
-              {doc.issueDate}
-            </div>
-          </div>
-          <div
-            className={`rounded-xl border px-3 py-2 ${
-              isExpired
-                ? "bg-red-50 border-red-200"
-                : isExpiring
-                ? "bg-amber-50 border-amber-200"
-                : "bg-white/80 border-slate-100"
-            }`}
-          >
-            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">
-              Expires
-            </div>
-            <div
-              className={`text-[12px] font-semibold ${
-                isExpired
-                  ? "text-red-500"
-                  : isExpiring
-                  ? "text-amber-600"
-                  : "text-slate-700"
-              }`}
-            >
-              {doc.expiryDate}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Pending timeline */}
-      {isPending && (
-        <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 mb-3">
-          <div className="w-5 h-5 rounded-full border-2 border-blue-400 border-t-transparent animate-spin flex-shrink-0" />
-          <span className="text-[12px] text-blue-600 font-medium">
-            Under review by BloomRydes
-          </span>
-        </div>
-      )}
-
-      {/* Notes */}
-      {doc.notes && (
-        <div
-          className={`flex items-start gap-2 rounded-xl px-3 py-2.5 mb-3 text-[12px]
-          ${
-            isExpired
-              ? "bg-red-50 border border-red-100 text-red-500"
-              : isExpiring
-              ? "bg-amber-50 border border-amber-100 text-amber-600"
-              : isPending
-              ? "bg-blue-50  border border-blue-100  text-blue-600"
-              : "bg-slate-50 border border-slate-100 text-slate-500"
-          }`}
-        >
-          <svg
-            className="w-3.5 h-3.5 flex-shrink-0 mt-0.5"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="1.6"
-            />
-            <path
-              d="M12 8v4M12 16h.01"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            />
-          </svg>
-          {doc.notes}
-        </div>
-      )}
-
-      {/* Actions */}
-      <div className="flex gap-2 pt-1">
-        {isMissing ? (
-          <button
-            onClick={() => onUpload(doc)}
-            className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[13px] py-2.5 rounded-xl transition-all shadow-sm shadow-blue-200 hover:-translate-y-0.5"
-            style={{ fontFamily: "'Syne',sans-serif" }}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
-              <path
-                d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            </svg>
-            Upload Document
-          </button>
-        ) : isPending ? (
-          <>
-            <button
-              onClick={() => onView(doc)}
-              className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600 text-[13px] font-medium py-2 rounded-xl transition-all"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
-                <path
-                  d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 9a3 3 0 100 6 3 3 0 000-6z"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-              </svg>
-              View
-            </button>
-            <button
-              onClick={() => onUpload(doc)}
-              className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-500 hover:border-amber-300 hover:text-amber-600 text-[13px] font-medium py-2 rounded-xl transition-all"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
-                <path
-                  d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-              </svg>
-              Replace
-            </button>
-          </>
-        ) : isExpired ? (
-          <button
-            onClick={() => onUpload(doc)}
-            className="flex-1 flex items-center justify-center gap-2 bg-red-500 hover:bg-red-400 text-white font-semibold text-[13px] py-2.5 rounded-xl transition-all"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
-              <path
-                d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            </svg>
-            Renew Now
-          </button>
-        ) : (
-          <>
-            <button
-              onClick={() => onView(doc)}
-              className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600 text-[13px] font-medium py-2 rounded-xl transition-all"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
-                <path
-                  d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 9a3 3 0 100 6 3 3 0 000-6z"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-              </svg>
-              View
-            </button>
-            <button className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600 text-[13px] font-medium py-2 rounded-xl transition-all">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
-                <path
-                  d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-              </svg>
-              Download
-            </button>
-            {isExpiring && (
-              <button
-                onClick={() => onUpload(doc)}
-                className="flex-1 flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 text-amber-600 text-[13px] font-semibold py-2 rounded-xl hover:bg-amber-100 transition-all"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
-                  <path
-                    d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                Renew
-              </button>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── View Document Modal ──────────────────────────────────────────────────────
+// ─── View Modal ───────────────────────────────────────────────────────────────
 
 function ViewModal({
   doc,
@@ -693,7 +340,7 @@ function ViewModal({
   onUpload: (d: Document) => void;
 }) {
   if (!doc) return null;
-  const s = STATUS_META[doc.status];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
@@ -729,44 +376,47 @@ function ViewModal({
         </div>
 
         <div className="px-5 py-5">
-          {/* Simulated document preview */}
-          <div
-            className="w-full h-44 rounded-2xl mb-4 flex items-center justify-center border border-slate-200 overflow-hidden"
-            style={{
-              background: "linear-gradient(135deg,#1e3a5f 0%,#2d5986 100%)",
-            }}
-          >
-            <div className="flex flex-col items-center gap-2 opacity-40">
-              <svg
-                className="w-12 h-12 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
-                  stroke="currentColor"
-                  strokeWidth="1.2"
-                />
-                <polyline
-                  points="14 2 14 8 20 8"
-                  stroke="currentColor"
-                  strokeWidth="1.2"
-                />
-              </svg>
-              <span className="text-white text-[13px] font-medium">
-                {doc.fileType} Document
-              </span>
-            </div>
+          {/* Preview */}
+          <div className="w-full h-44 rounded-2xl mb-4 flex items-center justify-center border border-slate-200 overflow-hidden bg-slate-100">
+            {doc.fileUrl ? (
+              <img
+                src={doc.fileUrl}
+                alt={doc.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="flex flex-col items-center gap-2 opacity-40">
+                <svg
+                  className="w-12 h-12 text-slate-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                  />
+                  <polyline
+                    points="14 2 14 8 20 8"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                  />
+                </svg>
+                <span className="text-slate-500 text-[13px] font-medium">
+                  No preview available
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-2 mb-4">
             {[
-              { label: "Issued By", value: doc.issuedBy },
-              { label: "Category", value: CATEGORY_LABEL[doc.category] },
-              { label: "Issue Date", value: doc.issueDate },
-              { label: "Expiry Date", value: doc.expiryDate },
-              { label: "File Type", value: doc.fileType },
-              { label: "File Size", value: doc.fileSize },
+              { label: "Document", value: doc.name },
+              { label: "Number", value: doc.number ?? "—" },
+              { label: "Expiry Date", value: formatDate(doc.expiryDate) },
+              { label: "File Name", value: doc.fileName ?? "—" },
+              { label: "File Size", value: doc.fileSize ?? "—" },
+              { label: "Status", value: STATUS_META[doc.status].label },
             ].map(({ label, value }) => (
               <div
                 key={label}
@@ -775,7 +425,7 @@ function ViewModal({
                 <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">
                   {label}
                 </div>
-                <div className="text-[12px] font-semibold text-slate-700">
+                <div className="text-[12px] font-semibold text-slate-700 truncate">
                   {value}
                 </div>
               </div>
@@ -783,17 +433,24 @@ function ViewModal({
           </div>
 
           <div className="flex gap-2">
-            <button className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[13px] py-2.5 rounded-xl transition-all shadow-sm shadow-blue-200">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
-                <path
-                  d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                />
-              </svg>
-              Download
-            </button>
+            {doc.fileUrl && (
+              <a
+                href={doc.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[13px] py-2.5 rounded-xl transition-all shadow-sm shadow-blue-200"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <path
+                    d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                Download
+              </a>
+            )}
             <button
               onClick={() => {
                 onClose();
@@ -818,30 +475,218 @@ function ViewModal({
   );
 }
 
+// ─── Document Card ────────────────────────────────────────────────────────────
+
+function DocumentCard({
+  doc,
+  onUpload,
+  onView,
+}: {
+  doc: Document;
+  onUpload: (d: Document) => void;
+  onView: (d: Document) => void;
+}) {
+  const s = STATUS_META[doc.status];
+  const isMissing = doc.status === "missing";
+  const isExpired = doc.status === "expired";
+  const isExpiring = doc.status === "expiring";
+
+  return (
+    <div
+      className={`rounded-2xl border p-5 transition-all duration-200 hover:shadow-md ${s.cardBorder} ${s.cardBg}`}
+    >
+      {(isExpired || isExpiring) && (
+        <div
+          className={`h-[3px] -mx-5 -mt-5 mb-4 rounded-t-2xl ${
+            isExpired ? "bg-red-400" : "bg-amber-400"
+          }`}
+        />
+      )}
+
+      <div className="flex items-start gap-3 mb-3">
+        <div
+          className={`w-11 h-11 rounded-xl flex items-center justify-center text-[20px] flex-shrink-0 border ${
+            isMissing
+              ? "bg-slate-100 border-slate-200 border-dashed opacity-60"
+              : "bg-white border-slate-200 shadow-sm"
+          }`}
+        >
+          {doc.icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2 mb-0.5">
+            <span
+              className={`font-semibold text-[14px] leading-snug ${
+                isMissing ? "text-slate-400 italic" : "text-slate-800"
+              }`}
+            >
+              {doc.name}
+            </span>
+            {doc.required && (
+              <span className="text-[10px] font-bold text-blue-500 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                Required
+              </span>
+            )}
+          </div>
+          <div className="text-[11px] text-slate-400 truncate">
+            {doc.number
+              ? `No. ${doc.number}`
+              : isMissing
+              ? "Not uploaded"
+              : doc.fileName ?? "—"}
+          </div>
+        </div>
+      </div>
+
+      {/* Status badge */}
+      <div className="flex items-center justify-between mb-3">
+        <span
+          className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${s.badgeCls}`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full inline-block ${s.dotCls} ${
+              s.pulse ? "animate-pulse" : ""
+            }`}
+          />
+          {s.label}
+        </span>
+        <span className="text-[11px] text-slate-400">
+          {doc.fileSize ?? "—"}
+        </span>
+      </div>
+
+      {/* Expiry — only for licence */}
+      {!isMissing && doc.expiryDate && (
+        <div
+          className={`rounded-xl border px-3 py-2 mb-3 ${
+            isExpired
+              ? "bg-red-50 border-red-200"
+              : isExpiring
+              ? "bg-amber-50 border-amber-200"
+              : "bg-white/80 border-slate-100"
+          }`}
+        >
+          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">
+            Expires
+          </div>
+          <div
+            className={`text-[12px] font-semibold ${
+              isExpired
+                ? "text-red-500"
+                : isExpiring
+                ? "text-amber-600"
+                : "text-slate-700"
+            }`}
+          >
+            {formatDate(doc.expiryDate)}
+          </div>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="flex gap-2 pt-1">
+        {isMissing ? (
+          <button
+            onClick={() => onUpload(doc)}
+            className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[13px] py-2.5 rounded-xl transition-all shadow-sm shadow-blue-200 hover:-translate-y-0.5"
+            style={{ fontFamily: "'Syne',sans-serif" }}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <path
+                d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+            Upload Document
+          </button>
+        ) : isExpired ? (
+          <button
+            onClick={() => onUpload(doc)}
+            className="flex-1 flex items-center justify-center gap-2 bg-red-500 hover:bg-red-400 text-white font-semibold text-[13px] py-2.5 rounded-xl transition-all"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <path
+                d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+            Renew Now
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={() => onView(doc)}
+              className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600 text-[13px] font-medium py-2 rounded-xl transition-all"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                <path
+                  d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 9a3 3 0 100 6 3 3 0 000-6z"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+              View
+            </button>
+            {isExpiring ? (
+              <button
+                onClick={() => onUpload(doc)}
+                className="flex-1 flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 text-amber-600 text-[13px] font-semibold py-2 rounded-xl hover:bg-amber-100 transition-all"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                  <path
+                    d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                Renew
+              </button>
+            ) : (
+              doc.fileUrl && (
+                <a
+                  href={doc.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600 text-[13px] font-medium py-2 rounded-xl transition-all"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                    <path
+                      d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  Download
+                </a>
+              )
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function DriverDocuments() {
-  const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
+  const driverUser = useAppSelector(selectDriverUser);
+  const documents = buildDocuments(driverUser?.verificationDocuments);
+
   const [uploadDoc, setUploadDoc] = useState<Document | null>(null);
   const [viewDoc, setViewDoc] = useState<Document | null>(null);
 
-  const filtered =
-    activeFilter === "all"
-      ? DOCUMENTS
-      : DOCUMENTS.filter((d) => d.category === activeFilter);
-
-  const expiredCount = DOCUMENTS.filter((d) => d.status === "expired").length;
-  const expiringCount = DOCUMENTS.filter((d) => d.status === "expiring").length;
-  const missingCount = DOCUMENTS.filter((d) => d.status === "missing").length;
-  const pendingCount = DOCUMENTS.filter((d) => d.status === "pending").length;
-  const validCount = DOCUMENTS.filter((d) => d.status === "valid").length;
-
-  const FILTERS: { key: FilterTab; label: string }[] = [
-    { key: "all", label: "All Documents" },
-    { key: "personal", label: "Personal" },
-    { key: "vehicle", label: "Vehicle" },
-    { key: "insurance", label: "Insurance" },
-  ];
+  const expiredCount = documents.filter((d) => d.status === "expired").length;
+  const expiringCount = documents.filter((d) => d.status === "expiring").length;
+  const missingCount = documents.filter((d) => d.status === "missing").length;
+  const validCount = documents.filter((d) => d.status === "valid").length;
 
   return (
     <>
@@ -858,7 +703,6 @@ export default function DriverDocuments() {
         @keyframes cardIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
       `}</style>
 
-      {/* Modals */}
       {uploadDoc && (
         <UploadModal doc={uploadDoc} onClose={() => setUploadDoc(null)} />
       )}
@@ -875,7 +719,7 @@ export default function DriverDocuments() {
 
       <div className="doc-root">
         <div className="max-w-screen-xl mx-auto px-4 py-6 md:px-6 md:py-8">
-          {/* ── Header ──────────────────────────────────────── */}
+          {/* ── Header ── */}
           <div className="flex items-start justify-between mb-8">
             <div>
               <h1
@@ -918,7 +762,7 @@ export default function DriverDocuments() {
                 </svg>
                 Documents
                 <span className="bg-blue-600 text-white text-[12px] font-semibold px-2.5 py-0.5 rounded-full">
-                  {DOCUMENTS.length}
+                  {documents.length}
                 </span>
               </h1>
               <p className="text-slate-500 text-sm mt-1">
@@ -929,16 +773,10 @@ export default function DriverDocuments() {
             <button
               onClick={() =>
                 setUploadDoc({
-                  id: 0,
+                  id: "new",
                   name: "New Document",
                   icon: "📄",
-                  category: "personal",
                   status: "missing",
-                  issueDate: "—",
-                  expiryDate: "—",
-                  issuedBy: "",
-                  fileType: "—",
-                  fileSize: "—",
                   required: false,
                 })
               }
@@ -957,11 +795,10 @@ export default function DriverDocuments() {
             </button>
           </div>
 
-          {/* ── Alert banner (if issues) ───────────────────── */}
+          {/* ── Alert banner ── */}
           {(expiredCount > 0 || expiringCount > 0) && (
             <div
-              className={`flex items-start gap-3 rounded-2xl border px-5 py-4 mb-6 tab-enter
-              ${
+              className={`flex items-start gap-3 rounded-2xl border px-5 py-4 mb-6 tab-enter ${
                 expiredCount > 0
                   ? "bg-red-50 border-red-200"
                   : "bg-amber-50 border-amber-200"
@@ -1003,22 +840,11 @@ export default function DriverDocuments() {
                   Renew them as soon as possible to avoid trip interruptions.
                 </div>
               </div>
-              <button
-                onClick={() => setActiveFilter("all")}
-                className={`flex-shrink-0 text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-all
-                  ${
-                    expiredCount > 0
-                      ? "text-red-500 bg-red-100 hover:bg-red-200"
-                      : "text-amber-600 bg-amber-100 hover:bg-amber-200"
-                  }`}
-              >
-                Review
-              </button>
             </div>
           )}
 
-          {/* ── Stats strip ──────────────────────────────────── */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+          {/* ── Stats strip ── */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
             {[
               {
                 label: "Valid",
@@ -1029,25 +855,19 @@ export default function DriverDocuments() {
               {
                 label: "Expiring",
                 count: expiringCount,
-                color: "from-amber-50  to-white border-amber-100",
+                color: "from-amber-50 to-white border-amber-100",
                 vcolor: "text-amber-600",
               },
               {
                 label: "Expired",
                 count: expiredCount,
-                color: "from-red-50    to-white border-red-100",
+                color: "from-red-50 to-white border-red-100",
                 vcolor: "text-red-500",
-              },
-              {
-                label: "Pending",
-                count: pendingCount,
-                color: "from-blue-50   to-white border-blue-100",
-                vcolor: "text-blue-600",
               },
               {
                 label: "Missing",
                 count: missingCount,
-                color: "from-slate-50  to-white border-slate-200",
+                color: "from-slate-50 to-white border-slate-200",
                 vcolor: "text-slate-500",
               },
             ].map((s, i) => (
@@ -1069,43 +889,9 @@ export default function DriverDocuments() {
             ))}
           </div>
 
-          {/* ── Filter tabs ──────────────────────────────────── */}
-          <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0">
-            {FILTERS.map(({ key, label }) => {
-              const count =
-                key === "all"
-                  ? DOCUMENTS.length
-                  : DOCUMENTS.filter((d) => d.category === key).length;
-              return (
-                <button
-                  key={key}
-                  onClick={() => setActiveFilter(key)}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-all
-                    ${
-                      activeFilter === key
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-white text-slate-500 border-slate-200 hover:border-blue-300 hover:text-slate-700"
-                    }`}
-                >
-                  {label}
-                  <span
-                    className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full min-w-[18px] text-center
-                    ${
-                      activeFilter === key
-                        ? "bg-white/25 text-white"
-                        : "bg-slate-100 text-slate-500"
-                    }`}
-                  >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ── Document grid ─────────────────────────────────── */}
+          {/* ── Document grid ── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map((doc, i) => (
+            {documents.map((doc, i) => (
               <div
                 key={doc.id}
                 className="card-in"
@@ -1113,14 +899,14 @@ export default function DriverDocuments() {
               >
                 <DocumentCard
                   doc={doc}
-                  onUpload={(d) => setUploadDoc(d)}
-                  onView={(d) => setViewDoc(d)}
+                  onUpload={setUploadDoc}
+                  onView={setViewDoc}
                 />
               </div>
             ))}
           </div>
 
-          {/* ── Footer tip ───────────────────────────────────── */}
+          {/* ── Footer tip ── */}
           <div className="flex items-start gap-3 mt-8 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4">
             <svg
               className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5"

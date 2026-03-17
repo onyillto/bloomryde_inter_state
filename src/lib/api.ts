@@ -1,18 +1,7 @@
-/**
- * Centralized API request functions.
- * It's good practice to use environment variables for the base URL.
- * Create a .env.local file in your root directory and add:
- * NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
- */
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 
-/**
- * A helper function to handle API responses and errors.
- * @param response The Response object from a fetch call.
- */
 async function handleResponse(response: Response) {
-  // If the response is not OK (status code 200-299), parse the error and throw it.
   if (!response.ok) {
     const errorData = await response
       .json()
@@ -21,113 +10,44 @@ async function handleResponse(response: Response) {
       errorData.message || `HTTP error! status: ${response.status}`
     );
   }
-  // Otherwise, parse and return the JSON data.
   return response.json();
 }
 
-/**
- * A generic and reusable function for making API requests.
- * @param endpoint The API endpoint to call (e.g., '/users/login-rider').
- * @param options The RequestInit options for the fetch call.
- */
 async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
-  const defaultHeaders = {
-    "Content-Type": "application/json",
-  };
-
   const config: RequestInit = {
     ...options,
     headers: {
-      ...defaultHeaders,
+      "Content-Type": "application/json",
       ...options.headers,
     },
   };
-
   const response = await fetch(url, config);
   return handleResponse(response);
 }
 
-// --- Authentication API Calls ---
+// ─────────────────────────────────────────────────────────────
+//  SHARED TYPES
+// ─────────────────────────────────────────────────────────────
 
-/**
- * Requests an OTP for a given phone number.
- * Corresponds to: POST /users/request-otp
- */
-export const requestOTP = (phoneNumber: string) => {
-  return apiRequest("/users/request-otp", {
-    method: "POST",
-    body: JSON.stringify({ phoneNumber }),
-  });
-};
-
-/**
- * Verifies an OTP for a given phone number.
- * Corresponds to: POST /users/verify-otp
- */
-export const verifyOTP = (phoneNumber: string, otp: string) => {
-  return apiRequest("/users/verify-otp", {
-    method: "POST",
-    body: JSON.stringify({ phoneNumber, otp }),
-  });
-};
-
-/**
- * Logs in a rider with email and password.
- * Corresponds to: POST /users/login-rider
- */
-export const loginRider = (credentials: {
-  email: string;
-  password: string;
-}) => {
-  return apiRequest("/users/login-rider", {
-    method: "POST",
-    body: JSON.stringify(credentials),
-  });
-};
-
-/**
- * Registers a new rider.
- * Corresponds to: POST /users/register-rider
- * Note: You should create a specific TypeScript type for 'riderData'.
- */
-export const registerRider = (riderData: any) => {
-  return apiRequest("/users/register-rider", {
-    method: "POST",
-    body: JSON.stringify(riderData),
-  });
-};
-
-/**
- * Fetches the current user's profile information.
- * Corresponds to: GET /users/me
- */
-export const getUserProfile = (token: string) => {
-  return apiRequest("/users/me", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-};
-
-// You can add more API functions here for drivers, trips, etc. as you build them.
-export interface UpdateUserProfilePayload {
-  fullName: string;
-  email: string;
-  phone: string;
-  gender: string;
-  dateOfBirth?: string;
+interface FileDocument {
+  fileName: string;
+  fileSize: string;
+  url: string;
 }
 
-export interface User {
+// ─────────────────────────────────────────────────────────────
+//  RIDER USER TYPE
+// ─────────────────────────────────────────────────────────────
+
+export interface RiderUser {
   _id: string;
   phone: string;
   email: string;
   fullName: string;
   gender: string;
   dateOfBirth: string;
-  role: "rider" | "driver";
+  role: "rider";
   isVerified: boolean;
   emergencyContact: {
     name: string;
@@ -136,13 +56,166 @@ export interface User {
   };
 }
 
-// const API_BASE_URL =
-//   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+// ─────────────────────────────────────────────────────────────
+//  DRIVER USER TYPE
+// ─────────────────────────────────────────────────────────────
+
+export interface DriverUser {
+  _id: string;
+  role: "driver";
+  approvalStatus: "pending" | "approved" | "rejected";
+  createdAt: string;
+  updatedAt: string;
+  personalInfo: {
+    firstName: string;
+    lastName: string;
+    middleName?: string;
+    email: string;
+    phoneNumber: string;
+    dateOfBirth: string;
+    address: string;
+    city: string;
+    state: string;
+  };
+  verificationDocuments: {
+    driversLicense: {
+      front: FileDocument;
+      back: FileDocument;
+      number: string;
+      expiryDate: string;
+    };
+    nationalId: {
+      number: string;
+      document: FileDocument;
+    };
+    verificationSelfie: FileDocument;
+  };
+  contacts: {
+    emergency: {
+      fullName: string;
+      phoneNumber: string;
+      relationship: string;
+    };
+    guarantor: {
+      fullName: string;
+      phoneNumber: string;
+      address: string;
+      relationshipAndOccupation: string;
+    };
+  };
+  vehicleInfo: {
+    make: string;
+    model: string;
+    year: string;
+    color: string;
+    plateNumber: string;
+    passengerSeats: number;
+    vin: string;
+    photos: Array<{
+      label: string;
+      file: FileDocument;
+      _id: string;
+    }>;
+    documents: {
+      registrationCertificate: FileDocument;
+      insuranceCertificate: FileDocument;
+      roadWorthiness: FileDocument;
+    };
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
+//  UNION TYPE
+// ─────────────────────────────────────────────────────────────
+
+export type User = RiderUser | DriverUser;
+
+// ─────────────────────────────────────────────────────────────
+//  TYPE GUARDS
+// ─────────────────────────────────────────────────────────────
+
+export const isRider = (user: User): user is RiderUser => user.role === "rider";
+export const isDriver = (user: User): user is DriverUser =>
+  user.role === "driver";
+
+// ─────────────────────────────────────────────────────────────
+//  DISPLAY HELPERS
+// ─────────────────────────────────────────────────────────────
+
+export const getUserDisplayName = (user: User): string => {
+  if (isDriver(user)) {
+    const { firstName, lastName } = user.personalInfo;
+    return `${firstName} ${lastName}`;
+  }
+  return user.fullName;
+};
+
+export const getUserEmail = (user: User): string => {
+  if (isDriver(user)) return user.personalInfo.email;
+  return user.email;
+};
+
+export const getUserPhone = (user: User): string => {
+  if (isDriver(user)) return user.personalInfo.phoneNumber;
+  return user.phone;
+};
+
+// ─────────────────────────────────────────────────────────────
+//  AUTH ENDPOINTS
+// ─────────────────────────────────────────────────────────────
+
+export const requestOTP = (phoneNumber: string) =>
+  apiRequest("/users/request-otp", {
+    method: "POST",
+    body: JSON.stringify({ phoneNumber }),
+  });
+
+export const verifyOTP = (phoneNumber: string, otp: string) =>
+  apiRequest("/users/verify-otp", {
+    method: "POST",
+    body: JSON.stringify({ phoneNumber, otp }),
+  });
+
+export const loginRider = (credentials: { email: string; password: string }) =>
+  apiRequest("/users/login-rider", {
+    method: "POST",
+    body: JSON.stringify(credentials),
+  });
+
+export const loginDriver = (credentials: { email: string; password: string }) =>
+  apiRequest("/users/login-driver", {
+    method: "POST",
+    body: JSON.stringify(credentials),
+  });
+
+export const registerRider = (riderData: any) =>
+  apiRequest("/users/register-rider", {
+    method: "POST",
+    body: JSON.stringify(riderData),
+  });
+
+export const getUserProfile = (token: string) =>
+  apiRequest("/users/me", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+// ─────────────────────────────────────────────────────────────
+//  PROFILE UPDATE
+// ─────────────────────────────────────────────────────────────
+
+export interface UpdateUserProfilePayload {
+  fullName: string;
+  email: string;
+  phone: string;
+  gender: string;
+  dateOfBirth?: string;
+}
 
 export const updateUserProfile = async (
   payload: UpdateUserProfilePayload,
   token: string
-): Promise<User> => {
+): Promise<RiderUser> => {
   const response = await fetch(`${API_BASE_URL}/users/me`, {
     method: "PATCH",
     headers: {
@@ -164,3 +237,158 @@ export const updateUserProfile = async (
   const responseData = await response.json();
   return responseData.data.user;
 };
+
+// ─────────────────────────────────────────────────────────────
+//  TRIP TYPES
+// ─────────────────────────────────────────────────────────────
+
+export type TripStatus = "scheduled" | "active" | "completed" | "cancelled";
+export type LuggagePolicy = "none" | "light" | "medium" | "heavy";
+
+export interface TripLocation {
+  address: string;
+  city: string;
+  state: string;
+  coordinates: [number, number]; // [lng, lat] — auto-generated by backend
+  _id?: string;
+}
+
+// Stop shape for CREATE payload — coordinates optional, backend fills them
+export interface TripStopInput {
+  address: string;
+  city: string;
+  state: string;
+  coordinates?: [number, number];
+}
+
+export interface TripPreferences {
+  smokingAllowed: boolean;
+  petsAllowed: boolean;
+  luggagePolicy: LuggagePolicy;
+  instantBooking: boolean;
+}
+
+// Vehicle shape returned inside trip from GET /trips/my-trips (populated)
+export interface TripVehicle {
+  make: string;
+  model: string;
+  year: string;
+  color: string;
+  plateNumber: string;
+}
+
+// Full Trip shape — matches GET /trips/my-trips response
+export interface Trip {
+  _id: string;
+  id: string;
+  driver: string;
+  vehicle: TripVehicle | string; // populated object from /my-trips, string id from POST /trips
+  origin: TripLocation;
+  destination: TripLocation;
+  stops: TripLocation[];
+  departureTime: string;
+  pricePerSeat: number;
+  totalSeats: number;
+  availableSeats: number;
+  status: TripStatus;
+  description?: string;
+  preferences: TripPreferences;
+  bookings: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Create Trip Payload — matches POST /trips body
+// originAddress and destinationAddress are flat strings.
+// Backend geocodes them into full TripLocation objects with coordinates.
+export interface CreateTripPayload {
+  originAddress: string; // e.g. "Ikeja City Mall, Lagos"
+  destinationAddress: string; // e.g. "Jabi Lake Mall, Abuja"
+  departureTime: string; // ISO date string
+  pricePerSeat: number;
+  totalSeats: number;
+  stops?: TripStopInput[]; // optional — coordinates auto-generated
+  preferences: TripPreferences;
+  description?: string;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  TRIP ENDPOINTS
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Creates a new trip.
+ * Corresponds to: POST /trips
+ */
+export const createTrip = async (
+  payload: CreateTripPayload,
+  token: string
+): Promise<Trip> => {
+  const response = await fetch(`${API_BASE_URL}/trips`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errData = await response
+      .json()
+      .catch(() => ({ message: "An unknown error occurred" }));
+    throw new Error(
+      errData.message || `Request failed with status ${response.status}`
+    );
+  }
+
+  const data = await response.json();
+  return data.data.trip;
+};
+
+/**
+ * Fetches all trips for the logged-in driver.
+ * Corresponds to: GET /trips/my-trips
+ */
+export const getMyTrips = async (
+  token: string
+): Promise<{ status: string; results: number; data: { trips: Trip[] } }> => {
+  const response = await fetch(`${API_BASE_URL}/trips/my-trips`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errData = await response
+      .json()
+      .catch(() => ({ message: "An unknown error occurred" }));
+    throw new Error(
+      errData.message || `Request failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
+};
+
+/**
+ * Fetches a single trip by ID.
+ * Corresponds to: GET /trips/:id
+ */
+export const getTripById = (tripId: string, token: string) =>
+  apiRequest(`/trips/${tripId}`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+/**
+ * Cancels a trip.
+ * Corresponds to: PATCH /trips/:id/cancel
+ */
+export const cancelTrip = (tripId: string, token: string) =>
+  apiRequest(`/trips/${tripId}/cancel`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+  });

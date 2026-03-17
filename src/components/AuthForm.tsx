@@ -6,12 +6,22 @@ import {
   Smartphone,
   Lock,
   EyeOff,
+  Eye,
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
   AlertTriangle,
   XCircle,
+  Car,
+  User,
 } from "lucide-react";
+import { useAppDispatch } from "@/store/hooks";
+import {
+  setCredentials,
+  setAuthLoading,
+  setAuthError,
+} from "@/store/slices/authSlice";
+import { loginRider, loginDriver } from "@/lib/api";
 
 const RESEND_SECONDS = 60;
 const MAX_ATTEMPTS = 3;
@@ -30,14 +40,26 @@ export default function AuthForm({
   onVerifyOTP,
 }: AuthFormProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("login"); // "login" | "register"
+  const dispatch = useAppDispatch();
 
-  // Register sub-step: 0 = phone input, 1 = otp
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+
+  // ── Role selector ────────────────────────────────────────────
+  const [loginRole, setLoginRole] = useState<"rider" | "driver">("rider");
+
+  // ── Login state ──────────────────────────────────────────────
+  const [loginPhone, setLoginPhone] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isLoginSubmitting, setIsLoginSubmitting] = useState(false);
+
+  // ── Register state ───────────────────────────────────────────
   const [regStep, setRegStep] = useState(0);
   const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // OTP state
+  // ── OTP state ────────────────────────────────────────────────
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [otpStatus, setOtpStatus] = useState("idle");
   const [attempts, setAttempts] = useState(0);
@@ -49,23 +71,19 @@ export default function AuthForm({
   const resendIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lockoutIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Reset register flow when switching tabs
-  interface HandleTabSwitch {
-    (tab: "login" | "register"): void;
-  }
-
-  const handleTabSwitch: HandleTabSwitch = (tab) => {
+  // ── Tab switch reset ─────────────────────────────────────────
+  const handleTabSwitch = (tab: "login" | "register") => {
     setActiveTab(tab);
     setRegStep(0);
     setPhone("");
     setOtp(["", "", "", "", "", ""]);
     setOtpStatus("idle");
     setAttempts(0);
+    setLoginError(null);
     if (resendIntervalRef.current) clearInterval(resendIntervalRef.current);
     if (lockoutIntervalRef.current) clearInterval(lockoutIntervalRef.current);
   };
 
-  // Start OTP countdown when entering otp step
   useEffect(() => {
     if (activeTab !== "register" || regStep !== 1) return;
     startResendCountdown();
@@ -81,9 +99,7 @@ export default function AuthForm({
     resendIntervalRef.current = setInterval(() => {
       setResendTimer((t) => {
         if (t <= 1) {
-          if (resendIntervalRef.current !== null) {
-            clearInterval(resendIntervalRef.current);
-          }
+          clearInterval(resendIntervalRef.current!);
           return 0;
         }
         return t - 1;
@@ -98,9 +114,7 @@ export default function AuthForm({
     lockoutIntervalRef.current = setInterval(() => {
       setLockoutTimer((t) => {
         if (t <= 1) {
-          if (lockoutIntervalRef.current !== null) {
-            clearInterval(lockoutIntervalRef.current);
-          }
+          clearInterval(lockoutIntervalRef.current!);
           setOtpStatus("idle");
           setAttempts(0);
           setOtp(["", "", "", "", "", ""]);
@@ -112,38 +126,81 @@ export default function AuthForm({
     }, 1000);
   };
 
+  // ── Login submit ─────────────────────────────────────────────
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isLoginSubmitting) return;
+
+    setLoginError(null);
+    setIsLoginSubmitting(true);
+    dispatch(setAuthLoading(true));
+
+    try {
+      const credentials = { email: loginPhone, password: loginPassword };
+
+      const result =
+        loginRole === "driver"
+          ? await loginDriver(credentials)
+          : await loginRider(credentials);
+
+      // Driver: result.data.driver / Rider: result.data.user
+      // Token is always at result.token (root level)
+      const user =
+        loginRole === "driver" ? result?.data?.driver : result?.data?.user;
+
+      const token = result?.token;
+
+      if (!user || !token) {
+        throw new Error("Invalid response from server. Missing user or token.");
+      }
+
+      dispatch(
+        setCredentials({
+          user,
+          token,
+          role: loginRole,
+        })
+      );
+
+      router.push(
+        loginRole === "driver" ? "/dashboard/driver" : "/dashboard/rider"
+      );
+    } catch (error: any) {
+      const msg = error?.message || "Login failed. Please try again.";
+      setLoginError(msg);
+      dispatch(setAuthError(msg));
+    } finally {
+      setIsLoginSubmitting(false);
+      dispatch(setAuthLoading(false));
+    }
+  };
+
+  // ── Register: phone submit ───────────────────────────────────
   const handlePhoneSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (phone.length < 10 || isSubmitting) return;
-
     setIsSubmitting(true);
     try {
       await onRequestOTP(phone);
       setRegStep(1);
     } catch (error) {
-      console.error("Failed to request OTP in AuthForm", error);
+      // error notification handled in parent page
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  interface OtpChangeEvent {
-    index: number;
-    value: string;
-  }
-
-  const handleOtpChange = (index: number, value: string): void => {
+  // ── OTP handlers ─────────────────────────────────────────────
+  const handleOtpChange = (index: number, value: string) => {
     if (otpStatus === "locked" || verifying) return;
     if (!/^\d*$/.test(value)) return;
-    const next: string[] = [...otp];
+    const next = [...otp];
     next[index] = value.slice(-1);
     setOtp(next);
     setOtpStatus("idle");
     if (value && index < 5) otpRefs.current[index + 1]?.focus();
-    if (value && index === 5) {
-      const filled: string[] = [...next];
-      if (filled.every((d) => d !== ""))
-        setTimeout(() => verifyOtp(filled), 200);
+    if (value && index === 5 && next.every((d) => d !== "")) {
+      setTimeout(() => verifyOtp(next), 200);
     }
   };
 
@@ -175,7 +232,25 @@ export default function AuthForm({
     setOtpStatus("idle");
 
     try {
-      await onVerifyOTP(phone, code);
+      const result = await onVerifyOTP(phone, code);
+
+      // OTP verify is always rider registration flow
+      // Adjust key if your backend returns differently
+      const user = result?.data?.user;
+      const token = result?.token ?? result?.data?.token;
+
+      if (!user || !token) {
+        throw new Error("Verification failed. Invalid server response.");
+      }
+
+      dispatch(
+        setCredentials({
+          user,
+          token,
+          role: "rider",
+        })
+      );
+
       setVerifying(false);
       setOtpStatus("success");
       setTimeout(() => router.push("/onboarding"), 700);
@@ -193,16 +268,18 @@ export default function AuthForm({
     }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     if (resendTimer > 0 || otpStatus === "locked") return;
     setOtp(["", "", "", "", "", ""]);
     setOtpStatus("idle");
     setAttempts(0);
+    try {
+      await onRequestOTP(phone);
+    } catch (_) {}
     startResendCountdown();
     setTimeout(() => otpRefs.current[0]?.focus(), 100);
   };
 
-  // Register step progress bar
   const regSteps = ["Phone", "Verify", "Done"];
 
   return (
@@ -246,19 +323,55 @@ export default function AuthForm({
               </p>
             </header>
 
-            <div className="space-y-4">
+            {/* ── Role Selector ── */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">
+                I am a
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setLoginRole("rider")}
+                  className={`flex items-center justify-center gap-2.5 py-3.5 rounded-2xl border font-bold text-sm transition-all duration-200 ${
+                    loginRole === "rider"
+                      ? "bg-blue-600/15 border-blue-500 text-blue-400 ring-2 ring-blue-600/20"
+                      : "bg-black/20 border-white/10 text-slate-500 hover:border-white/20 hover:text-slate-300"
+                  }`}
+                >
+                  <User size={16} />
+                  Rider
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLoginRole("driver")}
+                  className={`flex items-center justify-center gap-2.5 py-3.5 rounded-2xl border font-bold text-sm transition-all duration-200 ${
+                    loginRole === "driver"
+                      ? "bg-blue-600/15 border-blue-500 text-blue-400 ring-2 ring-blue-600/20"
+                      : "bg-black/20 border-white/10 text-slate-500 hover:border-white/20 hover:text-slate-300"
+                  }`}
+                >
+                  <Car size={16} />
+                  Driver
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">
-                  Phone Number
+                  Email Address
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-500 transition-colors">
                     <Smartphone size={18} />
                   </div>
                   <input
-                    type="tel"
+                    type="email"
+                    value={loginPhone}
+                    onChange={(e) => setLoginPhone(e.target.value)}
                     className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/40 focus:border-blue-600 transition-all"
-                    placeholder="080 0000 0000"
+                    placeholder="name@email.com"
+                    required
                   />
                 </div>
               </div>
@@ -272,34 +385,64 @@ export default function AuthForm({
                     <Lock size={18} />
                   </div>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
                     className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-12 text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/40 focus:border-blue-600 transition-all"
                     placeholder="••••••••"
+                    required
                   />
-                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-slate-600 hover:text-slate-400 transition-colors">
-                    <EyeOff size={18} />
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((p) => !p)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-600 hover:text-slate-400 transition-colors"
+                  >
+                    {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                  </button>
                 </div>
               </div>
-            </div>
 
-            <div className="flex justify-end">
+              {/* Login error */}
+              {loginError && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20">
+                  <XCircle size={14} className="text-red-400 shrink-0" />
+                  <p className="text-[11px] font-bold text-red-400">
+                    {loginError}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={onForgotPassword}
+                  className="text-xs font-bold text-blue-500 hover:text-blue-400 transition-colors tracking-wide"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
               <button
-                type="button"
-                onClick={onForgotPassword}
-                className="text-xs font-bold text-blue-500 hover:text-blue-400 transition-colors tracking-wide"
+                type="submit"
+                disabled={isLoginSubmitting || !loginPhone || !loginPassword}
+                className="group w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
               >
-                Forgot Password?
+                {isLoginSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Signing in as {loginRole}...</span>
+                  </div>
+                ) : (
+                  <>
+                    Sign In as {loginRole === "driver" ? "Driver" : "Rider"}
+                    <ArrowRight
+                      size={20}
+                      className="group-hover:translate-x-1 transition-transform"
+                    />
+                  </>
+                )}
               </button>
-            </div>
-
-            <button className="group w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 transition-all active:scale-[0.98]">
-              Sign In
-              <ArrowRight
-                size={20}
-                className="group-hover:translate-x-1 transition-transform"
-              />
-            </button>
+            </form>
 
             <div className="flex items-center justify-center gap-2 pt-2 text-slate-600 border-t border-white/5">
               <Lock size={12} className="text-blue-500/50" />
@@ -313,7 +456,6 @@ export default function AuthForm({
         {/* ══════════════ REGISTER TAB ══════════════ */}
         {activeTab === "register" && (
           <div className="animate-in fade-in slide-in-from-right-2 duration-300">
-            {/* Register Step Progress */}
             <div className="flex items-center gap-2 mb-8">
               {regSteps.map((label, i) => (
                 <React.Fragment key={i}>
@@ -353,7 +495,7 @@ export default function AuthForm({
               ))}
             </div>
 
-            {/* ── Register Step 0: Phone ── */}
+            {/* Step 0: Phone */}
             {regStep === 0 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                 <header className="space-y-2">
@@ -410,7 +552,7 @@ export default function AuthForm({
               </div>
             )}
 
-            {/* ── Register Step 1: OTP ── */}
+            {/* Step 1: OTP */}
             {regStep === 1 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                 <header className="space-y-2">
@@ -426,7 +568,6 @@ export default function AuthForm({
                   </p>
                 </header>
 
-                {/* Attempts warning */}
                 {attempts > 0 && otpStatus !== "locked" && (
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
                     <AlertTriangle
@@ -450,7 +591,6 @@ export default function AuthForm({
                   </div>
                 )}
 
-                {/* Lockout */}
                 {otpStatus === "locked" && (
                   <div className="flex items-center gap-2 px-3 py-3 rounded-xl bg-red-500/10 border border-red-500/20">
                     <XCircle size={16} className="text-red-400 shrink-0" />
@@ -468,7 +608,6 @@ export default function AuthForm({
                   </div>
                 )}
 
-                {/* OTP Boxes */}
                 <div className="space-y-3">
                   <div
                     className={`flex gap-2 justify-between ${
@@ -528,7 +667,6 @@ export default function AuthForm({
                   )}
                 </div>
 
-                {/* Resend */}
                 <div className="text-center">
                   {resendTimer > 0 ? (
                     <p className="text-xs text-slate-600">
