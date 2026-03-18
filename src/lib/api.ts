@@ -406,27 +406,15 @@ export interface TripSearchParams {
   seats?: number;         // minimum available seats needed
 }
 
-/**
- * Fetches all available trips for riders to browse.
- * Corresponds to: GET /trips
- * No auth required — public endpoint.
- */
 export const getAvailableTrips = async (
-  params?: TripSearchParams
+  token: string
 ): Promise<{ status: string; results: number; data: { trips: Trip[] } }> => {
-  const query = new URLSearchParams();
-
-  if (params?.origin) query.set("origin", params.origin);
-  if (params?.destination) query.set("destination", params.destination);
-  if (params?.date) query.set("date", params.date);
-  if (params?.seats) query.set("seats", String(params.seats));
-
-  const queryString = query.toString();
-  const url = `${API_BASE_URL}/trips${queryString ? `?${queryString}` : ""}`;
-
-  const response = await fetch(url, {
+  const response = await fetch(`${API_BASE_URL}/trips`, {
     method: "GET",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!response.ok) {
