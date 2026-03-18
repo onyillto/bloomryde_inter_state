@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useAppSelector } from "@/store/hooks";
+import { selectRiderUser } from "@/store/slices/authSlice";
 import {
   Shield,
   Phone,
@@ -39,32 +41,7 @@ type Contact = {
   email?: string;
 };
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const INITIAL_CONTACTS: Contact[] = [
-  {
-    id: "1",
-    name: "Chioma Adeyemi",
-    phone: "+234 802 344 5678",
-    relationship: "Sister",
-    isDefault: true,
-    notifyViaSMS: true,
-    notifyViaWhatsApp: true,
-    notifyViaEmail: false,
-    email: "",
-  },
-  {
-    id: "2",
-    name: "Bola Adeyemi",
-    phone: "+234 806 123 4567",
-    relationship: "Father",
-    isDefault: false,
-    notifyViaSMS: true,
-    notifyViaWhatsApp: false,
-    notifyViaEmail: false,
-    email: "",
-  },
-];
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const RELATIONSHIPS = [
   "Spouse",
@@ -98,8 +75,6 @@ function getRelIcon(rel: string) {
   return RELATIONSHIP_ICONS[rel] || "👤";
 }
 
-// ─── Empty Add Form State ─────────────────────────────────────────────────────
-
 const EMPTY_FORM = {
   name: "",
   phone: "",
@@ -110,7 +85,7 @@ const EMPTY_FORM = {
   notifyViaEmail: false,
 };
 
-// ─── Toggle Switch ────────────────────────────────────────────────────────────
+// ─── Toggle ───────────────────────────────────────────────────────────────────
 
 function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
@@ -128,8 +103,6 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
     </button>
   );
 }
-
-// ─── Notify Channel Row ───────────────────────────────────────────────────────
 
 function NotifyRow({
   icon,
@@ -184,7 +157,6 @@ function ContactCard({
     onUpdate(form);
     setEditing(false);
   }
-
   function handleDiscard() {
     setForm(contact);
     setEditing(false);
@@ -192,42 +164,35 @@ function ContactCard({
 
   return (
     <div
-      className={`relative rounded-2xl border transition-all duration-200 overflow-hidden
-        ${
-          contact.isDefault
-            ? expanded
-              ? "border-blue-500/40 bg-blue-500/[0.04] shadow-lg shadow-blue-500/5"
-              : "border-blue-500/25 bg-blue-500/[0.03] hover:border-blue-500/40"
-            : expanded
-            ? "border-blue-500/40 bg-slate-900/60 shadow-lg shadow-blue-500/5"
-            : "border-white/5 bg-slate-900/60 hover:border-white/10 hover:bg-slate-800/50"
-        }`}
+      className={`relative rounded-2xl border transition-all duration-200 overflow-hidden ${
+        contact.isDefault
+          ? expanded
+            ? "border-blue-500/40 bg-blue-500/[0.04] shadow-lg shadow-blue-500/5"
+            : "border-blue-500/25 bg-blue-500/[0.03] hover:border-blue-500/40"
+          : expanded
+          ? "border-blue-500/40 bg-slate-900/60 shadow-lg shadow-blue-500/5"
+          : "border-white/5 bg-slate-900/60 hover:border-white/10 hover:bg-slate-800/50"
+      }`}
     >
-      {/* Default top accent */}
       {contact.isDefault && (
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
       )}
 
-      {/* ── Card Header ──────────────────────────────── */}
       <div
         className="flex items-center gap-4 p-5 cursor-pointer select-none"
         onClick={() => {
           if (!editing) onToggle();
         }}
       >
-        {/* Avatar */}
         <div
-          className={`w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0 border-2 transition-all
-            ${
-              contact.isDefault
-                ? "bg-blue-500/15 border-blue-500/30"
-                : "bg-white/5 border-white/10"
-            }`}
+          className={`w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0 border-2 transition-all ${
+            contact.isDefault
+              ? "bg-blue-500/15 border-blue-500/30"
+              : "bg-white/5 border-white/10"
+          }`}
         >
           {getRelIcon(contact.relationship)}
         </div>
-
-        {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span
@@ -250,7 +215,6 @@ function ContactCard({
             <span className="text-slate-700">·</span>
             <span>{contact.relationship}</span>
           </div>
-          {/* Notify channels */}
           <div className="flex items-center gap-2 mt-1.5">
             {contact.notifyViaWhatsApp && (
               <span className="flex items-center gap-1 text-[11px] text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
@@ -269,20 +233,17 @@ function ContactCard({
             )}
           </div>
         </div>
-
-        {/* Right: edit + chevron */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={(e) => {
               e.stopPropagation();
               setEditing(!editing);
             }}
-            className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all
-              ${
-                editing
-                  ? "bg-blue-600/20 border-blue-500/30 text-blue-400"
-                  : "bg-white/5 border-white/10 text-slate-500 hover:border-blue-500/30 hover:text-blue-400"
-              }`}
+            className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all ${
+              editing
+                ? "bg-blue-600/20 border-blue-500/30 text-blue-400"
+                : "bg-white/5 border-white/10 text-slate-500 hover:border-blue-500/30 hover:text-blue-400"
+            }`}
           >
             <Edit3 className="w-3.5 h-3.5" />
           </button>
@@ -294,11 +255,9 @@ function ContactCard({
         </div>
       </div>
 
-      {/* ── Expanded Panel ────────────────────────────── */}
       {expanded && (
         <div className="border-t border-white/5 px-5 pb-5 pt-4 space-y-4">
           {editing ? (
-            /* Edit mode */
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -324,7 +283,6 @@ function ContactCard({
                   />
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 mb-2">
@@ -362,8 +320,6 @@ function ContactCard({
                   />
                 </div>
               </div>
-
-              {/* Notify channels */}
               <div className="rounded-xl border border-white/5 bg-white/5 px-4 py-3">
                 <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2">
                   Notify via
@@ -391,8 +347,6 @@ function ContactCard({
                   onToggle={() => set("notifyViaEmail")(!form.notifyViaEmail)}
                 />
               </div>
-
-              {/* Save / Discard */}
               <div className="flex gap-2 pt-1">
                 <button
                   onClick={handleDiscard}
@@ -409,9 +363,7 @@ function ContactCard({
               </div>
             </div>
           ) : (
-            /* View mode */
             <>
-              {/* Detail grid */}
               <div className="grid grid-cols-3 gap-3">
                 {[
                   {
@@ -443,8 +395,6 @@ function ContactCard({
                   </div>
                 ))}
               </div>
-
-              {/* Notify preview */}
               <div className="rounded-xl border border-white/5 bg-white/5 px-4 py-3">
                 <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2.5">
                   Notification Channels
@@ -475,12 +425,11 @@ function ContactCard({
                   ].map(({ on, icon, label, activeClass }) => (
                     <div
                       key={label}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-semibold transition-all
-                        ${
-                          on
-                            ? activeClass
-                            : "text-slate-700 bg-slate-800/60 border-white/5"
-                        }`}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-semibold transition-all ${
+                        on
+                          ? activeClass
+                          : "text-slate-700 bg-slate-800/60 border-white/5"
+                      }`}
                     >
                       {icon} {label}
                       {on ? (
@@ -492,8 +441,6 @@ function ContactCard({
                   ))}
                 </div>
               </div>
-
-              {/* Actions */}
               <div className="flex gap-2">
                 {!contact.isDefault && (
                   <button
@@ -511,8 +458,6 @@ function ContactCard({
                   {!contact.isDefault && "Remove"}
                 </button>
               </div>
-
-              {/* Delete confirm */}
               {confirmDelete && (
                 <div
                   className="rounded-xl border border-red-500/25 bg-red-500/8 p-4"
@@ -590,7 +535,6 @@ function AddContactForm({
       className="rounded-2xl border border-blue-500/30 bg-gradient-to-br from-blue-500/6 to-blue-500/2 p-5 space-y-4"
       style={{ animation: "secIn 0.2s ease-out both" }}
     >
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div
           className="text-[14px] font-bold text-white flex items-center gap-2"
@@ -606,8 +550,6 @@ function AddContactForm({
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
-
-      {/* Fields */}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 mb-2">
@@ -663,8 +605,6 @@ function AddContactForm({
           />
         </div>
       </div>
-
-      {/* Notify channels */}
       <div className="rounded-xl border border-white/5 bg-white/5 px-4 py-3">
         <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2">
           Notify this contact via
@@ -688,15 +628,11 @@ function AddContactForm({
           onToggle={() => set("notifyViaEmail")(!form.notifyViaEmail)}
         />
       </div>
-
-      {/* Error */}
       {error && (
         <div className="flex items-center gap-2 text-[12px] text-red-400">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" /> {error}
         </div>
       )}
-
-      {/* Submit */}
       <div className="flex gap-2">
         <button
           onClick={onCancel}
@@ -715,11 +651,34 @@ function AddContactForm({
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function EmergencyContacts() {
-  const [contacts, setContacts] = useState<Contact[]>(INITIAL_CONTACTS);
-  const [expandedId, setExpandedId] = useState<string | null>("1");
+  const riderUser = useAppSelector(selectRiderUser);
+
+  // Seed from Redux — rider has a single emergencyContact from backend
+  const backendContact = riderUser?.emergencyContact;
+
+  const initialContacts: Contact[] = backendContact
+    ? [
+        {
+          id: "backend-1",
+          name: backendContact.name,
+          phone: backendContact.phone,
+          relationship: backendContact.relationship,
+          isDefault: true,
+          notifyViaSMS: true,
+          notifyViaWhatsApp: true,
+          notifyViaEmail: false,
+          email: "",
+        },
+      ]
+    : [];
+
+  const [contacts, setContacts] = useState<Contact[]>(initialContacts);
+  const [expandedId, setExpandedId] = useState<string | null>(
+    initialContacts[0]?.id ?? null
+  );
   const [showAddForm, setShowAddForm] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -751,36 +710,20 @@ export default function EmergencyContacts() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap');
-
         .ec-root * { box-sizing: border-box; }
-        .ec-root {
-          font-family: 'DM Sans', sans-serif;
-          background: #0f172a;
-          color: #cbd5e1;
-          min-height: 100vh;
-        }
-
+        .ec-root { font-family: 'DM Sans', sans-serif; background: #0f172a; color: #cbd5e1; min-height: 100vh; }
         .ec-root ::-webkit-scrollbar { width: 4px; }
         .ec-root ::-webkit-scrollbar-track { background: transparent; }
         .ec-root ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-
         .card-enter { animation: cardIn 0.25s ease-out both; }
-        @keyframes cardIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes secIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-
+        @keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes secIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         select option { background: #1e293b; }
       `}</style>
 
       <div className="ec-root">
         <div className="max-w-[780px] lg:max-w-[1100px] mx-auto px-6 py-8">
-          {/* ── Page Header ─────────────────────────────────────── */}
+          {/* ── Header ── */}
           <div className="flex items-start justify-between mb-8">
             <div>
               <h1
@@ -794,27 +737,27 @@ export default function EmergencyContacts() {
                 People notified automatically when you book a trip
               </p>
             </div>
-
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className={`flex items-center gap-2 font-bold text-[13px] px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5
-                ${
+            {contacts.length < 5 && (
+              <button
+                onClick={() => setShowAddForm(!showAddForm)}
+                className={`flex items-center gap-2 font-bold text-[13px] px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 ${
                   showAddForm
                     ? "bg-white/5 border border-white/5 text-slate-400 hover:border-white/10"
                     : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20"
                 }`}
-              style={{ fontFamily: "'Syne', sans-serif" }}
-            >
-              {showAddForm ? (
-                <X className="w-4 h-4" />
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}
-              {showAddForm ? "Cancel" : "Add Contact"}
-            </button>
+                style={{ fontFamily: "'Syne', sans-serif" }}
+              >
+                {showAddForm ? (
+                  <X className="w-4 h-4" />
+                ) : (
+                  <Plus className="w-4 h-4" />
+                )}
+                {showAddForm ? "Cancel" : "Add Contact"}
+              </button>
+            )}
           </div>
 
-          {/* ── Saved toast ──────────────────────────────────────── */}
+          {/* ── Saved toast ── */}
           {saved && (
             <div
               className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/25 rounded-xl px-4 py-3 mb-5"
@@ -827,7 +770,20 @@ export default function EmergencyContacts() {
             </div>
           )}
 
-          {/* ── How it works banner ──────────────────────────────── */}
+          {/* ── Backend contact notice ── */}
+          {backendContact && (
+            <div className="flex items-start gap-3 bg-emerald-500/8 border border-emerald-500/20 rounded-xl px-4 py-3 mb-5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <p className="text-[13px] text-emerald-400">
+                Your emergency contact from registration —{" "}
+                <span className="font-semibold">{backendContact.name}</span> (
+                {backendContact.relationship}) — has been loaded as your
+                default.
+              </p>
+            </div>
+          )}
+
+          {/* ── How it works ── */}
           <div className="rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-500/8 to-blue-500/3 p-5 mb-6">
             <div className="flex items-center gap-1.5 mb-3">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
@@ -844,11 +800,8 @@ export default function EmergencyContacts() {
                 </span>{" "}
                 automatically receives your driver's name, phone number, vehicle
                 details, route, and departure time via your preferred channel.
-                Keep this information up to date for your safety.
               </p>
             </div>
-
-            {/* What gets shared */}
             <div className="grid grid-cols-2 gap-2 mt-4">
               {[
                 {
@@ -879,7 +832,7 @@ export default function EmergencyContacts() {
             </div>
           </div>
 
-          {/* ── Stats row ────────────────────────────────────────── */}
+          {/* ── Stats ── */}
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
             {[
               {
@@ -930,7 +883,7 @@ export default function EmergencyContacts() {
             ))}
           </div>
 
-          {/* ── Add Contact Form ─────────────────────────────────── */}
+          {/* ── Add Form ── */}
           {showAddForm && (
             <div className="mb-4">
               <AddContactForm
@@ -940,7 +893,7 @@ export default function EmergencyContacts() {
             </div>
           )}
 
-          {/* ── Contacts list ────────────────────────────────────── */}
+          {/* ── Contacts list ── */}
           {contacts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="w-16 h-16 rounded-full border border-white/5 bg-slate-900/60 flex items-center justify-center mb-5 opacity-70">
@@ -967,7 +920,9 @@ export default function EmergencyContacts() {
               {contacts.map((contact, i) => (
                 <div
                   key={contact.id}
-                  className={`card-enter ${expandedId === contact.id ? "lg:col-span-2" : ""}`}
+                  className={`card-enter ${
+                    expandedId === contact.id ? "lg:col-span-2" : ""
+                  }`}
                   style={{ animationDelay: `${i * 60}ms` }}
                 >
                   <ContactCard
@@ -987,7 +942,7 @@ export default function EmergencyContacts() {
             </div>
           )}
 
-          {/* ── Max contacts hint ────────────────────────────────── */}
+          {/* ── Footer hints ── */}
           {contacts.length > 0 && contacts.length < 5 && (
             <div className="flex items-center justify-center gap-2 mt-8 text-[12px] text-slate-700">
               <Users className="w-3.5 h-3.5" />
@@ -1008,7 +963,6 @@ export default function EmergencyContacts() {
   );
 }
 
-// Bell icon (not in lucide imports above, adding inline)
 function Bell(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg {...props} fill="none" viewBox="0 0 24 24">

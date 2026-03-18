@@ -2,11 +2,12 @@ import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import authReducer from "./slices/authSlice";
 import tripReducer, { resetTripState } from "./slices/tripSlice";
 import uiReducer from "./slices/uiSlice";
-
+import bookingReducer from "./slices/bookingSlice";
 const rootReducer = combineReducers({
   auth: authReducer,
   trip: tripReducer,
   ui: uiReducer,
+  booking: bookingReducer,
 });
 
 export const store = configureStore({

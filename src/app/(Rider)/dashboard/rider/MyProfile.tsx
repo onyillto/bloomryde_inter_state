@@ -1,6 +1,13 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useAppSelector } from "@/store/hooks";
+import {
+  selectRiderUser,
+  selectRiderInitials,
+  selectRiderIsVerified,
+  selectToken,
+} from "@/store/slices/authSlice";
 import {
   FiUser,
   FiCamera,
@@ -25,26 +32,13 @@ import { MdOutlineDirectionsCar } from "react-icons/md";
 import { TbRoute } from "react-icons/tb";
 
 type TabKey = "personal" | "stats" | "security";
+
 type ProfileForm = {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   email: string;
   phone: string;
   gender: string;
   dob: string;
-  city: string;
-  state: string;
-};
-
-const INITIAL_FORM: ProfileForm = {
-  firstName: "Amara",
-  lastName: "Kolawole",
-  email: "amara.kolawole@gmail.com",
-  phone: "+234 812 345 6789",
-  gender: "Female",
-  dob: "1998-07-15",
-  city: "Lagos",
-  state: "Lagos State",
 };
 
 const ACTIVITY = [
@@ -54,9 +48,9 @@ const ACTIVITY = [
   { month: "Feb", trips: 2 },
 ];
 
-function formatDate(iso: string) {
+function formatDate(iso?: string) {
   if (!iso) return "—";
-  return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", {
+  return new Date(iso).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -160,12 +154,11 @@ function TabBtn({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-all
-        ${
-          active
-            ? "bg-blue-600 text-white shadow-md shadow-blue-600/25"
-            : "bg-transparent text-slate-500 hover:text-slate-300 hover:bg-white/5"
-        }`}
+      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-all ${
+        active
+          ? "bg-blue-600 text-white shadow-md shadow-blue-600/25"
+          : "bg-transparent text-slate-500 hover:text-slate-300 hover:bg-white/5"
+      }`}
     >
       {icon} {label}
     </button>
@@ -259,11 +252,24 @@ function ActionRow({
 }
 
 export default function MyProfile() {
+  const riderUser = useAppSelector(selectRiderUser);
+  const initials = useAppSelector(selectRiderInitials);
+  const isVerified = useAppSelector(selectRiderIsVerified);
+  const token = useAppSelector(selectToken);
+
   const [activeTab, setActiveTab] = useState<TabKey>("personal");
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState<ProfileForm>(INITIAL_FORM);
   const [saved, setSaved] = useState(false);
   const [dirty, setDirty] = useState(false);
+
+  // Seed form from Redux
+  const [form, setForm] = useState<ProfileForm>({
+    fullName: riderUser?.fullName ?? "",
+    email: riderUser?.email ?? "",
+    phone: riderUser?.phone ?? "",
+    gender: riderUser?.gender ?? "",
+    dob: riderUser?.dateOfBirth ?? "",
+  });
 
   const set = (k: keyof ProfileForm) => (v: string) => {
     setForm((f) => ({ ...f, [k]: v }));
@@ -271,18 +277,34 @@ export default function MyProfile() {
   };
 
   function handleSave() {
+    // TODO: call updateUserProfile API when rider profile update endpoint is ready
     setSaved(true);
     setEditing(false);
     setDirty(false);
     setTimeout(() => setSaved(false), 3000);
   }
+
   function handleDiscard() {
-    setForm(INITIAL_FORM);
+    setForm({
+      fullName: riderUser?.fullName ?? "",
+      email: riderUser?.email ?? "",
+      phone: riderUser?.phone ?? "",
+      gender: riderUser?.gender ?? "",
+      dob: riderUser?.dateOfBirth ?? "",
+    });
     setEditing(false);
     setDirty(false);
   }
 
   const maxTrips = Math.max(...ACTIVITY.map((a) => a.trips));
+
+  // Derived from form
+  const memberSince = riderUser
+    ? new Date((riderUser as any).createdAt ?? "").toLocaleDateString("en-GB", {
+        month: "short",
+        year: "numeric",
+      })
+    : "—";
 
   return (
     <>
@@ -300,7 +322,7 @@ export default function MyProfile() {
 
       <div className="mp-root">
         <div className="max-w-[1100px] mx-auto px-6 py-8">
-          {/* ── Header ─────────────────────────────────────────── */}
+          {/* ── Header ── */}
           <div className="flex items-start justify-between mb-8">
             <div>
               <h1
@@ -341,7 +363,7 @@ export default function MyProfile() {
             </div>
           </div>
 
-          {/* ── Saved toast ─────────────────────────────────────── */}
+          {/* ── Saved toast ── */}
           {saved && (
             <div className="flex items-center gap-2 bg-blue-600/10 border border-blue-500/20 rounded-xl px-4 py-3 mb-6 sec-enter">
               <FiCheckCircle
@@ -354,79 +376,86 @@ export default function MyProfile() {
             </div>
           )}
 
-          {/* ── Hero card ────────────────────────────────────────── */}
+          {/* ── Hero card ── */}
           <div className="relative rounded-2xl border border-white/5 bg-slate-900/60 p-6 mb-6 overflow-hidden">
             <div className="absolute top-0 left-0 w-56 h-56 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
             <div className="flex items-start gap-6 relative">
               <div className="flex flex-col items-center gap-3 flex-shrink-0">
-                <Avatar
-                  initials={`${form.firstName[0]}${form.lastName[0]}`}
-                  editing={editing}
-                />
-                <div className="flex items-center gap-1.5 bg-blue-600/15 border border-blue-500/20 rounded-full px-3 py-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-                  <span className="text-[11px] font-bold text-blue-400 uppercase tracking-wider">
-                    Verified
+                <Avatar initials={initials} editing={editing} />
+                <div
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1 ${
+                    isVerified
+                      ? "bg-blue-600/15 border border-blue-500/20"
+                      : "bg-amber-500/15 border border-amber-500/20"
+                  }`}
+                >
+                  <div
+                    className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                      isVerified ? "bg-blue-400" : "bg-amber-400"
+                    }`}
+                  />
+                  <span
+                    className={`text-[11px] font-bold uppercase tracking-wider ${
+                      isVerified ? "text-blue-400" : "text-amber-400"
+                    }`}
+                  >
+                    {isVerified ? "Verified" : "Unverified"}
                   </span>
                 </div>
               </div>
+
               <div className="flex-1 min-w-0 pt-1">
                 {editing ? (
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    {(["firstName", "lastName"] as const).map((k) => (
-                      <input
-                        key={k}
-                        value={form[k]}
-                        onChange={(e) => set(k)(e.target.value)}
-                        placeholder={
-                          k === "firstName" ? "First name" : "Last name"
-                        }
-                        className="bg-slate-800/80 border border-white/5 rounded-xl px-3.5 py-2.5 text-[18px] font-black text-white focus:outline-none focus:border-blue-500/40 transition-colors"
-                        style={{ fontFamily: "'Syne', sans-serif" }}
-                      />
-                    ))}
+                  <div className="mb-3">
+                    <input
+                      value={form.fullName}
+                      onChange={(e) => set("fullName")(e.target.value)}
+                      placeholder="Full name"
+                      className="bg-slate-800/80 border border-white/5 rounded-xl px-3.5 py-2.5 text-[18px] font-black text-white focus:outline-none focus:border-blue-500/40 transition-colors w-full max-w-sm"
+                      style={{ fontFamily: "'Syne', sans-serif" }}
+                    />
                   </div>
                 ) : (
                   <div
                     className="text-[26px] font-black text-white tracking-tight mb-1"
                     style={{ fontFamily: "'Syne', sans-serif" }}
                   >
-                    {form.firstName} {form.lastName}
+                    {form.fullName || "—"}
                   </div>
                 )}
+
                 <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-4">
                   {[
                     { icon: <FiMail size={13} />, val: form.email },
                     { icon: <FiPhone size={13} />, val: form.phone },
-                    {
-                      icon: <FiMapPin size={13} />,
-                      val: `${form.city}, ${form.state}`,
-                    },
-                  ].map(({ icon, val }) => (
-                    <span
-                      key={val}
-                      className="flex items-center gap-1.5 text-[13px] text-slate-500"
-                    >
-                      <span className="text-slate-600">{icon}</span>
-                      {val}
-                    </span>
-                  ))}
+                  ]
+                    .filter(({ val }) => Boolean(val))
+                    .map(({ icon, val }) => (
+                      <span
+                        key={val}
+                        className="flex items-center gap-1.5 text-[13px] text-slate-500"
+                      >
+                        <span className="text-slate-600">{icon}</span>
+                        {val}
+                      </span>
+                    ))}
                 </div>
+
                 <div className="flex flex-wrap gap-5">
                   {[
                     {
                       label: "Total Trips",
-                      value: "8",
+                      value: "—",
                       icon: <MdOutlineDirectionsCar size={14} />,
                     },
                     {
                       label: "Avg Rating",
-                      value: "4.8 ★",
+                      value: "—",
                       icon: <FiStar size={13} />,
                     },
                     {
                       label: "Member Since",
-                      value: "Jan 2026",
+                      value: memberSince,
                       icon: <FiCalendar size={13} />,
                     },
                   ].map((s) => (
@@ -448,7 +477,7 @@ export default function MyProfile() {
             </div>
           </div>
 
-          {/* ── Tabs ─────────────────────────────────────────────── */}
+          {/* ── Tabs ── */}
           <div className="flex items-center gap-2 mb-6">
             <TabBtn
               active={activeTab === "personal"}
@@ -479,20 +508,15 @@ export default function MyProfile() {
                   icon={<FiUser size={15} />}
                 >
                   <div className="grid grid-cols-2 gap-4">
-                    <Field
-                      label="First Name"
-                      value={form.firstName}
-                      onChange={set("firstName")}
-                      editing={editing}
-                      icon={<FiUser size={11} />}
-                    />
-                    <Field
-                      label="Last Name"
-                      value={form.lastName}
-                      onChange={set("lastName")}
-                      editing={editing}
-                      icon={<FiUser size={11} />}
-                    />
+                    <div className="col-span-2">
+                      <Field
+                        label="Full Name"
+                        value={form.fullName}
+                        onChange={set("fullName")}
+                        editing={editing}
+                        icon={<FiUser size={11} />}
+                      />
+                    </div>
                     <Field
                       label="Gender"
                       value={form.gender}
@@ -511,11 +535,12 @@ export default function MyProfile() {
                     />
                   </div>
                 </SectionCard>
+
                 <SectionCard
                   title="Contact Details"
                   icon={<FiMail size={15} />}
                 >
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <Field
                       label="Email Address"
                       value={form.email}
@@ -532,25 +557,44 @@ export default function MyProfile() {
                       type="tel"
                       icon={<FiPhone size={11} />}
                     />
-                    <Field
-                      label="City"
-                      value={form.city}
-                      onChange={set("city")}
-                      editing={editing}
-                      icon={<FiMapPin size={11} />}
-                      placeholder="e.g. Lagos"
-                    />
-                    <Field
-                      label="State"
-                      value={form.state}
-                      onChange={set("state")}
-                      editing={editing}
-                      icon={<FiMapPin size={11} />}
-                      placeholder="e.g. Lagos State"
-                    />
                   </div>
                 </SectionCard>
               </div>
+
+              {/* Emergency contact — from backend */}
+              {riderUser?.emergencyContact && (
+                <SectionCard
+                  title="Emergency Contact"
+                  icon={<FiShield size={15} />}
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {[
+                      { label: "Name", value: riderUser.emergencyContact.name },
+                      {
+                        label: "Relationship",
+                        value: riderUser.emergencyContact.relationship,
+                      },
+                      {
+                        label: "Phone",
+                        value: riderUser.emergencyContact.phone,
+                      },
+                    ].map(({ label, value }) => (
+                      <div
+                        key={label}
+                        className="bg-white/5 border border-white/5 rounded-xl px-3.5 py-2.5"
+                      >
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-1">
+                          {label}
+                        </div>
+                        <div className="text-[14px] text-slate-300 font-medium">
+                          {value || "—"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </SectionCard>
+              )}
+
               {dirty && editing && (
                 <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/8 px-4 py-3">
                   <FiAlertCircle
@@ -574,6 +618,17 @@ export default function MyProfile() {
           {/* ══ Stats ════════════════════════════════════════════ */}
           {activeTab === "stats" && (
             <div className="sec-enter space-y-4">
+              {/* Placeholder notice */}
+              <div className="flex items-center gap-3 bg-blue-600/10 border border-blue-500/20 rounded-xl px-4 py-3">
+                <FiAlertCircle
+                  size={14}
+                  className="text-blue-400 flex-shrink-0"
+                />
+                <p className="text-[12px] text-blue-400">
+                  Trip stats will populate once booking endpoints are connected.
+                </p>
+              </div>
+
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
                   {
@@ -584,16 +639,16 @@ export default function MyProfile() {
                       />
                     ),
                     label: "Total Trips",
-                    value: "8",
-                    sub: "Since Jan 2026",
+                    value: "—",
+                    sub: "No data yet",
                     color: "from-blue-600/20 to-blue-600/5 border-blue-500/20",
                     valueColor: "text-blue-400",
                   },
                   {
                     icon: <FiStar size={18} className="text-amber-400" />,
                     label: "Avg Rating Given",
-                    value: "4.8 ★",
-                    sub: "Across 6 rated trips",
+                    value: "—",
+                    sub: "No data yet",
                     color:
                       "from-amber-500/10 to-amber-500/5 border-amber-500/20",
                     valueColor: "text-amber-400",
@@ -601,8 +656,8 @@ export default function MyProfile() {
                   {
                     icon: <FiMapPin size={18} className="text-violet-400" />,
                     label: "Cities Visited",
-                    value: "6",
-                    sub: "Unique destinations",
+                    value: "—",
+                    sub: "No data yet",
                     color: "from-white/5 to-white/[0.02] border-white/5",
                     valueColor: "text-white",
                   },
@@ -611,8 +666,8 @@ export default function MyProfile() {
                       <FiTrendingUp size={18} className="text-emerald-400" />
                     ),
                     label: "Total Spent",
-                    value: "₦29,500",
-                    sub: "On completed trips",
+                    value: "—",
+                    sub: "No data yet",
                     color: "from-white/5 to-white/[0.02] border-white/5",
                     valueColor: "text-white",
                   },
@@ -635,13 +690,14 @@ export default function MyProfile() {
                   </div>
                 ))}
               </div>
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <SectionCard
                   title="Trip Activity"
                   icon={<FiTrendingUp size={15} />}
                 >
                   <div className="text-[12px] text-slate-600 mb-5">
-                    Trips per month
+                    Placeholder data
                   </div>
                   <div className="flex items-end gap-3 h-20">
                     {ACTIVITY.map((a) => (
@@ -653,39 +709,9 @@ export default function MyProfile() {
                   title="Favourite Routes"
                   icon={<TbRoute size={16} />}
                 >
-                  <div className="space-y-3">
-                    {[
-                      { from: "Lagos", to: "Abuja", count: 4, pct: 100 },
-                      { from: "Abuja", to: "Enugu", count: 2, pct: 50 },
-                      { from: "P.H", to: "Lagos", count: 1, pct: 25 },
-                    ].map((r) => (
-                      <div
-                        key={r.from + r.to}
-                        className="flex items-center gap-3"
-                      >
-                        <div className="flex items-center gap-1.5 text-[13px] min-w-[130px]">
-                          <span className="text-slate-300 font-medium">
-                            {r.from}
-                          </span>
-                          <FiChevronRight
-                            size={12}
-                            className="text-blue-400 flex-shrink-0"
-                          />
-                          <span className="text-blue-400 font-medium">
-                            {r.to}
-                          </span>
-                        </div>
-                        <div className="flex-1 bg-white/5 rounded-full h-1.5 overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-blue-700 to-blue-500 rounded-full transition-all duration-700"
-                            style={{ width: `${r.pct}%` }}
-                          />
-                        </div>
-                        <span className="text-[12px] text-slate-500 font-semibold min-w-[20px] text-right">
-                          {r.count}x
-                        </span>
-                      </div>
-                    ))}
+                  <div className="flex flex-col items-center justify-center py-6 text-slate-600">
+                    <TbRoute size={28} className="mb-2 opacity-30" />
+                    <p className="text-[13px]">No routes yet</p>
                   </div>
                 </SectionCard>
               </div>
@@ -711,16 +737,25 @@ export default function MyProfile() {
                       className="text-[16px] font-bold text-white"
                       style={{ fontFamily: "'Syne', sans-serif" }}
                     >
-                      Account Verified
+                      {isVerified ? "Account Verified" : "Account Not Verified"}
                     </div>
                     <div className="text-[12px] text-slate-500">
-                      Phone number and email confirmed · Active since Jan 2026
+                      {isVerified
+                        ? `Phone and email confirmed · Member since ${memberSince}`
+                        : "Please verify your phone number and email"}
                     </div>
                   </div>
-                  <FiCheckCircle
-                    size={20}
-                    className="text-blue-400 ml-auto flex-shrink-0"
-                  />
+                  {isVerified ? (
+                    <FiCheckCircle
+                      size={20}
+                      className="text-blue-400 ml-auto flex-shrink-0"
+                    />
+                  ) : (
+                    <FiAlertCircle
+                      size={20}
+                      className="text-amber-400 ml-auto flex-shrink-0"
+                    />
+                  )}
                 </div>
               </div>
 
@@ -733,17 +768,19 @@ export default function MyProfile() {
                     {
                       icon: <FiPhone size={14} />,
                       label: "Change Phone Number",
-                      sub: "Verified · +234 812 345 6789",
+                      sub: riderUser?.phone
+                        ? `Current: ${riderUser.phone}`
+                        : "Not set",
                     },
                     {
                       icon: <FiMail size={14} />,
                       label: "Change Email Address",
-                      sub: "amara.kolawole@gmail.com",
+                      sub: riderUser?.email ?? "Not set",
                     },
                     {
                       icon: <FiLock size={14} />,
                       label: "Change PIN / Password",
-                      sub: "Last changed 30 days ago",
+                      sub: "Update your account password",
                     },
                     {
                       icon: <FiBell size={14} />,

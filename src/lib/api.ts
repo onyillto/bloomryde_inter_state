@@ -392,3 +392,94 @@ export const cancelTrip = (tripId: string, token: string) =>
     method: "PATCH",
     headers: { Authorization: `Bearer ${token}` },
   });
+
+
+
+  // ─────────────────────────────────────────────────────────────
+//  PUBLIC TRIP SEARCH (for riders)
+// ─────────────────────────────────────────────────────────────
+
+export interface TripSearchParams {
+  origin?: string;        // city name filter
+  destination?: string;   // city name filter
+  date?: string;          // ISO date string
+  seats?: number;         // minimum available seats needed
+}
+
+/**
+ * Fetches all available trips for riders to browse.
+ * Corresponds to: GET /trips
+ * No auth required — public endpoint.
+ */
+export const getAvailableTrips = async (
+  params?: TripSearchParams
+): Promise<{ status: string; results: number; data: { trips: Trip[] } }> => {
+  const query = new URLSearchParams();
+
+  if (params?.origin) query.set("origin", params.origin);
+  if (params?.destination) query.set("destination", params.destination);
+  if (params?.date) query.set("date", params.date);
+  if (params?.seats) query.set("seats", String(params.seats));
+
+  const queryString = query.toString();
+  const url = `${API_BASE_URL}/trips${queryString ? `?${queryString}` : ""}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response.ok) {
+    const errData = await response
+      .json()
+      .catch(() => ({ message: "An unknown error occurred" }));
+    throw new Error(
+      errData.message || `Request failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
+};
+
+
+
+// ─────────────────────────────────────────────────────────────
+//  TRIP SEARCH (for riders) — POST /trips/search
+// ─────────────────────────────────────────────────────────────
+
+export interface TripSearchPayload {
+  origin: string;        // e.g. "Ikeja City Mall"
+  destination: string;   // e.g. "Jabi Lake Mall, Jabi"
+  departureDate: string; // ISO date string e.g. "2024-12-25"
+  passengers: number;    // minimum seats needed
+}
+
+/**
+ * Searches available trips for riders.
+ * Corresponds to: POST /trips/search
+ * Requires auth token.
+ */
+export const searchTrips = async (
+  payload: TripSearchPayload,
+  token: string
+): Promise<{ status: string; results: number; data: { trips: Trip[] } }> => {
+  const response = await fetch(`${API_BASE_URL}/trips/search`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errData = await response
+      .json()
+      .catch(() => ({ message: "An unknown error occurred" }));
+    throw new Error(
+      errData.message || `Request failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
+};

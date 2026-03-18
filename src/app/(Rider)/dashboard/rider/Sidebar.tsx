@@ -1,5 +1,13 @@
+"use client";
+
 import { Icons } from "./Icons";
-import { useAppSelector } from "@/lib/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  selectRiderUser,
+  selectRiderInitials,
+  logout,
+} from "@/store/slices/authSlice";
+import { useRouter } from "next/navigation";
 
 const navItems = [
   { icon: "Home", label: "Dashboard", section: "MAIN" },
@@ -24,7 +32,16 @@ export default function Sidebar({
   activeNav,
   setActiveNav,
 }: SidebarProps) {
-  const { user } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const riderUser = useAppSelector(selectRiderUser);
+  const initials = useAppSelector(selectRiderInitials);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    router.replace("/auth");
+  };
+
   return (
     <aside
       className={`fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 flex flex-col border-r border-white/5 bg-slate-900/95 backdrop-blur-xl md:bg-slate-900/80 md:backdrop-blur-none sidebar-scrollbar overflow-y-auto transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
@@ -54,6 +71,7 @@ export default function Sidebar({
         </button>
       </div>
 
+      {/* Nav items */}
       <div className="px-4 pb-4 flex-1">
         {["MAIN", "ACCOUNT"].map((section) => (
           <div key={section} className="mb-4">
@@ -92,17 +110,25 @@ export default function Sidebar({
       {/* Bottom user card */}
       <div className="p-4 border-t border-white/5">
         <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-sm font-bold">
-            {user?.fullName?.charAt(0).toUpperCase() || "U"}
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-sm font-bold text-white">
+            {initials}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-sm font-semibold truncate">
-              {user?.fullName || "User"}
+              {riderUser?.fullName ?? "User"}
             </p>
             <p className="text-slate-400 text-xs truncate capitalize">
-              {user?.role || "Passenger"}
+              {riderUser?.isVerified ? "Verified Rider" : "Rider"}
             </p>
           </div>
+          {/* Logout button */}
+          <button
+            onClick={handleLogout}
+            title="Logout"
+            className="text-slate-500 hover:text-red-400 transition-colors flex-shrink-0"
+          >
+            {/* <Icons.LogOut /> */}
+          </button>
         </div>
       </div>
     </aside>

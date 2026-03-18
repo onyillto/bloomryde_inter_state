@@ -146,7 +146,7 @@ export default function AuthForm({
       // Driver: result.data.driver / Rider: result.data.user
       // Token is always at result.token (root level)
       const user =
-        loginRole === "driver" ? result?.data?.driver : result?.data?.user;
+        loginRole === "driver" ? result?.data?.driver : result?.data?.rider;
 
       const token = result?.token;
 
@@ -174,7 +174,6 @@ export default function AuthForm({
       dispatch(setAuthLoading(false));
     }
   };
-
   // ── Register: phone submit ───────────────────────────────────
   const handlePhoneSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
