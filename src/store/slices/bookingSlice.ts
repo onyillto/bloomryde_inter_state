@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
-import type { Trip } from "@/lib/api";
+import type { Trip, Booking } from "@/lib/api";
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -24,6 +24,10 @@ interface BookingState {
   confirmedTrip: Trip | null;
   bookingLoading: boolean;
   bookingError: string | null;
+
+  // Rider's booked trips — from GET /trips/booked-trips
+  bookedTrips: Booking[];
+  bookedTripsLoading: boolean;
 }
 
 const initialState: BookingState = {
@@ -36,6 +40,8 @@ const initialState: BookingState = {
   confirmedTrip: null,
   bookingLoading: false,
   bookingError: null,
+  bookedTrips: [],
+  bookedTripsLoading: false,
 };
 
 // ─── Slice ────────────────────────────────────────────────────────────────────
@@ -44,7 +50,7 @@ const bookingSlice = createSlice({
   name: "booking",
   initialState,
   reducers: {
-    // Search results
+    // ── Search results ────────────────────────────────────
     setSearchResults: (state, action: PayloadAction<Trip[]>) => {
       state.searchResults = action.payload;
       state.searchError = null;
@@ -67,12 +73,12 @@ const bookingSlice = createSlice({
       state.lastSearch = null;
     },
 
-    // Trip selection
+    // ── Trip selection ────────────────────────────────────
     setSelectedTrip: (state, action: PayloadAction<Trip | null>) => {
       state.selectedTrip = action.payload;
     },
 
-    // Booking flow
+    // ── Booking flow ──────────────────────────────────────
     setContactedTrip: (state, action: PayloadAction<Trip | null>) => {
       state.contactedTrip = action.payload;
     },
@@ -86,7 +92,15 @@ const bookingSlice = createSlice({
       state.bookingError = action.payload;
     },
 
-    // Reset entire booking flow (e.g. "Book Another Trip")
+    // ── Rider's booked trips ──────────────────────────────
+    setBookedTrips: (state, action: PayloadAction<Booking[]>) => {
+      state.bookedTrips = action.payload;
+    },
+    setBookedTripsLoading: (state, action: PayloadAction<boolean>) => {
+      state.bookedTripsLoading = action.payload;
+    },
+
+    // ── Reset booking flow (e.g. "Book Another Trip") ─────
     resetBookingFlow: (state) => {
       state.selectedTrip = null;
       state.contactedTrip = null;
@@ -94,7 +108,7 @@ const bookingSlice = createSlice({
       state.bookingError = null;
     },
 
-    // Full reset on logout
+    // ── Full reset on logout ──────────────────────────────
     resetBookingState: () => initialState,
   },
 });
@@ -110,6 +124,8 @@ export const {
   setConfirmedTrip,
   setBookingLoading,
   setBookingError,
+  setBookedTrips,
+  setBookedTripsLoading,
   resetBookingFlow,
   resetBookingState,
 } = bookingSlice.actions;
@@ -134,13 +150,17 @@ export const selectBookingLoading = (state: RootState) =>
 export const selectBookingError = (state: RootState) =>
   state.booking.bookingError;
 
+// Rider booked trips
+export const selectBookedTrips = (state: RootState) =>
+  state.booking.bookedTrips;
+export const selectBookedTripsLoading = (state: RootState) =>
+  state.booking.bookedTripsLoading;
+
 // Derived
 export const selectSearchResultCount = (state: RootState) =>
   state.booking.searchResults.length;
-
 export const selectAvailableTrips = (state: RootState) =>
   state.booking.searchResults.filter((t) => t.availableSeats > 0);
-
 export const selectScheduledTrips = (state: RootState) =>
   state.booking.searchResults.filter((t) => t.status === "scheduled");
 

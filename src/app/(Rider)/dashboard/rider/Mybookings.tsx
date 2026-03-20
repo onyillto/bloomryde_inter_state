@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FiBookmark,
   FiClock,
@@ -20,118 +20,62 @@ import {
   FiRotateCcw,
   FiShield,
   FiCopy,
+  FiTruck,
 } from "react-icons/fi";
 import { BsWhatsapp, BsPhoneFill } from "react-icons/bs";
 import { MdOutlineDirectionsCar } from "react-icons/md";
 import { PiCurrencyNgnBold } from "react-icons/pi";
 import { TbCreditCard } from "react-icons/tb";
 import { RiSmartphoneLine } from "react-icons/ri";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  setBookedTrips,
+  setBookedTripsLoading,
+  selectBookedTrips,
+  selectBookedTripsLoading,
+} from "@/store/slices/bookingSlice";
+import { selectToken, selectRiderUser } from "@/store/slices/authSlice";
+import { getBookedTrips, Booking, BookingStatus } from "@/lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type BookingStatus = "confirmed" | "pending" | "cancelled";
-
-type Booking = {
-  id: string;
-  driverInitials: string;
-  driverName: string;
-  driverRating: number;
-  driverTrips: number;
-  avatarBg: string;
-  from: string;
-  to: string;
-  date: string;
-  dateShort: string;
-  monthShort: string;
-  time: string;
-  duration: string;
-  vehicle: string;
-  vehicleColor: string;
-  plate: string;
-  seats: number;
-  price: number;
-  status: BookingStatus;
-  ref: string;
-  phone: string;
-  notes?: string;
-};
-
 type Filter = "all" | "confirmed" | "pending" | "cancelled";
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const MOCK_BOOKINGS: Booking[] = [
-  {
-    id: "1",
-    driverInitials: "EO",
-    driverName: "Emeka Okonkwo",
-    driverRating: 5,
-    driverTrips: 48,
-    avatarBg: "from-blue-600/30 to-blue-900/60",
-    from: "Lagos (Jibowu)",
-    to: "Abuja (Utako Park)",
-    date: "28 Feb 2026",
-    dateShort: "28",
-    monthShort: "Feb",
-    time: "6:00 AM",
-    duration: "~8 hrs",
-    vehicle: "Toyota Hiace",
-    vehicleColor: "Black",
-    plate: "LSD-432-AE",
-    seats: 1,
-    price: 5000,
-    status: "confirmed",
-    ref: "BR-2602-00847",
-    phone: "+234 803 XXX XXXX",
-  },
-  {
-    id: "2",
-    driverInitials: "CA",
-    driverName: "Chidi Anyanwu",
-    driverRating: 4,
-    driverTrips: 31,
-    avatarBg: "from-indigo-600/30 to-indigo-900/60",
-    from: "Abuja (Utako Park)",
-    to: "Port Harcourt (Waterlines)",
-    date: "12 Mar 2026",
-    dateShort: "12",
-    monthShort: "Mar",
-    time: "7:30 AM",
-    duration: "~9 hrs",
-    vehicle: "Honda Accord",
-    vehicleColor: "Silver",
-    plate: "KTU-218-BQ",
-    seats: 2,
-    price: 6500,
-    status: "pending",
-    ref: "BR-2603-00214",
-    phone: "+234 812 XXX XXXX",
-    notes: "2 seats booked",
-  },
-  {
-    id: "3",
-    driverInitials: "BF",
-    driverName: "Biodun Fashola",
-    driverRating: 5,
-    driverTrips: 67,
-    avatarBg: "from-amber-600/30 to-amber-900/60",
-    from: "Lagos (Jibowu)",
-    to: "Enugu (Nike Lake Rd)",
-    date: "5 Jan 2026",
-    dateShort: "5",
-    monthShort: "Jan",
-    time: "5:00 AM",
-    duration: "~7 hrs",
-    vehicle: "Toyota Camry",
-    vehicleColor: "White",
-    plate: "APP-901-CX",
-    seats: 1,
-    price: 5500,
-    status: "cancelled",
-    ref: "BR-2601-00093",
-    phone: "+234 809 XXX XXXX",
-  },
+const AVATAR_GRADIENTS = [
+  "from-blue-600/30 to-blue-900/60",
+  "from-indigo-600/30 to-indigo-900/60",
+  "from-amber-600/30 to-amber-900/60",
+  "from-emerald-600/30 to-emerald-900/60",
+  "from-violet-600/30 to-violet-900/60",
+  "from-rose-600/30 to-rose-900/60",
 ];
+
+function getAvatarGradient(id: string) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++)
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
+}
+
+function getDriverInitials(firstName: string, lastName: string) {
+  return `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase();
+}
+
+function formatDepDate(iso: string) {
+  const d = new Date(iso);
+  return {
+    dateShort: d.getDate().toString(),
+    monthShort: d.toLocaleDateString("en-GB", { month: "short" }).toUpperCase(),
+    full: d.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }),
+    time: d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+  };
+}
 
 // ─── StarRating ───────────────────────────────────────────────────────────────
 
@@ -176,8 +120,13 @@ function StatusBadge({ status }: { status: BookingStatus }) {
       icon: <FiXCircle size={11} />,
       label: "Cancelled",
     },
+    completed: {
+      cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
+      icon: <FiCheckCircle size={11} />,
+      label: "Completed",
+    },
   };
-  const { cls, icon, label } = map[status];
+  const { cls, icon, label } = map[status] ?? map.pending;
   return (
     <span
       className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border ${cls}`}
@@ -193,60 +142,74 @@ function BookingCard({
   booking,
   expanded,
   onToggle,
+  emergencyContactName,
 }: {
   booking: Booking;
   expanded: boolean;
   onToggle: () => void;
+  emergencyContactName?: string;
 }) {
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  const total = booking.price * booking.seats;
+
+  const trip = booking.trip;
+  const driver = trip.driver;
+  const driverFirstName = driver.personalInfo.firstName;
+  const driverLastName = driver.personalInfo.lastName;
+  const driverName = `${driverFirstName} ${driverLastName}`;
+  const driverPhone = driver.personalInfo.phoneNumber;
+  const initials = getDriverInitials(driverFirstName, driverLastName);
+  const avatarBg = getAvatarGradient(driver._id);
+  const vehicleLabel = `${trip.vehicle.make} ${trip.vehicle.model}`;
+  const vehicleColor = trip.vehicle.color;
+  const plate = trip.vehicle.plateNumber;
+  const { dateShort, monthShort, full, time } = formatDepDate(
+    trip.departureTime
+  );
+  const ref = `BR-${booking._id.slice(-8).toUpperCase()}`;
 
   function copyRef() {
-    navigator.clipboard.writeText(booking.ref).catch(() => {});
+    navigator.clipboard.writeText(ref).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
 
+  const isActive = booking.status !== "cancelled";
+
   return (
     <div
-      className={`
-        relative rounded-2xl border transition-all duration-200 overflow-hidden
-        ${
-          expanded
-            ? "border-blue-500/40 bg-slate-900/60 shadow-lg shadow-blue-500/5"
-            : "border-white/5 bg-slate-900/60 hover:border-white/10 hover:bg-slate-800/50"
-        }
-      `}
+      className={`relative rounded-2xl border transition-all duration-200 overflow-hidden ${
+        expanded
+          ? "border-blue-500/40 bg-slate-900/60 shadow-lg shadow-blue-500/5"
+          : "border-white/5 bg-slate-900/60 hover:border-white/10 hover:bg-slate-800/50"
+      }`}
     >
-      {/* Top accent */}
       {expanded && (
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
       )}
 
-      {/* ── Header ─────────────────────────────────── */}
+      {/* ── Header ── */}
       <div
         className="flex items-start gap-4 p-5 cursor-pointer select-none"
         onClick={onToggle}
       >
         {/* Date block */}
         <div
-          className={`flex-shrink-0 w-14 rounded-xl text-center py-2.5 border transition-all
-            ${
-              expanded
-                ? "bg-blue-600/20 border-blue-500/20"
-                : "bg-white/5 border-white/5"
-            }`}
+          className={`flex-shrink-0 w-14 rounded-xl text-center py-2.5 border transition-all ${
+            expanded
+              ? "bg-blue-600/20 border-blue-500/20"
+              : "bg-white/5 border-white/5"
+          }`}
         >
           <div
             className="font-black text-[22px] leading-none text-white"
             style={{ fontFamily: "'Syne', sans-serif" }}
           >
-            {booking.dateShort}
+            {dateShort}
           </div>
           <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mt-0.5">
-            {booking.monthShort}
+            {monthShort}
           </div>
         </div>
 
@@ -255,29 +218,23 @@ function BookingCard({
           {/* Driver row */}
           <div className="flex items-center gap-2 mb-1">
             <div
-              className={`w-7 h-7 rounded-full bg-gradient-to-br ${booking.avatarBg}
-                flex items-center justify-center text-[10px] font-bold text-blue-300
-                border border-white/10 flex-shrink-0`}
+              className={`w-7 h-7 rounded-full bg-gradient-to-br ${avatarBg} flex items-center justify-center text-[10px] font-bold text-blue-300 border border-white/10 flex-shrink-0`}
             >
-              {booking.driverInitials}
+              {initials}
             </div>
             <span className="font-semibold text-[14px] text-white tracking-tight truncate">
-              {booking.driverName}
-            </span>
-            <StarRating rating={booking.driverRating} />
-            <span className="text-[11px] text-slate-600 hidden sm:inline">
-              ({booking.driverTrips})
+              {driverName}
             </span>
           </div>
 
           {/* Route */}
           <div className="flex items-center gap-1.5 text-[13px] mb-2">
-            <span className="text-slate-300 font-medium truncate">
-              {booking.from}
+            <span className="text-slate-300 font-medium truncate capitalize">
+              {trip.origin.city}
             </span>
             <FiArrowRight size={13} className="text-blue-400 flex-shrink-0" />
-            <span className="text-blue-400 font-medium truncate">
-              {booking.to}
+            <span className="text-blue-400 font-medium truncate capitalize">
+              {trip.destination.city}
             </span>
           </div>
 
@@ -285,15 +242,15 @@ function BookingCard({
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
               <FiClock size={11} className="text-slate-600" />
-              {booking.time} · {booking.duration}
+              {time}
             </span>
             <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
               <MdOutlineDirectionsCar size={13} className="text-slate-600" />
-              {booking.vehicle} · {booking.vehicleColor}
+              {vehicleLabel} · {vehicleColor}
             </span>
             <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
               <FiUsers size={11} className="text-slate-600" />
-              {booking.seats} seat{booking.seats > 1 ? "s" : ""}
+              {booking.seatsBooked} seat{booking.seatsBooked > 1 ? "s" : ""}
             </span>
           </div>
         </div>
@@ -306,9 +263,11 @@ function BookingCard({
               className="font-black text-[20px] text-blue-400 leading-none"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
-              ₦{total.toLocaleString()}
+              ₦{booking.totalPrice.toLocaleString()}
             </div>
-            <div className="text-[11px] text-slate-600 mt-0.5">cash</div>
+            <div className="text-[11px] text-slate-600 mt-0.5">
+              {booking.paymentInfo.paymentStatus}
+            </div>
           </div>
           <FiChevronDown
             size={16}
@@ -319,7 +278,7 @@ function BookingCard({
         </div>
       </div>
 
-      {/* ── Expanded Panel ────────────────────────── */}
+      {/* ── Expanded Panel ── */}
       {expanded && (
         <div className="border-t border-white/5 px-5 pb-5 pt-4 space-y-4">
           {/* Details grid */}
@@ -328,32 +287,32 @@ function BookingCard({
               {
                 icon: <FiMapPin size={12} />,
                 label: "Pickup",
-                value: booking.from,
+                value: trip.origin.address,
               },
               {
                 icon: <FiMapPin size={12} />,
                 label: "Drop-off",
-                value: booking.to,
+                value: trip.destination.address,
               },
               {
                 icon: <FiCalendar size={12} />,
                 label: "Departure",
-                value: `${booking.date}, ${booking.time}`,
+                value: `${full}, ${time}`,
               },
               {
                 icon: <MdOutlineDirectionsCar size={13} />,
                 label: "Vehicle",
-                value: `${booking.vehicle} · ${booking.vehicleColor}`,
+                value: `${vehicleLabel} · ${vehicleColor}`,
               },
               {
                 icon: <FiShield size={12} />,
                 label: "Plate No.",
-                value: booking.plate,
+                value: plate,
               },
               {
                 icon: <PiCurrencyNgnBold size={13} />,
                 label: "Total (Cash)",
-                value: `₦${total.toLocaleString()}`,
+                value: `₦${booking.totalPrice.toLocaleString()}`,
                 highlight: true,
               },
             ].map(({ icon, label, value, highlight }) => (
@@ -373,7 +332,7 @@ function BookingCard({
                   {icon} {label}
                 </div>
                 <div
-                  className={`text-[13px] font-semibold leading-snug ${
+                  className={`text-[13px] font-semibold leading-snug break-words ${
                     highlight
                       ? "text-blue-400 text-[16px] font-black"
                       : "text-slate-300"
@@ -386,6 +345,50 @@ function BookingCard({
             ))}
           </div>
 
+          {/* Stops */}
+          {trip.stops.length > 0 && (
+            <div className="rounded-xl bg-white/5 border border-white/5 px-4 py-3">
+              <div className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest mb-2">
+                Stops ({trip.stops.length})
+              </div>
+              <div className="space-y-1.5">
+                {trip.stops.map((stop, i) => (
+                  <div
+                    key={stop._id ?? i}
+                    className="flex items-center gap-2 text-[12px] text-slate-400"
+                  >
+                    <div className="w-4 h-4 rounded-full bg-amber-500/15 border border-amber-500/20 flex items-center justify-center text-[8px] font-bold text-amber-400 flex-shrink-0">
+                      {i + 1}
+                    </div>
+                    <span className="truncate">{stop.address}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Preferences */}
+          <div className="flex flex-wrap gap-2">
+            {trip.preferences.instantBooking && (
+              <span className="text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full">
+                ⚡ Instant Booking
+              </span>
+            )}
+            {trip.preferences.smokingAllowed && (
+              <span className="text-[10px] font-semibold bg-white/5 text-slate-500 border border-white/5 px-2 py-0.5 rounded-full">
+                🚬 Smoking OK
+              </span>
+            )}
+            {trip.preferences.petsAllowed && (
+              <span className="text-[10px] font-semibold bg-white/5 text-slate-500 border border-white/5 px-2 py-0.5 rounded-full">
+                🐾 Pets OK
+              </span>
+            )}
+            <span className="text-[10px] font-semibold bg-white/5 text-slate-500 border border-white/5 px-2 py-0.5 rounded-full">
+              🧳 {trip.preferences.luggagePolicy}
+            </span>
+          </div>
+
           {/* Reference */}
           <div className="flex items-center gap-3 rounded-xl bg-white/5 border border-white/5 px-4 py-3">
             <div className="flex-1">
@@ -396,25 +399,24 @@ function BookingCard({
                 className="font-mono text-[13px] font-bold text-slate-300 tracking-widest"
                 style={{ fontFamily: "'Syne', sans-serif" }}
               >
-                {booking.ref}
+                {ref}
               </div>
             </div>
             <button
               onClick={copyRef}
-              className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg border transition-all
-                ${
-                  copied
-                    ? "bg-blue-600/15 border-blue-500/30 text-blue-400"
-                    : "bg-white/5 border-white/5 text-slate-400 hover:border-white/10 hover:text-slate-200"
-                }`}
+              className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg border transition-all ${
+                copied
+                  ? "bg-blue-600/15 border-blue-500/30 text-blue-400"
+                  : "bg-white/5 border-white/5 text-slate-400 hover:border-white/10 hover:text-slate-200"
+              }`}
             >
               {copied ? <FiCheckCircle size={13} /> : <FiCopy size={13} />}
               {copied ? "Copied!" : "Copy"}
             </button>
           </div>
 
-          {/* Driver contact card — active bookings only */}
-          {booking.status !== "cancelled" && (
+          {/* Driver contact card */}
+          {isActive && (
             <div className="rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-600/10 to-blue-600/5 p-4">
               <div className="flex items-center gap-1.5 mb-4">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse inline-block" />
@@ -422,15 +424,12 @@ function BookingCard({
                   Driver Contact
                 </span>
               </div>
-
               <div className="flex items-center gap-3 mb-4">
                 <div className="relative flex-shrink-0">
                   <div
-                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${booking.avatarBg}
-                      flex items-center justify-center font-bold text-sm text-blue-300
-                      border-2 border-blue-500/30`}
+                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${avatarBg} flex items-center justify-center font-bold text-sm text-blue-300 border-2 border-blue-500/30`}
                   >
-                    {booking.driverInitials}
+                    {initials}
                   </div>
                   <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center border-2 border-[#0f172a]">
                     <FiCheckCircle
@@ -442,21 +441,19 @@ function BookingCard({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-[14px] text-white">
-                    {booking.driverName}
+                    {driverName}
                   </div>
-                  <div className="flex items-center gap-1.5 text-[12px] text-slate-500 mt-0.5">
-                    <FiCheckCircle size={11} className="text-blue-400" />
-                    Verified · {booking.driverTrips} trips
+                  <div className="text-[12px] text-slate-500 mt-0.5">
+                    {vehicleLabel} · {plate}
                   </div>
                 </div>
                 <div
-                  className="font-black text-[15px] text-white tracking-wide flex-shrink-0"
+                  className="font-black text-[14px] text-white tracking-wide flex-shrink-0"
                   style={{ fontFamily: "'Syne', sans-serif" }}
                 >
-                  {booking.phone}
+                  {driverPhone}
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-2">
                 <button className="flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold text-[13px] py-2.5 rounded-xl hover:bg-blue-500 transition-all hover:-translate-y-0.5 shadow-md shadow-blue-600/20">
                   <BsPhoneFill size={13} /> Call Driver
@@ -469,7 +466,7 @@ function BookingCard({
           )}
 
           {/* Share trip OR cancelled banner */}
-          {booking.status !== "cancelled" ? (
+          {isActive ? (
             <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
               <div
                 className="text-[13px] font-semibold text-white mb-1 flex items-center gap-2"
@@ -479,7 +476,9 @@ function BookingCard({
                 Share Trip Details
               </div>
               <div className="text-[12px] text-slate-500 mb-3">
-                Auto-shared to emergency contact · Chioma Adeyemi
+                {emergencyContactName
+                  ? `Auto-share to ${emergencyContactName}`
+                  : "Share with your emergency contact"}
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {[
@@ -490,12 +489,11 @@ function BookingCard({
                   <button
                     key={label}
                     onClick={() => setShared(true)}
-                    className={`flex flex-col items-center gap-1.5 py-2.5 rounded-xl border text-[11px] font-medium transition-all
-                      ${
-                        shared
-                          ? "border-blue-500/30 bg-blue-600/10 text-blue-400"
-                          : "border-white/5 bg-white/5 text-slate-400 hover:border-blue-500/30 hover:bg-blue-600/10 hover:text-blue-400"
-                      }`}
+                    className={`flex flex-col items-center gap-1.5 py-2.5 rounded-xl border text-[11px] font-medium transition-all ${
+                      shared
+                        ? "border-blue-500/30 bg-blue-600/10 text-blue-400"
+                        : "border-white/5 bg-white/5 text-slate-400 hover:border-blue-500/30 hover:bg-blue-600/10 hover:text-blue-400"
+                    }`}
                   >
                     {icon} {label}
                   </button>
@@ -523,7 +521,7 @@ function BookingCard({
 
           {/* Bottom actions */}
           <div className="flex gap-2 pt-1">
-            {booking.status === "cancelled" ? (
+            {!isActive ? (
               <button className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold text-[13px] py-2.5 rounded-xl hover:bg-blue-500 transition-all shadow-md shadow-blue-600/20 hover:-translate-y-0.5">
                 <FiSearch size={14} /> Find Another Ride
               </button>
@@ -542,7 +540,7 @@ function BookingCard({
             )}
           </div>
 
-          {/* Inline cancel confirm */}
+          {/* Cancel confirm */}
           {cancelling && (
             <div
               className="rounded-xl border border-red-500/25 bg-red-500/8 p-4"
@@ -600,72 +598,91 @@ function EmptyState({ filter }: { filter: Filter }) {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function MyBookings() {
+  const dispatch = useAppDispatch();
+  const token = useAppSelector(selectToken);
+  const riderUser = useAppSelector(selectRiderUser);
+  const bookings = useAppSelector(selectBookedTrips);
+  const isLoading = useAppSelector(selectBookedTripsLoading);
+
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
-  const [expandedId, setExpandedId] = useState<string | null>("1");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const emergencyContactName = riderUser?.emergencyContact?.name;
+
+  // ── Fetch booked trips on mount ───────────────────────────
+  useEffect(() => {
+    if (!token) return;
+    const load = async () => {
+      dispatch(setBookedTripsLoading(true));
+      try {
+        const result = await getBookedTrips(token);
+        dispatch(setBookedTrips(result.data.bookings));
+        if (result.data.bookings.length > 0) {
+          setExpandedId(result.data.bookings[0]._id);
+        }
+      } catch (_) {
+        // silently fail
+      } finally {
+        dispatch(setBookedTripsLoading(false));
+      }
+    };
+    load();
+  }, [token, dispatch]);
+
+  // ── Derived stats ─────────────────────────────────────────
+  const confirmedCount = bookings.filter(
+    (b) => b.status === "confirmed"
+  ).length;
+  const totalSpent = bookings
+    .filter((b) => b.status !== "cancelled")
+    .reduce((s, b) => s + b.totalPrice, 0);
+  const upcomingCount = bookings.filter(
+    (b) => b.status === "confirmed" || b.status === "pending"
+  ).length;
 
   const filterDefs: { key: Filter; label: string; count: number }[] = [
-    { key: "all", label: "All", count: MOCK_BOOKINGS.length },
+    { key: "all", label: "All", count: bookings.length },
     {
       key: "confirmed",
       label: "Confirmed",
-      count: MOCK_BOOKINGS.filter((b) => b.status === "confirmed").length,
+      count: bookings.filter((b) => b.status === "confirmed").length,
     },
     {
       key: "pending",
       label: "Pending",
-      count: MOCK_BOOKINGS.filter((b) => b.status === "pending").length,
+      count: bookings.filter((b) => b.status === "pending").length,
     },
     {
       key: "cancelled",
       label: "Cancelled",
-      count: MOCK_BOOKINGS.filter((b) => b.status === "cancelled").length,
+      count: bookings.filter((b) => b.status === "cancelled").length,
     },
   ];
 
   const filteredBookings =
     activeFilter === "all"
-      ? MOCK_BOOKINGS
-      : MOCK_BOOKINGS.filter((b) => b.status === activeFilter);
-
-  const confirmedCount = MOCK_BOOKINGS.filter(
-    (b) => b.status === "confirmed"
-  ).length;
-  const totalSpent = MOCK_BOOKINGS.filter(
-    (b) => b.status !== "cancelled"
-  ).reduce((s, b) => s + b.price * b.seats, 0);
-  const upcomingCount = MOCK_BOOKINGS.filter(
-    (b) => b.status === "confirmed" || b.status === "pending"
-  ).length;
+      ? bookings
+      : bookings.filter((b) => b.status === activeFilter);
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap');
-
         .mb-root * { box-sizing: border-box; }
-        .mb-root {
-          font-family: 'DM Sans', sans-serif;
-          background: #0f172a;
-          color: #cbd5e1;
-          min-height: 100vh;
-        }
+        .mb-root { font-family: 'DM Sans', sans-serif; background: #0f172a; color: #cbd5e1; min-height: 100vh; }
         .mb-root ::-webkit-scrollbar { width: 4px; }
         .mb-root ::-webkit-scrollbar-track { background: transparent; }
         .mb-root ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-
         .booking-enter { animation: bookingIn 0.25s ease-out both; }
-        @keyframes bookingIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes bookingIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
       <div className="mb-root">
         <div className="max-w-[780px] lg:max-w-[1100px] mx-auto px-6 py-8">
-          {/* ── Page Header ─────────────────────────────────────── */}
+          {/* ── Header ── */}
           <div className="flex items-start justify-between mb-8">
             <div>
               <h1
@@ -684,7 +701,6 @@ export default function MyBookings() {
                 Manage your upcoming and past trip bookings
               </p>
             </div>
-
             <button
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-[13px] px-4 py-2.5 rounded-xl shadow-lg shadow-blue-600/20 hover:-translate-y-0.5 transition-all"
               style={{ fontFamily: "'Syne', sans-serif" }}
@@ -693,33 +709,33 @@ export default function MyBookings() {
             </button>
           </div>
 
-          {/* ── Stats ─────────────────────────────────────────────── */}
-          <div className="grid grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
+          {/* ── Stats ── */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             {[
               {
                 label: "Total Trips",
-                value: MOCK_BOOKINGS.length,
+                value: isLoading ? "—" : bookings.length,
                 icon: <FiBookmark size={14} />,
                 color: "from-blue-600/20 to-blue-600/5 border-blue-500/20",
                 valueColor: "text-blue-400",
               },
               {
                 label: "Total Spent",
-                value: `₦${totalSpent.toLocaleString()}`,
+                value: isLoading ? "—" : `₦${totalSpent.toLocaleString()}`,
                 icon: <TbCreditCard size={15} />,
                 color: "from-white/5 to-white/[0.02] border-white/5",
                 valueColor: "text-white",
               },
               {
                 label: "Upcoming",
-                value: upcomingCount,
+                value: isLoading ? "—" : upcomingCount,
                 icon: <FiCalendar size={14} />,
                 color: "from-white/5 to-white/[0.02] border-white/5",
                 valueColor: "text-white",
               },
               {
                 label: "Confirmed",
-                value: confirmedCount,
+                value: isLoading ? "—" : confirmedCount,
                 icon: <FiCheckCircle size={14} />,
                 color:
                   "from-emerald-500/10 to-emerald-500/5 border-emerald-500/20",
@@ -746,86 +762,118 @@ export default function MyBookings() {
             ))}
           </div>
 
-          {/* ── Filter Pills ─────────────────────────────────────── */}
-          <div className="flex gap-2 flex-wrap mb-5">
-            {filterDefs.map(({ key, label, count }) => (
-              <button
-                key={key}
-                onClick={() => setActiveFilter(key)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-all
-                  ${
-                    activeFilter === key
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-transparent text-slate-500 border-white/5 hover:border-blue-500/30 hover:text-slate-300"
-                  }`}
+          {/* ── Loading state ── */}
+          {isLoading && (
+            <div className="flex items-center justify-center py-20 gap-3 text-slate-400">
+              <svg
+                className="w-5 h-5 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
               >
-                {label}
-                <span
-                  className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full min-w-[18px] text-center
-                    ${
-                      activeFilter === key
-                        ? "bg-white/20 text-white"
-                        : "bg-white/5 text-slate-500"
-                    }`}
-                >
-                  {count}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* ── Results meta ─────────────────────────────────────── */}
-          {filteredBookings.length > 0 && (
-            <div className="flex items-center gap-2 text-[13px] text-slate-500 mb-4">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse inline-block" />
-              <span>
-                <span className="text-white font-semibold">
-                  {filteredBookings.length} booking
-                  {filteredBookings.length !== 1 ? "s" : ""}
-                </span>
-                {activeFilter !== "all" && ` · ${activeFilter}`}
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeOpacity="0.3"
+                />
+                <path
+                  d="M12 2a10 10 0 0110 10"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="text-[14px] font-medium">
+                Loading your bookings...
               </span>
             </div>
           )}
 
-          {/* ── Booking Cards ────────────────────────────────────── */}
-          {filteredBookings.length === 0 ? (
-            <EmptyState filter={activeFilter} />
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              {filteredBookings.map((booking, i) => {
-                const isExpanded = expandedId === booking.id;
-                return (
-                  <div
-                    key={booking.id}
-                    className={`booking-enter ${
-                      isExpanded ? "lg:col-span-2" : ""
+          {!isLoading && (
+            <>
+              {/* ── Filter Pills ── */}
+              <div className="flex gap-2 flex-wrap mb-5">
+                {filterDefs.map(({ key, label, count }) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveFilter(key)}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-all ${
+                      activeFilter === key
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-transparent text-slate-500 border-white/5 hover:border-blue-500/30 hover:text-slate-300"
                     }`}
-                    style={{ animationDelay: `${i * 60}ms` }}
                   >
-                    <BookingCard
-                      booking={booking}
-                      expanded={isExpanded}
-                      onToggle={() =>
-                        setExpandedId(isExpanded ? null : booking.id)
-                      }
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                    {label}
+                    <span
+                      className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
+                        activeFilter === key
+                          ? "bg-white/20 text-white"
+                          : "bg-white/5 text-slate-500"
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                ))}
+              </div>
 
-          {/* ── Footer ──────────────────────────────────────────── */}
-          {filteredBookings.length > 0 && (
-            <div className="flex items-center justify-center gap-2 mt-8 text-[12px] text-slate-700">
-              <FiRotateCcw size={12} />
-              Last synced just now
-            </div>
+              {/* ── Results meta ── */}
+              {filteredBookings.length > 0 && (
+                <div className="flex items-center gap-2 text-[13px] text-slate-500 mb-4">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse inline-block" />
+                  <span>
+                    <span className="text-white font-semibold">
+                      {filteredBookings.length} booking
+                      {filteredBookings.length !== 1 ? "s" : ""}
+                    </span>
+                    {activeFilter !== "all" && ` · ${activeFilter}`}
+                  </span>
+                </div>
+              )}
+
+              {/* ── Booking Cards ── */}
+              {filteredBookings.length === 0 ? (
+                <EmptyState filter={activeFilter} />
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  {filteredBookings.map((booking, i) => {
+                    const isExpanded = expandedId === booking._id;
+                    return (
+                      <div
+                        key={booking._id}
+                        className={`booking-enter ${
+                          isExpanded ? "lg:col-span-2" : ""
+                        }`}
+                        style={{ animationDelay: `${i * 60}ms` }}
+                      >
+                        <BookingCard
+                          booking={booking}
+                          expanded={isExpanded}
+                          onToggle={() =>
+                            setExpandedId(isExpanded ? null : booking._id)
+                          }
+                          emergencyContactName={emergencyContactName}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* ── Footer ── */}
+              {filteredBookings.length > 0 && (
+                <div className="flex items-center justify-center gap-2 mt-8 text-[12px] text-slate-700">
+                  <FiRotateCcw size={12} />
+                  {bookings.length} booking{bookings.length !== 1 ? "s" : ""}{" "}
+                  loaded from server
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
     </>
   );
 }
-

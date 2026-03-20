@@ -7,17 +7,8 @@ import {
   selectRiderInitials,
   logout,
 } from "@/store/slices/authSlice";
+import { selectBookedTrips } from "@/store/slices/bookingSlice";
 import { useRouter } from "next/navigation";
-
-const navItems = [
-  { icon: "Home", label: "Dashboard", section: "MAIN" },
-  { icon: "Search", label: "Find a Ride", section: "MAIN" },
-  { icon: "Bookmark", label: "My Bookings", badge: 2, section: "MAIN" },
-  { icon: "Clock", label: "Trip History", section: "MAIN" },
-  { icon: "User", label: "My Profile", section: "ACCOUNT" },
-  { icon: "Shield", label: "Emergency Contacts", section: "ACCOUNT" },
-  { icon: "Settings", label: "Settings", section: "ACCOUNT" },
-];
 
 type SidebarProps = {
   isSidebarOpen: boolean;
@@ -36,11 +27,32 @@ export default function Sidebar({
   const router = useRouter();
   const riderUser = useAppSelector(selectRiderUser);
   const initials = useAppSelector(selectRiderInitials);
+  const bookings = useAppSelector(selectBookedTrips);
+
+  // Live badge — count active/pending bookings
+  const activeBookingCount = bookings.filter(
+    (b) => b.status === "confirmed" || b.status === "pending"
+  ).length;
 
   const handleLogout = () => {
     dispatch(logout());
     router.replace("/auth");
   };
+
+  const navItems = [
+    { icon: "Home", label: "Dashboard", section: "MAIN" },
+    { icon: "Search", label: "Find a Ride", section: "MAIN" },
+    {
+      icon: "Bookmark",
+      label: "My Bookings",
+      badge: activeBookingCount > 0 ? activeBookingCount : undefined,
+      section: "MAIN",
+    },
+    { icon: "Clock", label: "Trip History", section: "MAIN" },
+    { icon: "User", label: "My Profile", section: "ACCOUNT" },
+    { icon: "Shield", label: "Emergency Contacts", section: "ACCOUNT" },
+    { icon: "Settings", label: "Settings", section: "ACCOUNT" },
+  ];
 
   return (
     <aside
@@ -48,7 +60,7 @@ export default function Sidebar({
         isSidebarOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
-      {/* Logo */}
+      {/* ── Logo ── */}
       <div className="p-6 pb-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30">
@@ -71,7 +83,7 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* Nav items */}
+      {/* ── Nav items ── */}
       <div className="px-4 pb-4 flex-1">
         {["MAIN", "ACCOUNT"].map((section) => (
           <div key={section} className="mb-4">
@@ -86,8 +98,11 @@ export default function Sidebar({
                 return (
                   <button
                     key={item.label}
-                    onClick={() => setActiveNav(item.label)}
-                    className={`nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-sm font-medium ${
+                    onClick={() => {
+                      setActiveNav(item.label);
+                      setIsSidebarOpen(false);
+                    }}
+                    className={`nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-sm font-medium transition-all ${
                       isActive
                         ? "bg-blue-600 text-white shadow-lg shadow-blue-600/25"
                         : "text-slate-400 hover:text-white hover:bg-white/5"
@@ -95,8 +110,8 @@ export default function Sidebar({
                   >
                     <Icon />
                     <span className="flex-1 text-left">{item.label}</span>
-                    {item.badge && (
-                      <span className="bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold">
+                    {item.badge !== undefined && (
+                      <span className="bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold flex-shrink-0">
                         {item.badge}
                       </span>
                     )}
@@ -107,10 +122,10 @@ export default function Sidebar({
         ))}
       </div>
 
-      {/* Bottom user card */}
+      {/* ── Bottom user card ── */}
       <div className="p-4 border-t border-white/5">
         <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-sm font-bold text-white">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
             {initials}
           </div>
           <div className="flex-1 min-w-0">
@@ -121,13 +136,12 @@ export default function Sidebar({
               {riderUser?.isVerified ? "Verified Rider" : "Rider"}
             </p>
           </div>
-          {/* Logout button */}
           <button
             onClick={handleLogout}
             title="Logout"
-            className="text-slate-500 hover:text-red-400 transition-colors flex-shrink-0"
+            className="text-slate-500 hover:text-red-400 transition-colors flex-shrink-0 p-1 rounded-lg hover:bg-red-500/10"
           >
-            {/* <Icons.LogOut /> */}
+            <Icons.LogOut />
           </button>
         </div>
       </div>

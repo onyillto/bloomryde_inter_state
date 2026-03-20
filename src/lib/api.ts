@@ -471,3 +471,171 @@ export const searchTrips = async (
 
   return response.json();
 };
+
+
+// ─────────────────────────────────────────────────────────────
+//  BOOKING TYPES
+// ─────────────────────────────────────────────────────────────
+
+export type BookingStatus = "pending" | "confirmed" | "cancelled" | "completed";
+export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+
+// Driver shape as populated inside a booking's trip
+export interface BookingDriver {
+  _id: string;
+  personalInfo: {
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+  };
+  vehicleInfo: {
+    make: string;
+    model: string;
+    year: string;
+    color: string;
+    plateNumber: string;
+    passengerSeats: number;
+    vin: string;
+    photos: Array<{
+      label: string;
+      file: {
+        fileName: string;
+        fileSize: string;
+        url: string;
+      };
+      _id: string;
+    }>;
+    documents: {
+      registrationCertificate: { fileName: string; fileSize: string; url: string };
+      insuranceCertificate: { fileName: string; fileSize: string; url: string };
+      roadWorthiness: { fileName: string; fileSize: string; url: string };
+    };
+  };
+}
+
+// Trip shape as populated inside a booking
+export interface BookingTrip {
+  _id: string;
+  id: string;
+  driver: BookingDriver;           // fully populated — not just an ID string
+  vehicle: TripVehicle;
+  origin: TripLocation;
+  destination: TripLocation;
+  stops: TripLocation[];
+  departureTime: string;
+  pricePerSeat: number;
+  totalSeats: number;
+  availableSeats: number;
+  status: TripStatus;
+  description?: string;
+  preferences: TripPreferences;
+  bookings: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Full booking shape — matches GET /trips/booked-trips response
+export interface Booking {
+  _id: string;
+  id: string;
+  trip: BookingTrip;
+  rider: string;
+  seatsBooked: number;
+  totalPrice: number;
+  status: BookingStatus;
+  paymentInfo: {
+    paymentStatus: PaymentStatus;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  BOOKING ENDPOINTS
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Fetches all trips booked by the logged-in rider.
+ * Corresponds to: GET /trips/booked-trips
+ * Requires auth token.
+ */
+export const getBookedTrips = async (
+  token: string
+): Promise<{ status: string; results: number; data: { bookings: Booking[] } }> => {
+  const response = await fetch(`${API_BASE_URL}/trips/booked-trips`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errData = await response
+      .json()
+      .catch(() => ({ message: "An unknown error occurred" }));
+    throw new Error(
+      errData.message || `Request failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
+};
+
+// ─────────────────────────────────────────────────────────────
+//  BOOK A TRIP (for riders)
+// ─────────────────────────────────────────────────────────────
+
+export interface BookTripPayload {
+  tripId: string;
+  seats: number; // backend expects "seats" not "seatsBooked"
+}
+
+// Booking shape returned from POST /trips/:id/book
+// Note: trip is a string ID here — NOT populated like GET /trips/booked-trips
+export interface BookTripResponse {
+  _id: string;
+  id: string;
+  trip: string;          // just the trip ID — not populated
+  rider: string;
+  seatsBooked: number;
+  totalPrice: number;
+  status: BookingStatus;
+  paymentInfo: {
+    paymentStatus: PaymentStatus;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Books a trip for the logged-in rider.
+ * Corresponds to: POST /trips/:id/book
+ * Body: { seats: number }
+ * Returns 201 with booking object — trip field is a string ID (not populated).
+ * After booking, call getBookedTrips() to get the full populated booking.
+ */
+export const bookTrip = async (
+  payload: BookTripPayload,
+  token: string
+): Promise<{ status: string; message: string; data: { booking: BookTripResponse } }> => {
+  const response = await fetch(`${API_BASE_URL}/trips/${payload.tripId}/book`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ seats: payload.seats }), // ← "seats" not "seatsBooked"
+  });
+
+  if (!response.ok) {
+    const errData = await response
+      .json()
+      .catch(() => ({ message: "An unknown error occurred" }));
+    throw new Error(
+      errData.message || `Request failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
+};
