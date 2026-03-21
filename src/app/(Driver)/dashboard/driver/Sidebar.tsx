@@ -141,12 +141,12 @@ export default function DriverSidebar({
             active={activeNav === "passengers"}
             onClick={() => setActiveNav("passengers")}
           />
-          <NavItem
+          {/* <NavItem
             icon={<IconBar />}
             label="Performance"
             active={activeNav === "performance"}
             onClick={() => setActiveNav("performance")}
-          />
+          /> */}
         </div>
       </div>
 

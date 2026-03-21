@@ -19,8 +19,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { registerRider } from "@/lib/api";
-import { useAppDispatch } from "../lib/hooks";
-import { setCredentials } from "../lib/authSlice";
+import { useAppDispatch } from "@/store/hooks";
+import { setCredentials } from "@/store/slices/authSlice";
 
 // ─────────────────────────────────────────────────────────────
 //  TYPE HELPERS

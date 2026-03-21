@@ -62,6 +62,110 @@ const upcomingTrips = [
 const quickRoutes = ["Lagos → Abuja", "Lagos → Port Harcourt", "Abuja → Enugu"];
 
 export default function DashboardContent() {
+<<<<<<< Updated upstream
+=======
+  const dispatch = useAppDispatch();
+  const token = useAppSelector(selectToken);
+  const riderUser = useAppSelector(selectRiderUser);
+  const isVerified = useAppSelector(selectRiderIsVerified);
+  const bookings = useAppSelector(selectBookedTrips);
+  const isLoading = useAppSelector(selectBookedTripsLoading);
+
+  // ── Fetch booked trips on mount ───────────────────────────
+  useEffect(() => {
+    if (!token) return;
+    if (bookings.length > 0) return;
+
+    const load = async () => {
+      dispatch(setBookedTripsLoading(true));
+      try {
+        const result = await getBookedTrips(token);
+        dispatch(setBookedTrips(result.data.bookings));
+      } catch (_) {
+        // silently fail
+      } finally {
+        dispatch(setBookedTripsLoading(false));
+      }
+    };
+    load();
+  }, [token, dispatch, bookings.length]);
+
+  // ── Derived stats ──────────────────────────────────────────
+  const totalBookings = bookings.length;
+  const upcomingBookings = bookings.filter(
+    (b) => b.trip.status === "scheduled" || b.trip.status === "active"
+  );
+  const completedBookings = bookings.filter(
+    (b) => b.trip.status === "completed"
+  );
+
+  // Favourite route — most repeated origin → destination pair
+  const routeCounts: Record<string, number> = {};
+  bookings.forEach((b) => {
+    const key = `${b.trip.origin.city} → ${b.trip.destination.city}`;
+    routeCounts[key] = (routeCounts[key] ?? 0) + 1;
+  });
+  const favouriteRoute =
+    Object.entries(routeCounts).sort((a, b) => b[1] - a[1])[0] ?? null;
+
+  // Emergency contact
+  const emergencyContact = riderUser?.emergencyContact ?? null;
+
+  const stats = [
+    {
+      label: "Total Trips",
+      value: totalBookings.toString(),
+      sub:
+        totalBookings === 0
+          ? "No trips yet"
+          : `${completedBookings.length} completed`,
+      icon: "Bus",
+      accent: "blue",
+    },
+    {
+      label: "Upcoming",
+      value: upcomingBookings.length.toString(),
+      sub:
+        upcomingBookings.length === 0
+          ? "No upcoming trips"
+          : `${upcomingBookings.length} scheduled`,
+      icon: "Star",
+      accent: "amber",
+    },
+    {
+      label: "Favourite Route",
+      value: favouriteRoute ? favouriteRoute[0] : "—",
+      sub: favouriteRoute ? `Travelled ${favouriteRoute[1]}x` : "No trips yet",
+      icon: "MapPin",
+      accent: "indigo",
+    },
+    {
+      label: "Safety Score",
+      value: isVerified ? "100%" : "—",
+      sub: isVerified ? "Account verified" : "Not yet verified",
+      icon: "Shield",
+      accent: "emerald",
+    },
+  ];
+
+  const accents: Record<string, string> = {
+    blue: "from-blue-600/20 to-blue-600/5 border-blue-500/20 text-blue-400",
+    amber:
+      "from-amber-500/20 to-amber-500/5 border-amber-500/20 text-amber-400",
+    indigo:
+      "from-indigo-500/20 to-indigo-500/5 border-indigo-500/20 text-indigo-400",
+    emerald:
+      "from-emerald-500/20 to-emerald-500/5 border-emerald-500/20 text-emerald-400",
+  };
+
+  const iconBg: Record<string, string> = {
+    blue: "bg-blue-600/20 text-blue-400",
+    amber: "bg-amber-500/20 text-amber-400",
+    indigo: "bg-indigo-500/20 text-indigo-400",
+    emerald: "bg-emerald-500/20 text-emerald-400",
+  };
+
+>>>>>>> Stashed changes
   return (
     <>
       {/* Stats */}

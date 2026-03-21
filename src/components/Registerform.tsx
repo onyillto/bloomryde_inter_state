@@ -179,12 +179,37 @@ export default function RegisterForm({
     setOtpStatus("idle");
 
     try {
+<<<<<<< Updated upstream
       await onVerifyOTP(phone, code);
       setVerifying(false);
       setOtpStatus("success");
       setTimeout(() => router.push("/onboarding/choose-type"), 700);
       setTimeout(() => router.push(`/onboarding?phone=${encodeURIComponent(phone)}`), 700);
     } catch (error) {
+=======
+      const result = await onVerifyOTP(phone, code);
+
+      // Token is at result.token — NOT result.data.token
+      // User is at result.data.user
+      dispatch(
+        setCredentials({
+          user: result.data?.user ?? result.data ?? result.user ?? null,
+          token: result.token ?? result.data?.token ?? null,
+          role: "rider", // OTP verify is always rider registration
+        })
+      );
+
+      localStorage.setItem("onboardingPhone", phone);
+
+      setVerifying(false);
+      setOtpStatus("success");
+
+      setTimeout(
+        () => router.push(`/onboarding?phone=${encodeURIComponent(phone)}`),
+        700
+      );
+    } catch (error: any) {
+>>>>>>> Stashed changes
       setVerifying(false);
       setAttempts((prev) => {
         const newAttempts = prev + 1;

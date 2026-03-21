@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowRight, User, Car, CheckCircle2 } from "lucide-react";
 import RiderOnboarding from "../../../components/RiderOnboarding";
 import DriverOnboarding from "../../../components/DriverOnboarding";
@@ -8,7 +8,11 @@ import DriverOnboarding from "../../../components/DriverOnboarding";
 // ─────────────────────────────────────────────────────────────
 //  CHOOSE TYPE SCREEN (Desktop Optimized)
 // ─────────────────────────────────────────────────────────────
-function ChooseTypePage({ onSelect }: { onSelect: (role: "rider" | "driver") => void }) {
+function ChooseTypePage({
+  onSelect,
+}: {
+  onSelect: (role: "rider" | "driver") => void;
+}) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-700 via-blue-600 to-blue-500 flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden">
       {/* Dynamic Background Elements */}
@@ -128,13 +132,31 @@ function ChooseTypePage({ onSelect }: { onSelect: (role: "rider" | "driver") => 
 // ─────────────────────────────────────────────────────────────
 //  ROOT PAGE EXPORT
 // ─────────────────────────────────────────────────────────────
-export default function OnboardingPage({ searchParams }: { searchParams: { phone?: string } }) {
-  const phone = searchParams?.phone ?? "";
+export default function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: { phone?: string };
+}) {
+  const urlPhone = searchParams?.phone ?? "";
+  const [phone, setPhone] = useState(urlPhone);
+
+  useEffect(() => {
+    if (urlPhone) {
+      setPhone(urlPhone);
+    } else {
+      const stored = localStorage.getItem("onboardingPhone");
+      if (stored) setPhone(stored);
+    }
+  }, [urlPhone]);
+
   const [role, setRole] = useState<"rider" | "driver" | null>(null);
   const [visible, setVisible] = useState(true);
   const [dir, setDir] = useState("forward");
 
-  const navigate = (target: "rider" | "driver" | null, direction: "forward" | "back") => {
+  const navigate = (
+    target: "rider" | "driver" | null,
+    direction: "forward" | "back"
+  ) => {
     setDir(direction);
     setVisible(false);
     setTimeout(() => {

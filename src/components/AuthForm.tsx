@@ -175,10 +175,34 @@ export default function AuthForm({
     setOtpStatus("idle");
 
     try {
+<<<<<<< Updated upstream
       await onVerifyOTP(phone, code);
+=======
+      const result = await onVerifyOTP(phone, code);
+
+      // Attempt to extract user/token if they exist (optional for verification step)
+      const user = result?.data?.user ?? result?.user;
+      const token = result?.token ?? result?.data?.token;
+
+      if (user && token) {
+        dispatch(
+          setCredentials({
+            user,
+            token,
+            role: "rider",
+          })
+        );
+      }
+
+      localStorage.setItem("onboardingPhone", phone);
+
+>>>>>>> Stashed changes
       setVerifying(false);
       setOtpStatus("success");
-      setTimeout(() => router.push("/onboarding"), 700);
+      setTimeout(
+        () => router.push(`/onboarding?phone=${encodeURIComponent(phone)}`),
+        700
+      );
     } catch (error) {
       setVerifying(false);
       const newAttempts = attempts + 1;

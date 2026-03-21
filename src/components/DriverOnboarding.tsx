@@ -490,12 +490,12 @@ function StepEmergency({
 // ─────────────────────────────────────────────────────────────
 
 const STEPS = [
-  { title: "Account", subtitle: "Secure your passenger profile" },
-  { title: "Identity", subtitle: "Personal info for driver matching" },
+  { title: "Account", subtitle: "Secure your driver profile" },
+  { title: "Identity", subtitle: "Personal info for verification" },
   { title: "Safety", subtitle: "Emergency contact setup" },
 ];
 
-export default function PassengerOnboarding({
+export default function DriverOnboarding({
   phone = "",
   onBackToChoose,
 }: {
@@ -553,7 +553,7 @@ export default function PassengerOnboarding({
               Welcome!
             </h2>
             <p className="text-blue-100 text-lg font-medium">
-              Your profile is ready. Let's find your first ride.
+              Your driver profile is ready. Let's get you on the road.
             </p>
           </div>
           <button
