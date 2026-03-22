@@ -1201,139 +1201,139 @@ export default function DriverOnboarding({
   };
 
   // ── Final submit ──────────────────────────────────────────────────────────
-const handleFinalSubmit = async () => {
-  setSubmitting(true);
-  setSubmitError(null);
+  const handleFinalSubmit = async () => {
+    setSubmitting(true);
+    setSubmitError(null);
 
-  const nameParts = personal.fullName.trim().split(" ");
-  const firstName = nameParts[0] ?? "";
-  const lastName = nameParts.slice(1).join(" ") || firstName;
+    const nameParts = personal.fullName.trim().split(" ");
+    const firstName = nameParts[0] ?? "";
+    const lastName = nameParts.slice(1).join(" ") || firstName;
 
-  try {
-    const formData = new FormData();
+    try {
+      const formData = new FormData();
 
-    // ── Root fields ───────────────────────────────────────
-    formData.append("password", account.password);
+      // ── Root fields ───────────────────────────────────────
+      formData.append("password", account.password);
 
-    // ── personalInfo as JSON string ───────────────────────
-    formData.append(
-      "personalInfo",
-      JSON.stringify({
-        firstName,
-        lastName,
-        email: account.email,
-        phoneNumber: phone,
-        dateOfBirth: personal.dob,
-        address: personal.address || "N/A",
-        city: personal.city || "N/A",
-        state: personal.state || "N/A",
-      })
-    );
-
-    // ── contacts as JSON string ───────────────────────────
-    formData.append(
-      "contacts",
-      JSON.stringify({
-        emergency: {
-          fullName: emergency.eName,
-          phoneNumber: emergency.ePhone,
-          relationship: emergency.eRel,
-        },
-        guarantor: {
-          fullName: guarantor.gName,
-          phoneNumber: guarantor.gPhone,
-          address: guarantor.gAddress,
-          relationshipAndOccupation: guarantor.gRelOcc,
-        },
-      })
-    );
-
-    // ── verificationDocuments text fields only (NO JSON blob) ─
-    formData.append(
-      "verificationDocuments[driversLicense][number]",
-      documents.licenseNumber
-    );
-    formData.append(
-      "verificationDocuments[driversLicense][expiryDate]",
-      documents.licenseExpiry
-    );
-    formData.append(
-      "verificationDocuments[nationalId][number]",
-      documents.nationalIdNumber
-    );
-
-    // ── verificationDocuments files ───────────────────────
-    if (documents.licenseFront)
+      // ── personalInfo as JSON string ───────────────────────
       formData.append(
-        "verificationDocuments[driversLicense][front]",
-        documents.licenseFront
-      );
-    if (documents.licenseBack)
-      formData.append(
-        "verificationDocuments[driversLicense][back]",
-        documents.licenseBack
-      );
-    if (documents.nationalIdDoc)
-      formData.append(
-        "verificationDocuments[nationalId][document]",
-        documents.nationalIdDoc
-      );
-    if (documents.selfie)
-      formData.append(
-        "verificationDocuments[verificationSelfie]",
-        documents.selfie
+        "personalInfo",
+        JSON.stringify({
+          firstName,
+          lastName,
+          email: account.email,
+          phoneNumber: phone,
+          dateOfBirth: personal.dob,
+          address: personal.address || "N/A",
+          city: personal.city || "N/A",
+          state: personal.state || "N/A",
+        })
       );
 
-    // ── vehicleInfo text fields only (NO JSON blob) ───────
-    formData.append("vehicleInfo[make]", vehicle.make);
-    formData.append("vehicleInfo[model]", vehicle.model);
-    formData.append("vehicleInfo[year]", vehicle.year);
-    formData.append("vehicleInfo[color]", vehicle.color);
-    formData.append("vehicleInfo[plateNumber]", vehicle.plateNumber);
-    formData.append(
-      "vehicleInfo[passengerSeats]",
-      String(Number(vehicle.passengerSeats))
-    );
-    formData.append("vehicleInfo[vin]", vehicle.vin);
+      // ── contacts as JSON string ───────────────────────────
+      formData.append(
+        "contacts",
+        JSON.stringify({
+          emergency: {
+            fullName: emergency.eName,
+            phoneNumber: emergency.ePhone,
+            relationship: emergency.eRel,
+          },
+          guarantor: {
+            fullName: guarantor.gName,
+            phoneNumber: guarantor.gPhone,
+            address: guarantor.gAddress,
+            relationshipAndOccupation: guarantor.gRelOcc,
+          },
+        })
+      );
 
-    // ── vehicleInfo files ─────────────────────────────────
-    if (documents.regCert)
+      // ── verificationDocuments text fields only (NO JSON blob) ─
       formData.append(
-        "vehicleInfo[documents][registrationCertificate]",
-        documents.regCert
+        "verificationDocuments[driversLicense][number]",
+        documents.licenseNumber
       );
-    if (documents.insurance)
       formData.append(
-        "vehicleInfo[documents][insuranceCertificate]",
-        documents.insurance
+        "verificationDocuments[driversLicense][expiryDate]",
+        documents.licenseExpiry
       );
-    if (documents.roadWorthiness)
       formData.append(
-        "vehicleInfo[documents][roadWorthiness]",
-        documents.roadWorthiness
+        "verificationDocuments[nationalId][number]",
+        documents.nationalIdNumber
       );
-    if (documents.vehiclePhoto) {
-      formData.append("vehicleInfo[photos][0][label]", "Front View");
-      formData.append("vehicleInfo[photos][0][file]", documents.vehiclePhoto);
+
+      // ── verificationDocuments files ───────────────────────
+      if (documents.licenseFront)
+        formData.append(
+          "verificationDocuments[driversLicense][front]",
+          documents.licenseFront
+        );
+      if (documents.licenseBack)
+        formData.append(
+          "verificationDocuments[driversLicense][back]",
+          documents.licenseBack
+        );
+      if (documents.nationalIdDoc)
+        formData.append(
+          "verificationDocuments[nationalId][document]",
+          documents.nationalIdDoc
+        );
+      if (documents.selfie)
+        formData.append(
+          "verificationDocuments[verificationSelfie]",
+          documents.selfie
+        );
+
+      // ── vehicleInfo text fields only (NO JSON blob) ───────
+      formData.append("vehicleInfo[make]", vehicle.make);
+      formData.append("vehicleInfo[model]", vehicle.model);
+      formData.append("vehicleInfo[year]", vehicle.year);
+      formData.append("vehicleInfo[color]", vehicle.color);
+      formData.append("vehicleInfo[plateNumber]", vehicle.plateNumber);
+      formData.append(
+        "vehicleInfo[passengerSeats]",
+        String(Number(vehicle.passengerSeats))
+      );
+      formData.append("vehicleInfo[vin]", vehicle.vin);
+
+      // ── vehicleInfo files ─────────────────────────────────
+      if (documents.regCert)
+        formData.append(
+          "vehicleInfo[documents][registrationCertificate]",
+          documents.regCert
+        );
+      if (documents.insurance)
+        formData.append(
+          "vehicleInfo[documents][insuranceCertificate]",
+          documents.insurance
+        );
+      if (documents.roadWorthiness)
+        formData.append(
+          "vehicleInfo[documents][roadWorthiness]",
+          documents.roadWorthiness
+        );
+      if (documents.vehiclePhoto) {
+        formData.append("vehicleInfo[photos][0][label]", "Front View");
+        formData.append("vehicleInfo[photos][0][file]", documents.vehiclePhoto);
+      }
+
+      const result = await registerDriver(formData);
+
+      dispatch(
+        setCredentials({
+          user: result.data.driver,
+          token: result.token,
+          role: "driver",
+        })
+      );
+
+      setDone(true);
+    } catch (err: any) {
+      setSubmitError(err?.message || "Registration failed. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-
-    const result = await registerDriver(formData);
-
-    dispatch(
-      setCredentials({
-        user: result.data.driver,
-        token: result.token,
-        role: "driver",
-      })
-    );
-
-    setDone(true);
-  } catch (err: any) {
-    setSubmitError(err?.message || "Registration failed. Please try again.");
-  } finally {
-    setSubmitting(false);
-  }
-};
+  };
 
   // ── Success screen ────────────────────────────────────────────────────────
   if (done) {

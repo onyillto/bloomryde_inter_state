@@ -60,9 +60,7 @@ const CITIES = [
   "Zamfara",
 ];
 
-const ROUTE_PRICES: Record<string, string> = {
-  
-};
+const ROUTE_PRICES: Record<string, string> = {};
 
 function getSuggestedPrice(from: string, to: string) {
   const fromCity = from.split("(")[0].trim();
@@ -101,7 +99,7 @@ export default function CreateTrip() {
   const [smokingAllowed, setSmokingAllowed] = useState(false);
   const [petsAllowed, setPetsAllowed] = useState(false);
   const [luggagePolicy, setLuggagePolicy] = useState<
-    "none" | "light" | "medium" | "heavy"
+    "none" | "small" | "medium" | "large"
   >("medium");
   const [instantBooking, setInstantBooking] = useState(true);
 
@@ -179,7 +177,7 @@ export default function CreateTrip() {
       preferences: {
         smokingAllowed,
         petsAllowed,
-        luggagePolicy,
+        luggagePolicy: luggagePolicy as any,
         instantBooking,
       },
       description:
@@ -632,16 +630,16 @@ export default function CreateTrip() {
                         setLuggagePolicy(
                           e.target.value as
                             | "none"
-                            | "light"
+                            | "small"
                             | "medium"
-                            | "heavy"
+                            | "large"
                         )
                       }
                     >
                       <option value="none">No Luggage</option>
-                      <option value="light">Light</option>
+                      <option value="small">Small</option>
                       <option value="medium">Medium</option>
-                      <option value="heavy">Heavy</option>
+                      <option value="large">Large</option>
                     </select>
                   </div>
                 </div>

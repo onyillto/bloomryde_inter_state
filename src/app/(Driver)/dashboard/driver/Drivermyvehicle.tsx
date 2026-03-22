@@ -478,7 +478,7 @@ export default function DriverMyVehicle() {
                       editing={editing}
                       onChange={set("seats")}
                     />
-                    <EditField
+                    {/* <EditField
                       label="Fuel Type"
                       value={vehicle.fuel}
                       editing={editing}
@@ -501,13 +501,13 @@ export default function DriverMyVehicle() {
                       value={vehicle.mileage}
                       editing={editing}
                       onChange={set("mileage")}
-                    />
-                    <EditField
+                    /> */}
+                    {/* <EditField
                       label="Last Service"
                       value={vehicle.lastService}
                       editing={editing}
                       onChange={set("lastService")}
-                    />
+                    /> */}
                   </div>
                 </SectionCard>
               </div>
@@ -575,7 +575,7 @@ export default function DriverMyVehicle() {
                       className="group relative rounded-2xl overflow-hidden border border-slate-200 aspect-[4/3] cursor-pointer hover:border-blue-300 transition-all hover:shadow-md"
                     >
                       <img
-                        src={photo.file.url}
+                        src={photo.file} // ← plain string now
                         alt={photo.label}
                         className="absolute inset-0 w-full h-full object-cover"
                       />

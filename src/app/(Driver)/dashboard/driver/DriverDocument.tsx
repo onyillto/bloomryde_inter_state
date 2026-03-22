@@ -16,8 +16,6 @@ type Document = {
   status: DocStatus;
   expiryDate?: string;
   fileUrl?: string;
-  fileName?: string;
-  fileSize?: string;
   number?: string;
   required: boolean;
 };
@@ -98,9 +96,7 @@ function buildDocuments(
       icon: "🪪",
       status: deriveStatus(docs.driversLicense?.expiryDate),
       expiryDate: docs.driversLicense?.expiryDate,
-      fileUrl: docs.driversLicense?.front?.url,
-      fileName: docs.driversLicense?.front?.fileName,
-      fileSize: docs.driversLicense?.front?.fileSize,
+      fileUrl: docs.driversLicense?.front,
       number: docs.driversLicense?.number,
       required: true,
     },
@@ -108,13 +104,11 @@ function buildDocuments(
       id: "drivers-license-back",
       name: "Driver's Licence (Back)",
       icon: "🪪",
-      status: docs.driversLicense?.back?.url
+      status: docs.driversLicense?.back
         ? deriveStatus(docs.driversLicense?.expiryDate)
         : "missing",
       expiryDate: docs.driversLicense?.expiryDate,
-      fileUrl: docs.driversLicense?.back?.url,
-      fileName: docs.driversLicense?.back?.fileName,
-      fileSize: docs.driversLicense?.back?.fileSize,
+      fileUrl: docs.driversLicense?.back,
       number: docs.driversLicense?.number,
       required: true,
     },
@@ -122,10 +116,8 @@ function buildDocuments(
       id: "national-id",
       name: "National ID (NIN)",
       icon: "🆔",
-      status: docs.nationalId?.document?.url ? "valid" : "missing",
-      fileUrl: docs.nationalId?.document?.url,
-      fileName: docs.nationalId?.document?.fileName,
-      fileSize: docs.nationalId?.document?.fileSize,
+      status: docs.nationalId?.document ? "valid" : "missing",
+      fileUrl: docs.nationalId?.document,
       number: docs.nationalId?.number,
       required: true,
     },
@@ -133,10 +125,8 @@ function buildDocuments(
       id: "selfie",
       name: "Verification Selfie",
       icon: "🤳",
-      status: docs.verificationSelfie?.url ? "valid" : "missing",
-      fileUrl: docs.verificationSelfie?.url,
-      fileName: docs.verificationSelfie?.fileName,
-      fileSize: docs.verificationSelfie?.fileSize,
+      status: docs.verificationSelfie ? "valid" : "missing",
+      fileUrl: docs.verificationSelfie,
       required: true,
     },
   ];
@@ -252,7 +242,6 @@ function UploadModal({
                 </div>
               </div>
 
-              {/* Only show expiry for licence docs */}
               {doc.id.startsWith("drivers-license") && (
                 <div className="mb-4">
                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 block">
@@ -265,7 +254,6 @@ function UploadModal({
                 </div>
               )}
 
-              {/* Only show number for licence and national ID */}
               {(doc.id.startsWith("drivers-license") ||
                 doc.id === "national-id") && (
                 <div className="mb-4">
@@ -414,8 +402,6 @@ function ViewModal({
               { label: "Document", value: doc.name },
               { label: "Number", value: doc.number ?? "—" },
               { label: "Expiry Date", value: formatDate(doc.expiryDate) },
-              { label: "File Name", value: doc.fileName ?? "—" },
-              { label: "File Size", value: doc.fileSize ?? "—" },
               { label: "Status", value: STATUS_META[doc.status].label },
             ].map(({ label, value }) => (
               <div
@@ -533,7 +519,7 @@ function DocumentCard({
               ? `No. ${doc.number}`
               : isMissing
               ? "Not uploaded"
-              : doc.fileName ?? "—"}
+              : "Uploaded"}
           </div>
         </div>
       </div>
@@ -549,9 +535,6 @@ function DocumentCard({
             }`}
           />
           {s.label}
-        </span>
-        <span className="text-[11px] text-slate-400">
-          {doc.fileSize ?? "—"}
         </span>
       </div>
 
