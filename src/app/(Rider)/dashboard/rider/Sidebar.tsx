@@ -36,7 +36,7 @@ export default function Sidebar({
 
   const handleLogout = () => {
     dispatch(logout());
-    router.replace("/auth");
+    router.replace("/auth/login");
   };
 
   const navItems = [

@@ -1,24 +1,22 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, use } from "react";
 import { ArrowRight, User, Car, CheckCircle2 } from "lucide-react";
 import RiderOnboarding from "../../../components/RiderOnboarding";
 import DriverOnboarding from "../../../components/DriverOnboarding";
 
-// ─────────────────────────────────────────────────────────────
-//  CHOOSE TYPE SCREEN (Desktop Optimized)
-// ─────────────────────────────────────────────────────────────
-function ChooseTypePage({ onSelect }: { onSelect: (role: "rider" | "driver") => void }) {
+function ChooseTypePage({
+  onSelect,
+}: {
+  onSelect: (role: "rider" | "driver") => void;
+}) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-700 via-blue-600 to-blue-500 flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden">
-      {/* Dynamic Background Elements */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-400/20 rounded-full blur-[120px] pointer-events-none animate-pulse" />
       <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-500/20 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Main Content Container */}
       <div className="relative z-10 w-full max-w-6xl mx-auto space-y-12">
-        {/* Header Section - Responsive Text Sizes */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white/90 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] backdrop-blur-md">
             <span className="w-2 h-2 rounded-full bg-blue-300 animate-ping" />
@@ -34,9 +32,8 @@ function ChooseTypePage({ onSelect }: { onSelect: (role: "rider" | "driver") => 
           </p>
         </div>
 
-        {/* Role Cards - Grid switches to 2 columns on small/medium screens */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-10 max-w-5xl mx-auto">
-          {/* Rider Card - "Light Pro" Aesthetic */}
+          {/* Rider Card */}
           <button
             onClick={() => onSelect("rider")}
             className="group relative bg-white rounded-[2.5rem] p-8 lg:p-12 text-left transition-all duration-500 hover:-translate-y-3 hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.3)] active:scale-[0.98] overflow-hidden border border-transparent hover:border-white/50"
@@ -44,11 +41,9 @@ function ChooseTypePage({ onSelect }: { onSelect: (role: "rider" | "driver") => 
             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
               <User size={120} strokeWidth={1} />
             </div>
-
             <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mb-8 shadow-2xl shadow-blue-600/40 group-hover:scale-110 transition-transform duration-500">
               <User size={32} className="text-white" strokeWidth={2.5} />
             </div>
-
             <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">
               I want to Ride
             </h3>
@@ -56,7 +51,6 @@ function ChooseTypePage({ onSelect }: { onSelect: (role: "rider" | "driver") => 
               Book affordable interstate seats and travel with verified,
               top-rated drivers.
             </p>
-
             <div className="space-y-4 mb-10">
               {[
                 "Doorstep terminal pickup",
@@ -72,13 +66,12 @@ function ChooseTypePage({ onSelect }: { onSelect: (role: "rider" | "driver") => 
                 </div>
               ))}
             </div>
-
             <div className="flex items-center gap-2 text-blue-600 font-black text-sm uppercase tracking-widest group-hover:gap-4 transition-all">
               Start Booking <ArrowRight size={20} />
             </div>
           </button>
 
-          {/* Driver Card - "Dark Pro" Aesthetic */}
+          {/* Driver Card */}
           <button
             onClick={() => onSelect("driver")}
             className="group relative bg-slate-900 rounded-[2.5rem] p-8 lg:p-12 text-left transition-all duration-500 hover:-translate-y-3 hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.4)] active:scale-[0.98] overflow-hidden border border-white/5"
@@ -86,11 +79,9 @@ function ChooseTypePage({ onSelect }: { onSelect: (role: "rider" | "driver") => 
             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
               <Car size={120} strokeWidth={1} className="text-white" />
             </div>
-
             <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-8 shadow-2xl shadow-white/10 group-hover:scale-110 transition-transform duration-500">
               <Car size={32} className="text-slate-900" strokeWidth={2.5} />
             </div>
-
             <h3 className="text-3xl font-black text-white mb-3 tracking-tight">
               I want to Drive
             </h3>
@@ -98,7 +89,6 @@ function ChooseTypePage({ onSelect }: { onSelect: (role: "rider" | "driver") => 
               Turn your empty seats into earnings. You set the price, we find
               the people.
             </p>
-
             <div className="space-y-4 mb-10">
               {[
                 "Keep 100% of your cash",
@@ -114,7 +104,6 @@ function ChooseTypePage({ onSelect }: { onSelect: (role: "rider" | "driver") => 
                 </div>
               ))}
             </div>
-
             <div className="flex items-center gap-2 text-white font-black text-sm uppercase tracking-widest group-hover:text-blue-400 group-hover:gap-4 transition-all">
               Become a Driver <ArrowRight size={20} />
             </div>
@@ -125,16 +114,33 @@ function ChooseTypePage({ onSelect }: { onSelect: (role: "rider" | "driver") => 
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-//  ROOT PAGE EXPORT
-// ─────────────────────────────────────────────────────────────
-export default function OnboardingPage({ searchParams }: { searchParams: { phone?: string } }) {
-  const phone = searchParams?.phone ?? "";
+export default function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ phone?: string }>; // ← Promise type
+}) {
+  const params = use(searchParams); // ← unwrap with React.use()
+  const urlPhone = params?.phone ?? "";
+
+  const [phone, setPhone] = useState(urlPhone);
   const [role, setRole] = useState<"rider" | "driver" | null>(null);
   const [visible, setVisible] = useState(true);
   const [dir, setDir] = useState("forward");
 
-  const navigate = (target: "rider" | "driver" | null, direction: "forward" | "back") => {
+  useEffect(() => {
+    if (urlPhone) {
+      localStorage.setItem("onboardingPhone", urlPhone);
+      setPhone(urlPhone);
+    } else {
+      const stored = localStorage.getItem("onboardingPhone");
+      if (stored) setPhone(stored);
+    }
+  }, [urlPhone]);
+
+  const navigate = (
+    target: "rider" | "driver" | null,
+    direction: "forward" | "back"
+  ) => {
     setDir(direction);
     setVisible(false);
     setTimeout(() => {

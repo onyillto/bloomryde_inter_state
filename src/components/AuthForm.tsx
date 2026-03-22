@@ -238,21 +238,22 @@ export default function AuthForm({
       const user = result?.data?.user;
       const token = result?.token ?? result?.data?.token;
 
-      if (!user || !token) {
-        throw new Error("Verification failed. Invalid server response.");
+      if (user && token) {
+        dispatch(
+          setCredentials({
+            user,
+            token,
+            role: "rider",
+          })
+        );
       }
-
-      dispatch(
-        setCredentials({
-          user,
-          token,
-          role: "rider",
-        })
-      );
 
       setVerifying(false);
       setOtpStatus("success");
-      setTimeout(() => router.push("/onboarding"), 700);
+      setTimeout(
+        () => router.push(`/onboarding?phone=${encodeURIComponent(phone)}`),
+        700
+      );
     } catch (error) {
       setVerifying(false);
       const newAttempts = attempts + 1;

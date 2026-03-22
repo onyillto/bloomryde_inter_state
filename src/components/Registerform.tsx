@@ -176,46 +176,40 @@ export default function RegisterForm({
     }
   };
 
-  const verifyOtp = async (digits: string[]) => {
-    const code = digits.join("");
-    setVerifying(true);
-    setOtpStatus("idle");
-    dispatch(setAuthLoading(true));
+const verifyOtp = async (digits: string[]) => {
+  const code = digits.join("");
+  setVerifying(true);
+  setOtpStatus("idle");
+  dispatch(setAuthLoading(true));
 
-    try {
-      const result = await onVerifyOTP(phone, code);
+  try {
+    const result = await onVerifyOTP(phone, code);
 
-      // Dispatch credentials to Redux store
-      // Adjust result.data.user / result.data.token to match your backend shape
-      dispatch(
-        setCredentials({
-          user: result.data.user,
-          token: result.data.token,
-        })
-      );
+    // OTP verify just confirms the phone — no user/token returned yet
+    // User gets created during onboarding (registerRider / registerDriver)
+    // So we don't dispatch setCredentials here — just redirect to onboarding
 
-      setVerifying(false);
-      setOtpStatus("success");
+    setVerifying(false);
+    setOtpStatus("success");
+    dispatch(setAuthLoading(false));
 
-      // Redirect to onboarding with phone as query param
-      setTimeout(
-        () => router.push(`/onboarding?phone=${encodeURIComponent(phone)}`),
-        700
-      );
-    } catch (error: any) {
-      setVerifying(false);
-      dispatch(setAuthLoading(false));
+    setTimeout(
+      () => router.push(`/onboarding?phone=${encodeURIComponent(phone)}`),
+      700
+    );
+  } catch (error: any) {
+    setVerifying(false);
+    dispatch(setAuthLoading(false));
 
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      setOtpStatus(newAttempts >= MAX_ATTEMPTS ? "locked" : "error");
-      if (newAttempts >= MAX_ATTEMPTS) startLockout();
+    const newAttempts = attempts + 1;
+    setAttempts(newAttempts);
+    setOtpStatus(newAttempts >= MAX_ATTEMPTS ? "locked" : "error");
+    if (newAttempts >= MAX_ATTEMPTS) startLockout();
 
-      setOtp(["", "", "", "", "", ""]);
-      setTimeout(() => otpRefs.current[0]?.focus(), 100);
-    }
-  };
-
+    setOtp(["", "", "", "", "", ""]);
+    setTimeout(() => otpRefs.current[0]?.focus(), 100);
+  }
+};
   const handleResend = async () => {
     if (resendTimer > 0 || otpStatus === "locked") return;
     setOtp(["", "", "", "", "", ""]);

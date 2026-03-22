@@ -393,17 +393,15 @@ export const cancelTrip = (tripId: string, token: string) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-
-
-  // ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 //  PUBLIC TRIP SEARCH (for riders)
 // ─────────────────────────────────────────────────────────────
 
 export interface TripSearchParams {
-  origin?: string;        // city name filter
-  destination?: string;   // city name filter
-  date?: string;          // ISO date string
-  seats?: number;         // minimum available seats needed
+  origin?: string;
+  destination?: string;
+  date?: string;
+  seats?: number;
 }
 
 export const getAvailableTrips = async (
@@ -429,17 +427,15 @@ export const getAvailableTrips = async (
   return response.json();
 };
 
-
-
 // ─────────────────────────────────────────────────────────────
 //  TRIP SEARCH (for riders) — POST /trips/search
 // ─────────────────────────────────────────────────────────────
 
 export interface TripSearchPayload {
-  origin: string;        // e.g. "Ikeja City Mall"
-  destination: string;   // e.g. "Jabi Lake Mall, Jabi"
-  departureDate: string; // ISO date string e.g. "2024-12-25"
-  passengers: number;    // minimum seats needed
+  origin: string;
+  destination: string;
+  departureDate: string;
+  passengers: number;
 }
 
 /**
@@ -471,7 +467,6 @@ export const searchTrips = async (
 
   return response.json();
 };
-
 
 // ─────────────────────────────────────────────────────────────
 //  BOOKING TYPES
@@ -506,7 +501,11 @@ export interface BookingDriver {
       _id: string;
     }>;
     documents: {
-      registrationCertificate: { fileName: string; fileSize: string; url: string };
+      registrationCertificate: {
+        fileName: string;
+        fileSize: string;
+        url: string;
+      };
       insuranceCertificate: { fileName: string; fileSize: string; url: string };
       roadWorthiness: { fileName: string; fileSize: string; url: string };
     };
@@ -517,7 +516,7 @@ export interface BookingDriver {
 export interface BookingTrip {
   _id: string;
   id: string;
-  driver: BookingDriver;           // fully populated — not just an ID string
+  driver: BookingDriver;
   vehicle: TripVehicle;
   origin: TripLocation;
   destination: TripLocation;
@@ -561,7 +560,11 @@ export interface Booking {
  */
 export const getBookedTrips = async (
   token: string
-): Promise<{ status: string; results: number; data: { bookings: Booking[] } }> => {
+): Promise<{
+  status: string;
+  results: number;
+  data: { bookings: Booking[] };
+}> => {
   const response = await fetch(`${API_BASE_URL}/trips/booked-trips`, {
     method: "GET",
     headers: {
@@ -588,7 +591,7 @@ export const getBookedTrips = async (
 
 export interface BookTripPayload {
   tripId: string;
-  seats: number; // backend expects "seats" not "seatsBooked"
+  seats: number;
 }
 
 // Booking shape returned from POST /trips/:id/book
@@ -596,7 +599,7 @@ export interface BookTripPayload {
 export interface BookTripResponse {
   _id: string;
   id: string;
-  trip: string;          // just the trip ID — not populated
+  trip: string;
   rider: string;
   seatsBooked: number;
   totalPrice: number;
@@ -618,20 +621,224 @@ export interface BookTripResponse {
 export const bookTrip = async (
   payload: BookTripPayload,
   token: string
-): Promise<{ status: string; message: string; data: { booking: BookTripResponse } }> => {
+): Promise<{
+  status: string;
+  message: string;
+  data: { booking: BookTripResponse };
+}> => {
   const response = await fetch(`${API_BASE_URL}/trips/${payload.tripId}/book`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ seats: payload.seats }), // ← "seats" not "seatsBooked"
+    body: JSON.stringify({ seats: payload.seats }),
   });
 
   if (!response.ok) {
     const errData = await response
       .json()
       .catch(() => ({ message: "An unknown error occurred" }));
+    throw new Error(
+      errData.message || `Request failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
+};
+
+// ─────────────────────────────────────────────────────────────
+//  TRIP BOOKINGS (for drivers) — GET /trips/:id/bookings
+// ─────────────────────────────────────────────────────────────
+
+export interface TripBookingPassenger {
+  bookingId: string;
+  seatsBooked: number;
+  totalPrice: number;
+  status: BookingStatus;
+  rider: {
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+  };
+}
+
+/**
+ * Fetches all bookings for a specific trip — driver only.
+ * Corresponds to: GET /trips/:id/bookings
+ * Returns passenger names, phones, seats, payment status.
+ */
+export const getTripBookings = async (
+  tripId: string,
+  token: string
+): Promise<{
+  status: string;
+  results: number;
+  data: TripBookingPassenger[];
+}> => {
+  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/bookings`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errData = await response
+      .json()
+      .catch(() => ({ message: "An unknown error occurred" }));
+    throw new Error(
+      errData.message || `Request failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
+};
+
+// ─────────────────────────────────────────────────────────────
+//  CENTRALIZED DATA LOADER
+// ─────────────────────────────────────────────────────────────
+
+import type { AppDispatch, RootState } from "@/store";
+import {
+  setBookedTrips,
+  setBookedTripsLoading,
+} from "@/store/slices/bookingSlice";
+import {
+  setTripHistory,
+  setTripLoading,
+  setTripError,
+} from "@/store/slices/tripSlice";
+
+/**
+ * Loads rider data if not already in Redux.
+ * Call once in the rider dashboard layout/page.
+ */
+export const loadRiderData = async (
+  token: string,
+  dispatch: AppDispatch,
+  getState: () => RootState
+) => {
+  const state = getState();
+  const bookedTrips = state.booking.bookedTrips;
+  if (bookedTrips.length > 0) return;
+
+  dispatch(setBookedTripsLoading(true));
+  try {
+    const result = await getBookedTrips(token);
+    dispatch(setBookedTrips(result.data.bookings));
+  } catch (_) {
+    // silently fail — pages handle their own error states
+  } finally {
+    dispatch(setBookedTripsLoading(false));
+  }
+};
+
+/**
+ * Loads driver data if not already in Redux.
+ * Call once in the driver dashboard layout/page.
+ */
+export const loadDriverData = async (
+  token: string,
+  dispatch: AppDispatch,
+  getState: () => RootState
+) => {
+  const state = getState();
+  const tripHistory = state.trip.tripHistory;
+  if (tripHistory.length > 0) return;
+
+  dispatch(setTripLoading(true));
+  dispatch(setTripError(null));
+  try {
+    const result = await getMyTrips(token);
+    dispatch(setTripHistory(result.data.trips));
+  } catch (err: any) {
+    dispatch(setTripError(err?.message || "Failed to load trips"));
+  } finally {
+    dispatch(setTripLoading(false));
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+//  DRIVER REGISTRATION — POST /users/register-driver
+// ─────────────────────────────────────────────────────────────
+
+export interface DriverFileDocument {
+  fileName: string;
+  fileSize: string;
+  url: string;
+}
+export interface RegisterDriverPayload {
+  password: string;
+  personalInfo: {
+    firstName: string;
+    lastName: string;
+    middleName?: string;
+    email: string;
+    phoneNumber: string;
+    dateOfBirth: string;
+    address?: string;
+    city?: string;
+    state?: string;
+  };
+  verificationDocuments: {
+    driversLicense: {
+      front: string; // Cloudinary URL
+      back: string; // Cloudinary URL
+      number: string;
+      expiryDate: string;
+    };
+    nationalId: {
+      number: string;
+      document: string; // Cloudinary URL
+    };
+    verificationSelfie: string; // Cloudinary URL
+  };
+  contacts: {
+    emergency: {
+      fullName: string;
+      phoneNumber: string;
+      relationship: string;
+    };
+    guarantor: {
+      fullName: string;
+      phoneNumber: string;
+      address: string;
+      relationshipAndOccupation: string;
+    };
+  };
+  vehicleInfo: {
+    make: string;
+    model: string;
+    year: string;
+    color: string;
+    plateNumber: string;
+    passengerSeats: number;
+    vin: string;
+    photos: Array<{ label: string; file: string }>; // Cloudinary URLs
+    documents: {
+      registrationCertificate: string; // Cloudinary URL
+      insuranceCertificate: string; // Cloudinary URL
+      roadWorthiness: string; // Cloudinary URL
+    };
+  };
+}
+
+export const registerDriver = async (
+  formData: FormData
+): Promise<{ status: string; token: string; data: { driver: DriverUser } }> => {
+  const response = await fetch(`${API_BASE_URL}/users/register-driver`, {
+    method: "POST",
+    body: formData, // No Content-Type header — browser sets it automatically with boundary
+  });
+
+  if (!response.ok) {
+    const errData = await response
+      .json()
+      .catch(() => ({ message: "An unknown error occurred" }));
+
+    console.error("registerDriver error:", errData);
     throw new Error(
       errData.message || `Request failed with status ${response.status}`
     );

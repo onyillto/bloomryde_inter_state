@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiUser,
@@ -17,6 +18,9 @@ import {
 const DriverOnboarding = () => {
   const [step, setStep] = useState(1);
   const totalSteps = 4;
+
+  const searchParams = useSearchParams();
+  const phone = searchParams.get("phone");
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, totalSteps));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
@@ -86,6 +90,17 @@ const DriverOnboarding = () => {
                         type="email"
                         placeholder="name@example.com"
                         className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-100 transition-all"
+                      />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <label className="text-xs font-bold uppercase text-slate-500 ml-1">
+                        Phone Number (Verified)
+                      </label>
+                      <input
+                        type="tel"
+                        value={phone || ""}
+                        disabled
+                        className="w-full p-4 bg-green-50/50 border border-green-100 rounded-2xl outline-none text-slate-600 font-bold opacity-75 cursor-not-allowed"
                       />
                     </div>
                   </div>

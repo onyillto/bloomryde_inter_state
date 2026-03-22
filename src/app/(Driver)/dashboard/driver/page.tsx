@@ -36,7 +36,7 @@ export default function DriverDashboardPage() {
   // ── Auth guard ───────────────────────────────────────────────
   useEffect(() => {
     if (!isAuthenticated || !driverUser) {
-      router.replace("/auth");
+      router.replace("/auth/login");
     }
   }, [isAuthenticated, driverUser, router]);
 
