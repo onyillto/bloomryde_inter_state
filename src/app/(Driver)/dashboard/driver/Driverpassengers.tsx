@@ -1,13 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useAppSelector } from "@/store/hooks";
+import { selectToken } from "@/store/slices/authSlice";
+import { Trip, getTripBookings, TripBookingPassenger } from "@/lib/api";
+import { useEffect } from "react";
+import { selectTripHistory } from "@/store/slices/tripSlice";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type PassengerStatus = "confirmed" | "pending" | "cancelled";
+type FilterTab = "all" | "upcoming" | "past";
 
 type Passenger = {
-  id: number;
+  id: string;
   initials: string;
   color: string;
   name: string;
@@ -16,230 +22,60 @@ type Passenger = {
   amountOwed: number;
   paid: boolean;
   status: PassengerStatus;
-  tripId: number;
+  tripId: string;
   rating?: number;
 };
 
 type TripGroup = {
-  tripId: number;
+  tripId: string;
   from: string;
   to: string;
   date: string;
   dateShort: string;
   monthShort: string;
   departure: string;
-  status: "published" | "completed";
+  status: "scheduled" | "active" | "completed" | "cancelled";
   totalSeats: number;
   passengers: Passenger[];
+  loading: boolean;
 };
 
-type FilterTab = "all" | "upcoming" | "past";
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const TRIP_GROUPS: TripGroup[] = [
-  {
-    tripId: 1,
-    from: "Lagos",
-    to: "Abuja",
-    date: "28 Feb 2026",
-    dateShort: "28",
-    monthShort: "Feb",
-    departure: "6:00 AM",
-    status: "published",
-    totalSeats: 8,
-    passengers: [
-      {
-        id: 1,
-        initials: "AK",
-        color: "bg-blue-500",
-        name: "Amara Kolawole",
-        phone: "+234 812 345 6789",
-        seats: 1,
-        amountOwed: 5000,
-        paid: true,
-        status: "confirmed",
-        tripId: 1,
-      },
-      {
-        id: 2,
-        initials: "TB",
-        color: "bg-violet-500",
-        name: "Tunde Balogun",
-        phone: "+234 803 221 4455",
-        seats: 1,
-        amountOwed: 5000,
-        paid: false,
-        status: "confirmed",
-        tripId: 1,
-      },
-      {
-        id: 3,
-        initials: "NW",
-        color: "bg-rose-500",
-        name: "Ngozi Williams",
-        phone: "+234 908 112 3344",
-        seats: 2,
-        amountOwed: 10000,
-        paid: false,
-        status: "pending",
-        tripId: 1,
-      },
-      {
-        id: 4,
-        initials: "JI",
-        color: "bg-amber-500",
-        name: "Joseph Ike",
-        phone: "+234 816 778 9900",
-        seats: 1,
-        amountOwed: 5000,
-        paid: true,
-        status: "confirmed",
-        tripId: 1,
-      },
-      {
-        id: 5,
-        initials: "OA",
-        color: "bg-teal-500",
-        name: "Omotunde Adeyemi",
-        phone: "+234 701 345 2211",
-        seats: 1,
-        amountOwed: 5000,
-        paid: true,
-        status: "confirmed",
-        tripId: 1,
-      },
-    ],
-  },
-  {
-    tripId: 2,
-    from: "Abuja",
-    to: "Enugu",
-    date: "5 Mar 2026",
-    dateShort: "5",
-    monthShort: "Mar",
-    departure: "7:00 AM",
-    status: "published",
-    totalSeats: 8,
-    passengers: [
-      {
-        id: 6,
-        initials: "JA",
-        color: "bg-blue-500",
-        name: "James Achebe",
-        phone: "+234 810 556 7723",
-        seats: 1,
-        amountOwed: 3500,
-        paid: false,
-        status: "confirmed",
-        tripId: 2,
-      },
-      {
-        id: 7,
-        initials: "KI",
-        color: "bg-emerald-500",
-        name: "Kemi Ibrahim",
-        phone: "+234 907 334 1122",
-        seats: 1,
-        amountOwed: 3500,
-        paid: true,
-        status: "confirmed",
-        tripId: 2,
-      },
-    ],
-  },
-  {
-    tripId: 4,
-    from: "Lagos",
-    to: "Ibadan",
-    date: "14 Feb 2026",
-    dateShort: "14",
-    monthShort: "Feb",
-    departure: "8:00 AM",
-    status: "completed",
-    totalSeats: 8,
-    passengers: [
-      {
-        id: 8,
-        initials: "MO",
-        color: "bg-blue-500",
-        name: "Musa Okafor",
-        phone: "+234 803 112 9988",
-        seats: 1,
-        amountOwed: 2500,
-        paid: true,
-        status: "confirmed",
-        tripId: 4,
-        rating: 5,
-      },
-      {
-        id: 9,
-        initials: "FA",
-        color: "bg-rose-500",
-        name: "Fatima Abubakar",
-        phone: "+234 813 445 0011",
-        seats: 1,
-        amountOwed: 2500,
-        paid: true,
-        status: "confirmed",
-        tripId: 4,
-        rating: 4,
-      },
-      {
-        id: 10,
-        initials: "TK",
-        color: "bg-amber-500",
-        name: "Tobi Kadri",
-        phone: "+234 908 771 2233",
-        seats: 2,
-        amountOwed: 5000,
-        paid: true,
-        status: "confirmed",
-        tripId: 4,
-        rating: 5,
-      },
-      {
-        id: 11,
-        initials: "SB",
-        color: "bg-violet-500",
-        name: "Stella Babatunde",
-        phone: "+234 701 993 4455",
-        seats: 1,
-        amountOwed: 2500,
-        paid: true,
-        status: "confirmed",
-        tripId: 4,
-        rating: 5,
-      },
-      {
-        id: 12,
-        initials: "CE",
-        color: "bg-teal-500",
-        name: "Chike Eze",
-        phone: "+234 816 224 6677",
-        seats: 1,
-        amountOwed: 2500,
-        paid: true,
-        status: "confirmed",
-        tripId: 4,
-        rating: 4,
-      },
-      {
-        id: 13,
-        initials: "RI",
-        color: "bg-indigo-500",
-        name: "Remi Idowu",
-        phone: "+234 803 558 8899",
-        seats: 1,
-        amountOwed: 2500,
-        paid: true,
-        status: "confirmed",
-        tripId: 4,
-        rating: 5,
-      },
-    ],
-  },
+const AVATAR_COLORS = [
+  "bg-blue-500",
+  "bg-violet-500",
+  "bg-rose-500",
+  "bg-amber-500",
+  "bg-teal-500",
+  "bg-emerald-500",
+  "bg-indigo-500",
 ];
+
+function getInitials(firstName: string, lastName: string) {
+  return `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase();
+}
+
+function getColor(index: number) {
+  return AVATAR_COLORS[index % AVATAR_COLORS.length];
+}
+
+function formatTripDate(iso: string) {
+  const d = new Date(iso);
+  return {
+    date: d.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }),
+    dateShort: d.getDate().toString(),
+    monthShort: d.toLocaleDateString("en-GB", { month: "short" }),
+    departure: d.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
+}
 
 const STATUS_MAP: Record<PassengerStatus, { label: string; cls: string }> = {
   confirmed: {
@@ -290,15 +126,12 @@ function PassengerCard({
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-4 hover:border-blue-200 hover:shadow-sm transition-all duration-150">
       <div className="flex items-start gap-3">
-        {/* Avatar */}
         <div
           className={`w-11 h-11 rounded-full ${p.color} flex items-center justify-center font-bold text-[13px] text-white flex-shrink-0 shadow-sm`}
         >
           {p.initials}
         </div>
-
         <div className="flex-1 min-w-0">
-          {/* Name + status */}
           <div className="flex items-center justify-between gap-2 mb-0.5">
             <span className="font-semibold text-[14px] text-slate-800 truncate">
               {p.name}
@@ -309,8 +142,6 @@ function PassengerCard({
               {s.label}
             </span>
           </div>
-
-          {/* Phone */}
           <div className="flex items-center gap-1 text-[12px] text-slate-400 mb-2">
             <svg
               className="w-3 h-3 flex-shrink-0"
@@ -326,8 +157,6 @@ function PassengerCard({
             </svg>
             {p.phone}
           </div>
-
-          {/* Seat + amount row */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-[12px] text-slate-500 flex items-center gap-1">
@@ -349,8 +178,6 @@ function PassengerCard({
                 ₦{p.amountOwed.toLocaleString()}
               </span>
             </div>
-
-            {/* Payment badge or rating */}
             {isCompleted ? (
               p.rating ? (
                 <StarRating rating={p.rating} />
@@ -361,8 +188,7 @@ function PassengerCard({
               )
             ) : (
               <span
-                className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1
-                ${
+                className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
                   p.paid
                     ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
                     : "bg-slate-100 text-slate-400 border border-slate-200"
@@ -392,8 +218,6 @@ function PassengerCard({
           </div>
         </div>
       </div>
-
-      {/* Action row — active trips only */}
       {!isCompleted && p.status !== "cancelled" && (
         <div className="flex gap-2 mt-3 pt-3 border-t border-slate-100">
           <button className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 hover:border-blue-300 hover:text-blue-600 text-[12px] font-medium transition-all">
@@ -460,8 +284,7 @@ function TripSection({
 
   return (
     <div
-      className={`rounded-2xl border overflow-hidden transition-all duration-200
-      ${
+      className={`rounded-2xl border overflow-hidden transition-all duration-200 ${
         expanded
           ? "border-blue-300 shadow-md shadow-blue-100/50"
           : "border-slate-200 bg-white hover:border-blue-200 hover:shadow-sm"
@@ -471,15 +294,13 @@ function TripSection({
         <div className="h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
       )}
 
-      {/* ── Section Header ─────────────────────────────── */}
       <div
         className="flex flex-wrap md:flex-nowrap items-center gap-4 px-5 py-4 cursor-pointer select-none bg-white"
         onClick={onToggle}
       >
         {/* Date block */}
         <div
-          className={`flex-shrink-0 w-12 rounded-xl text-center py-2 border transition-all
-          ${
+          className={`flex-shrink-0 w-12 rounded-xl text-center py-2 border transition-all ${
             expanded
               ? "bg-blue-100 border-blue-200"
               : "bg-slate-50 border-slate-200"
@@ -530,7 +351,7 @@ function TripSection({
                   : "bg-blue-600 text-white"
               }`}
             >
-              {isCompleted ? "Completed" : "Published"}
+              {isCompleted ? "Completed" : "Active"}
             </span>
           </div>
           <div className="text-[12px] text-slate-400">
@@ -566,7 +387,7 @@ function TripSection({
             className="font-black text-[20px] text-slate-800 leading-none"
             style={{ fontFamily: "'Syne',sans-serif" }}
           >
-            {confirmed}
+            {group.loading ? "..." : confirmed}
             <span className="text-[13px] font-medium text-slate-400">
               /{group.totalSeats}
             </span>
@@ -607,15 +428,17 @@ function TripSection({
         </svg>
       </div>
 
-      {/* ── Expanded Passenger Grid ─────────────────────── */}
+      {/* Expanded Passenger Grid */}
       {expanded && (
         <div className="border-t border-slate-100 px-5 pb-5 pt-4 bg-slate-50/40">
-          {/* Sub-header */}
           <div className="flex items-center justify-between mb-4">
             <div className="text-[13px] font-semibold text-slate-700 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse inline-block" />
-              {group.passengers.length} passenger
-              {group.passengers.length !== 1 ? "s" : ""} on this trip
+              {group.loading
+                ? "Loading passengers..."
+                : `${group.passengers.length} passenger${
+                    group.passengers.length !== 1 ? "s" : ""
+                  } on this trip`}
             </div>
             {!isCompleted && (
               <div className="flex gap-2">
@@ -645,11 +468,40 @@ function TripSection({
             )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-            {group.passengers.map((p) => (
-              <PassengerCard key={p.id} p={p} isCompleted={isCompleted} />
-            ))}
-          </div>
+          {group.loading ? (
+            <div className="flex items-center justify-center py-10 text-slate-400 text-[13px]">
+              <svg
+                className="w-5 h-5 animate-spin mr-2 text-blue-500"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                />
+              </svg>
+              Loading passengers...
+            </div>
+          ) : group.passengers.length === 0 ? (
+            <div className="text-center py-10 text-slate-400 text-[13px]">
+              No passengers booked yet
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+              {group.passengers.map((p) => (
+                <PassengerCard key={p.id} p={p} isCompleted={isCompleted} />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -687,12 +539,109 @@ function EmptyState() {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function DriverPassengers() {
-  const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
-  const [expandedId, setExpandedId] = useState<number | null>(1);
-  const [search, setSearch] = useState("");
+  const token = useAppSelector(selectToken);
+  const tripHistory = useAppSelector(selectTripHistory);
 
-  const filtered = TRIP_GROUPS.filter((g) => {
-    if (activeFilter === "upcoming") return g.status === "published";
+  const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [tripGroups, setTripGroups] = useState<TripGroup[]>([]);
+  const [passengersCache, setPassengersCache] = useState<
+    Record<string, TripBookingPassenger[]>
+  >({});
+
+  // ── Build trip groups from Redux trip history ──────────────────────────────
+  useEffect(() => {
+    if (!tripHistory.length) return;
+
+    const groups: TripGroup[] = tripHistory.map((trip: Trip) => {
+      const { date, dateShort, monthShort, departure } = formatTripDate(
+        trip.departureTime
+      );
+      return {
+        tripId: trip._id,
+        from: trip.origin.city,
+        to: trip.destination.city,
+        date,
+        dateShort,
+        monthShort,
+        departure,
+        status: trip.status,
+        totalSeats: trip.totalSeats,
+        passengers: [],
+        loading: false,
+      };
+    });
+
+    setTripGroups(groups);
+    // Auto-expand first trip
+    if (groups.length > 0) setExpandedId(groups[0].tripId);
+  }, [tripHistory]);
+
+  // ── Fetch passengers when a trip is expanded ──────────────────────────────
+  useEffect(() => {
+    if (!expandedId || !token) return;
+    if (passengersCache[expandedId]) {
+      // Already fetched — map from cache
+      setTripGroups((prev) =>
+        prev.map((g) =>
+          g.tripId === expandedId
+            ? {
+                ...g,
+                passengers: mapPassengers(passengersCache[expandedId]),
+                loading: false,
+              }
+            : g
+        )
+      );
+      return;
+    }
+
+    // Mark as loading
+    setTripGroups((prev) =>
+      prev.map((g) => (g.tripId === expandedId ? { ...g, loading: true } : g))
+    );
+
+    getTripBookings(expandedId, token)
+      .then((res) => {
+        const raw = res.data;
+        setPassengersCache((prev) => ({ ...prev, [expandedId]: raw }));
+        setTripGroups((prev) =>
+          prev.map((g) =>
+            g.tripId === expandedId
+              ? { ...g, passengers: mapPassengers(raw), loading: false }
+              : g
+          )
+        );
+      })
+      .catch(() => {
+        setTripGroups((prev) =>
+          prev.map((g) =>
+            g.tripId === expandedId ? { ...g, loading: false } : g
+          )
+        );
+      });
+  }, [expandedId, token]);
+
+  function mapPassengers(raw: TripBookingPassenger[]): Passenger[] {
+    return raw.map((b, i) => ({
+      id: b.bookingId,
+      initials: getInitials(b.rider.firstName, b.rider.lastName),
+      color: getColor(i),
+      name: `${b.rider.firstName} ${b.rider.lastName}`,
+      phone: b.rider.phoneNumber,
+      seats: b.seatsBooked,
+      amountOwed: b.totalPrice,
+      paid: b.status === "confirmed",
+      status: b.status as PassengerStatus,
+      tripId: expandedId!,
+    }));
+  }
+
+  // ── Filter + search ────────────────────────────────────────────────────────
+  const filtered = tripGroups.filter((g) => {
+    if (activeFilter === "upcoming")
+      return g.status === "scheduled" || g.status === "active";
     if (activeFilter === "past") return g.status === "completed";
     return true;
   });
@@ -710,8 +659,8 @@ export default function DriverPassengers() {
         .filter((g) => g.passengers.length > 0)
     : filtered;
 
-  // All-time stats
-  const allPassengers = TRIP_GROUPS.flatMap((g) => g.passengers);
+  // ── Stats ──────────────────────────────────────────────────────────────────
+  const allPassengers = tripGroups.flatMap((g) => g.passengers);
   const totalPassengers = allPassengers.length;
   const totalOwed = allPassengers.reduce((s, p) => s + p.amountOwed, 0);
   const totalPaid = allPassengers
@@ -741,7 +690,7 @@ export default function DriverPassengers() {
 
       <div className="dp-root">
         <div className="max-w-screen-xl mx-auto px-4 py-6 md:px-6 md:py-8">
-          {/* ── Header ──────────────────────────────────────── */}
+          {/* ── Header ── */}
           <div className="flex items-start justify-between mb-8">
             <div>
               <h1
@@ -801,7 +750,7 @@ export default function DriverPassengers() {
             </div>
           </div>
 
-          {/* ── Stats ────────────────────────────────────────── */}
+          {/* ── Stats ── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             {[
               {
@@ -851,41 +800,40 @@ export default function DriverPassengers() {
             ))}
           </div>
 
-          {/* ── Filter tabs ──────────────────────────────────── */}
+          {/* ── Filter tabs ── */}
           <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0">
             {[
               {
                 key: "all" as FilterTab,
                 label: "All Trips",
-                count: TRIP_GROUPS.length,
+                count: tripGroups.length,
               },
               {
                 key: "upcoming" as FilterTab,
                 label: "Upcoming",
-                count: TRIP_GROUPS.filter((g) => g.status === "published")
-                  .length,
+                count: tripGroups.filter(
+                  (g) => g.status === "scheduled" || g.status === "active"
+                ).length,
               },
               {
                 key: "past" as FilterTab,
                 label: "Past Trips",
-                count: TRIP_GROUPS.filter((g) => g.status === "completed")
+                count: tripGroups.filter((g) => g.status === "completed")
                   .length,
               },
             ].map(({ key, label, count }) => (
               <button
                 key={key}
                 onClick={() => setActiveFilter(key)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-all
-                  ${
-                    activeFilter === key
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-slate-500 border-slate-200 hover:border-blue-300 hover:text-slate-700"
-                  }`}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-all ${
+                  activeFilter === key
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-slate-500 border-slate-200 hover:border-blue-300 hover:text-slate-700"
+                }`}
               >
                 {label}
                 <span
-                  className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full min-w-[18px] text-center
-                  ${
+                  className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
                     activeFilter === key
                       ? "bg-white/25 text-white"
                       : "bg-slate-100 text-slate-500"
@@ -897,7 +845,7 @@ export default function DriverPassengers() {
             ))}
           </div>
 
-          {/* ── Results meta ──────────────────────────────────── */}
+          {/* ── Results meta ── */}
           {searchedGroups.length > 0 && (
             <div className="flex items-center gap-2 text-[13px] text-slate-400 mb-4">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse inline-block" />
@@ -914,7 +862,7 @@ export default function DriverPassengers() {
             </div>
           )}
 
-          {/* ── Trip sections ─────────────────────────────────── */}
+          {/* ── Trip sections ── */}
           {searchedGroups.length === 0 ? (
             <EmptyState />
           ) : (
@@ -939,7 +887,7 @@ export default function DriverPassengers() {
             </div>
           )}
 
-          {/* ── Footer ───────────────────────────────────────── */}
+          {/* ── Footer ── */}
           {searchedGroups.length > 0 && (
             <div className="flex items-center justify-center gap-2 mt-8 text-[12px] text-slate-400">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
