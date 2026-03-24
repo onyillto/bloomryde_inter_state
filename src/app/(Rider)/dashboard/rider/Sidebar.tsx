@@ -51,7 +51,7 @@ export default function Sidebar({
     { icon: "Clock", label: "Trip History", section: "MAIN" },
     { icon: "User", label: "My Profile", section: "ACCOUNT" },
     { icon: "Shield", label: "Emergency Contacts", section: "ACCOUNT" },
-    { icon: "Settings", label: "Settings", section: "ACCOUNT" },
+    // { icon: "Settings", label: "Settings", section: "ACCOUNT" },
   ];
 
   return (

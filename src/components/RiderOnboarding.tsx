@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, CSSProperties } from "react";
+import React, { useState, CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import {
   Phone,
@@ -13,30 +13,13 @@ import {
   Heart,
   ChevronLeft,
   ArrowRight,
-  Camera,
   ChevronDown,
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import { registerRider } from "@/lib/api";
+import { registerRider, RegisterRiderPayload } from "@/lib/api";
 import { useAppDispatch } from "../store/hooks";
 import { setCredentials } from "../store/slices/authSlice";
-
-// ─────────────────────────────────────────────────────────────
-//  TYPE HELPERS
-// ─────────────────────────────────────────────────────────────
-
-/** Error prop is always a string message or undefined — never boolean */
-type ErrorProp = string | undefined;
-
-/** Converts a File to a base64 string for JSON transport */
-const toBase64 = (file: File): Promise<string | ArrayBuffer | null> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
-  });
 
 // ─────────────────────────────────────────────────────────────
 //  STEP DATA TYPES
@@ -52,7 +35,6 @@ interface StepPersonalData {
   fullName: string;
   gender: string;
   dob: string;
-  photo: File | null;
 }
 
 interface StepEmergencyData {
@@ -62,9 +44,10 @@ interface StepEmergencyData {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  ERROR STATE TYPES  (all string, never boolean)
+//  ERROR STATE TYPES
 // ─────────────────────────────────────────────────────────────
 
+type ErrorProp = string | undefined;
 type AccountErrors = {
   email?: string;
   password?: string;
@@ -252,59 +235,6 @@ function ProgressBar({ step, total, onBack }: ProgressBarProps) {
   );
 }
 
-interface ProfilePhotoUploadProps {
-  preview: string | null;
-  onFile: (file: File, url: string) => void;
-}
-
-function ProfilePhotoUpload({ preview, onFile }: ProfilePhotoUploadProps) {
-  const ref = useRef<HTMLInputElement>(null);
-  return (
-    <div className="flex flex-col items-center gap-4 py-6">
-      <div className="relative">
-        <div className="w-24 h-24 md:w-28 md:h-28 rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden transition-all group hover:border-blue-400">
-          {preview ? (
-            <img
-              src={preview}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <User
-              size={40}
-              className="text-slate-300 group-hover:text-blue-400 transition-colors"
-              strokeWidth={1.5}
-            />
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={() => ref.current?.click()}
-          className="absolute -bottom-2 -right-2 w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg hover:bg-blue-700 transition-all border-4 border-white active:scale-90"
-        >
-          <Camera size={18} strokeWidth={2.5} />
-        </button>
-        <input
-          ref={ref}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            const f = e.target.files?.[0];
-            if (f) onFile(f, URL.createObjectURL(f));
-          }}
-        />
-      </div>
-      <div className="text-center">
-        <p className="text-sm font-bold text-slate-900">Add a Profile Photo</p>
-        <p className="text-xs text-slate-400 mt-0.5">
-          Helps drivers identify you
-        </p>
-      </div>
-    </div>
-  );
-}
-
 // ─────────────────────────────────────────────────────────────
 //  STEP 1 — Account
 // ─────────────────────────────────────────────────────────────
@@ -350,7 +280,7 @@ function StepAccount({ data, onChange, onNext, phone }: StepAccountProps) {
           placeholder="name@example.com"
           value={data.email}
           error={errors.email}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          onChange={(e) => {
             onChange("email", e.target.value);
             setErrors((p) => ({ ...p, email: undefined }));
           }}
@@ -364,7 +294,7 @@ function StepAccount({ data, onChange, onNext, phone }: StepAccountProps) {
           placeholder="••••••••"
           value={data.password}
           error={errors.password}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          onChange={(e) => {
             onChange("password", e.target.value);
             setErrors((p) => ({ ...p, password: undefined }));
           }}
@@ -387,7 +317,7 @@ function StepAccount({ data, onChange, onNext, phone }: StepAccountProps) {
           placeholder="••••••••"
           value={data.confirmPassword}
           error={errors.confirmPassword}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          onChange={(e) => {
             onChange("confirmPassword", e.target.value);
             setErrors((p) => ({ ...p, confirmPassword: undefined }));
           }}
@@ -414,16 +344,12 @@ function StepAccount({ data, onChange, onNext, phone }: StepAccountProps) {
 
 interface StepPersonalProps {
   data: StepPersonalData;
-  onChange: (
-    key: keyof StepPersonalData,
-    value: StepPersonalData[keyof StepPersonalData]
-  ) => void;
+  onChange: (key: keyof StepPersonalData, value: string) => void;
   onNext: () => void;
 }
 
 function StepPersonal({ data, onChange, onNext }: StepPersonalProps) {
   const [errors, setErrors] = useState<PersonalErrors>({});
-  const [preview, setPreview] = useState<string | null>(null);
 
   const validate = (): boolean => {
     const e: PersonalErrors = {};
@@ -436,21 +362,13 @@ function StepPersonal({ data, onChange, onNext }: StepPersonalProps) {
 
   return (
     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <ProfilePhotoUpload
-        preview={preview}
-        onFile={(f, url) => {
-          onChange("photo", f);
-          setPreview(url);
-        }}
-      />
-
       <Field label="Legal Full Name" error={errors.fullName}>
         <Inp
           leftIcon={User}
           placeholder="John Doe"
           value={data.fullName}
           error={errors.fullName}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          onChange={(e) => {
             onChange("fullName", e.target.value);
             setErrors((p) => ({ ...p, fullName: undefined }));
           }}
@@ -462,15 +380,15 @@ function StepPersonal({ data, onChange, onNext }: StepPersonalProps) {
           <Sel
             value={data.gender}
             error={errors.gender}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+            onChange={(e) => {
               onChange("gender", e.target.value);
               setErrors((p) => ({ ...p, gender: undefined }));
             }}
           >
             <option value="">Choose...</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
           </Sel>
         </Field>
 
@@ -480,7 +398,7 @@ function StepPersonal({ data, onChange, onNext }: StepPersonalProps) {
             type="date"
             value={data.dob}
             error={errors.dob}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            onChange={(e) => {
               onChange("dob", e.target.value);
               setErrors((p) => ({ ...p, dob: undefined }));
             }}
@@ -545,7 +463,7 @@ function StepEmergency({
           placeholder="Emergency Contact Name"
           value={data.eName}
           error={errors.eName}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          onChange={(e) => {
             onChange("eName", e.target.value);
             setErrors((p) => ({ ...p, eName: undefined }));
           }}
@@ -556,7 +474,7 @@ function StepEmergency({
         <Sel
           value={data.eRel}
           error={errors.eRel}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+          onChange={(e) => {
             onChange("eRel", e.target.value);
             setErrors((p) => ({ ...p, eRel: undefined }));
           }}
@@ -576,7 +494,7 @@ function StepEmergency({
           placeholder="+234 ..."
           value={data.ePhone}
           error={errors.ePhone}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          onChange={(e) => {
             onChange("ePhone", e.target.value);
             setErrors((p) => ({ ...p, ePhone: undefined }));
           }}
@@ -614,7 +532,6 @@ const STEP_META = [
   { title: "Safety", subtitle: "Emergency backup" },
 ] as const;
 
-/** Generic field updater — fully typed, no implicit any */
 function makeUpdater<T extends object>(
   setter: React.Dispatch<React.SetStateAction<T>>
 ) {
@@ -643,7 +560,6 @@ export default function RiderOnboarding({
     fullName: "",
     gender: "",
     dob: "",
-    photo: null,
   });
   const [emergency, setEmergency] = useState<StepEmergencyData>({
     eName: "",
@@ -663,26 +579,17 @@ export default function RiderOnboarding({
     setIsSubmitting(true);
     setSubmissionError(null);
 
-    let photoData: string | ArrayBuffer | null = null;
-    if (personal.photo) {
-      try {
-        photoData = await toBase64(personal.photo);
-      } catch (error) {
-        console.error("Error converting image to base64", error);
-        setSubmissionError("Failed to process profile image.");
-        setIsSubmitting(false);
-        return;
-      }
-    }
+    const formattedPhone = phone.startsWith("0")
+      ? "+234" + phone.slice(1)
+      : phone;
 
-    const riderData = {
-      phone,
+    const payload: RegisterRiderPayload = {
+      phone: formattedPhone,
       email: account.email,
       password: account.password,
       fullName: personal.fullName,
       gender: personal.gender,
-      dob: personal.dob,
-      photo: photoData,
+      dateOfBirth: personal.dob,
       emergencyContact: {
         name: emergency.eName,
         relationship: emergency.eRel,
@@ -691,29 +598,28 @@ export default function RiderOnboarding({
     };
 
     try {
-      // Assuming `registerRider` returns { token, data: { rider } } on success
-      const response = await registerRider(riderData);
+      const response = await registerRider(payload);
       dispatch(
-        setCredentials({ token: response.token, user: response.data.rider })
+        setCredentials({
+          token: response.token,
+          user: response.data.rider,
+          role: "rider",
+        })
       );
       setDone(true);
     } catch (err) {
-      console.error("Rider registration failed", err);
+      console.error("Rider registration failed:", err);
       const message =
         err instanceof Error ? err.message : "An unknown error occurred.";
-      setSubmissionError(
-        `Registration failed: ${message}. An account may already exist.`
-      );
+      setSubmissionError(message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const goNext = () => (step < 3 ? animateTo(step + 1) : handleRegistration());
-  const goBack = () =>
-    step > 1 ? animateTo(step - 1) : onBackToChoose && onBackToChoose();
+  const goBack = () => (step > 1 ? animateTo(step - 1) : onBackToChoose?.());
 
-  // ── Success screen ──
   if (done) {
     return (
       <div className="min-h-screen bg-blue-600 flex items-center justify-center p-6 overflow-hidden relative">
@@ -747,24 +653,19 @@ export default function RiderOnboarding({
     );
   }
 
-  /** Inline style typed as CSSProperties — no implicit any on style object */
   const slideStyle: CSSProperties = {
     transition: "all 400ms cubic-bezier(0.4, 0, 0.2, 1)",
     opacity: visible ? 1 : 0,
     transform: visible ? "translateY(0)" : "translateY(10px) scale(0.98)",
   };
 
-  // ── Main flow ──
   return (
     <div className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center relative overflow-hidden p-0 md:p-6">
-      {/* Background accents */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
       <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Main container */}
       <div className="w-full max-w-2xl z-10 flex flex-col h-screen md:h-auto">
-        {/* Header */}
         <div className="px-6 pt-8 pb-6 space-y-6 md:text-center">
           <ProgressBar step={step} total={3} onBack={goBack} />
           <div>
@@ -777,7 +678,6 @@ export default function RiderOnboarding({
           </div>
         </div>
 
-        {/* Form card */}
         <div className="flex-1 md:flex-none bg-white md:rounded-[3rem] rounded-t-[3rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-500">
           <div className="px-6 md:px-12 py-10">
             <div style={slideStyle}>
@@ -808,7 +708,6 @@ export default function RiderOnboarding({
             </div>
           </div>
 
-          {/* Desktop step dots */}
           <div className="hidden md:flex justify-center pb-8 opacity-20">
             <div className="flex gap-1.5">
               {[1, 2, 3].map((i) => (

@@ -37,6 +37,7 @@ export interface RiderUser {
   fullName: string;
   gender: string;
   dateOfBirth: string;
+  profilePhoto?: string;
   role: "rider";
   isVerified: boolean;
   emergencyContact: {
@@ -178,12 +179,6 @@ export const loginDriver = (credentials: { email: string; password: string }) =>
     body: JSON.stringify(credentials),
   });
 
-export const registerRider = (riderData: any) =>
-  apiRequest("/users/register-rider", {
-    method: "POST",
-    body: JSON.stringify(riderData),
-  });
-
 export const getUserProfile = (token: string) =>
   apiRequest("/users/me", {
     method: "GET",
@@ -191,22 +186,26 @@ export const getUserProfile = (token: string) =>
   });
 
 // ─────────────────────────────────────────────────────────────
-//  PROFILE UPDATE
+//  RIDER PROFILE UPDATE — PATCH /users/profile/rider
 // ─────────────────────────────────────────────────────────────
 
-export interface UpdateUserProfilePayload {
-  fullName: string;
-  email: string;
-  phone: string;
-  gender: string;
+export interface UpdateRiderProfilePayload {
+  fullName?: string;
+  gender?: string;
   dateOfBirth?: string;
+  profilePhoto?: string;
+  emergencyContact?: {
+    name: string;
+    relationship: string;
+    phone: string;
+  };
 }
 
-export const updateUserProfile = async (
-  payload: UpdateUserProfilePayload,
+export const updateRiderProfile = async (
+  payload: UpdateRiderProfilePayload,
   token: string
-): Promise<RiderUser> => {
-  const response = await fetch(`${API_BASE_URL}/users/me`, {
+): Promise<{ status: string; data: { rider: RiderUser } }> => {
+  const response = await fetch(`${API_BASE_URL}/users/profile/rider`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -224,8 +223,50 @@ export const updateUserProfile = async (
     );
   }
 
-  const responseData = await response.json();
-  return responseData.data.user;
+  return response.json();
+};
+
+// ─────────────────────────────────────────────────────────────
+//  RIDER REGISTRATION — POST /users/register-rider
+// ─────────────────────────────────────────────────────────────
+
+export interface RegisterRiderPayload {
+  phone: string;
+  email: string;
+  password: string;
+  fullName: string;
+  gender: string;
+  dateOfBirth: string;
+  emergencyContact: {
+    name: string;
+    relationship: string;
+    phone: string;
+  };
+}
+
+export const registerRider = async (
+  payload: RegisterRiderPayload
+): Promise<{ status: string; token: string; data: { rider: RiderUser } }> => {
+  const response = await fetch(`${API_BASE_URL}/users/register-rider`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errData = await response
+      .json()
+      .catch(() => ({ message: "An unknown error occurred" }));
+
+    console.error("registerRider error:", errData);
+    throw new Error(
+      errData.message || `Request failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -455,13 +496,13 @@ export interface BookingDriver {
     vin: string;
     photos: Array<{
       label: string;
-      file: string; // Cloudinary URL string
+      file: string;
       _id: string;
     }>;
     documents: {
-      registrationCertificate: string; // Cloudinary URL string
-      insuranceCertificate: string; // Cloudinary URL string
-      roadWorthiness: string; // Cloudinary URL string
+      registrationCertificate: string;
+      insuranceCertificate: string;
+      roadWorthiness: string;
     };
   };
 }

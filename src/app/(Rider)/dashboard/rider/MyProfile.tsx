@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useAppSelector } from "@/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import {
   selectRiderUser,
   selectRiderInitials,
   selectRiderIsVerified,
   selectToken,
+  updateUser,
 } from "@/store/slices/authSlice";
+import { updateRiderProfile } from "@/lib/api";
 import {
   FiUser,
   FiCamera,
@@ -31,6 +33,10 @@ import {
 import { MdOutlineDirectionsCar } from "react-icons/md";
 import { TbRoute } from "react-icons/tb";
 
+// ─────────────────────────────────────────────────────────────
+//  TYPES
+// ─────────────────────────────────────────────────────────────
+
 type TabKey = "personal" | "stats" | "security";
 
 type ProfileForm = {
@@ -48,6 +54,10 @@ const ACTIVITY = [
   { month: "Feb", trips: 2 },
 ];
 
+// ─────────────────────────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────────────────────────
+
 function formatDate(iso?: string) {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -56,6 +66,10 @@ function formatDate(iso?: string) {
     year: "numeric",
   });
 }
+
+// ─────────────────────────────────────────────────────────────
+//  SUB-COMPONENTS
+// ─────────────────────────────────────────────────────────────
 
 function Field({
   label,
@@ -251,18 +265,24 @@ function ActionRow({
   );
 }
 
+// ─────────────────────────────────────────────────────────────
+//  MAIN
+// ─────────────────────────────────────────────────────────────
+
 export default function MyProfile() {
   const riderUser = useAppSelector(selectRiderUser);
   const initials = useAppSelector(selectRiderInitials);
   const isVerified = useAppSelector(selectRiderIsVerified);
   const token = useAppSelector(selectToken);
+  const dispatch = useAppDispatch();
 
   const [activeTab, setActiveTab] = useState<TabKey>("personal");
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
 
-  // Seed form from Redux
   const [form, setForm] = useState<ProfileForm>({
     fullName: riderUser?.fullName ?? "",
     email: riderUser?.email ?? "",
@@ -276,12 +296,32 @@ export default function MyProfile() {
     setDirty(true);
   };
 
-  function handleSave() {
-    // TODO: call updateUserProfile API when rider profile update endpoint is ready
-    setSaved(true);
-    setEditing(false);
-    setDirty(false);
-    setTimeout(() => setSaved(false), 3000);
+  async function handleSave() {
+    if (!token) return;
+    setSaving(true);
+    setSaveError(null);
+
+    try {
+      const response = await updateRiderProfile(
+        {
+          fullName: form.fullName,
+          gender: form.gender,
+          dateOfBirth: form.dob,
+        },
+        token
+      );
+
+      dispatch(updateUser(response.data.rider));
+      setSaved(true);
+      setEditing(false);
+      setDirty(false);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Update failed.";
+      setSaveError(message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleDiscard() {
@@ -294,11 +334,11 @@ export default function MyProfile() {
     });
     setEditing(false);
     setDirty(false);
+    setSaveError(null);
   }
 
   const maxTrips = Math.max(...ACTIVITY.map((a) => a.trips));
 
-  // Derived from form
   const memberSince = riderUser
     ? new Date((riderUser as any).createdAt ?? "").toLocaleDateString("en-GB", {
         month: "short",
@@ -346,10 +386,20 @@ export default function MyProfile() {
                   </button>
                   <button
                     onClick={handleSave}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-[13px] px-4 py-2 rounded-xl shadow-lg shadow-blue-600/20 hover:-translate-y-0.5 transition-all"
+                    disabled={saving}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold text-[13px] px-4 py-2 rounded-xl shadow-lg shadow-blue-600/20 hover:-translate-y-0.5 transition-all"
                     style={{ fontFamily: "'Syne', sans-serif" }}
                   >
-                    <FiSave size={14} /> Save Changes
+                    {saving ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <FiSave size={14} /> Save Changes
+                      </>
+                    )}
                   </button>
                 </>
               ) : (
@@ -372,6 +422,16 @@ export default function MyProfile() {
               />
               <span className="text-[13px] text-blue-400 font-medium">
                 Profile updated successfully
+              </span>
+            </div>
+          )}
+
+          {/* ── Error toast ── */}
+          {saveError && (
+            <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-6 sec-enter">
+              <FiAlertCircle size={15} className="text-red-400 flex-shrink-0" />
+              <span className="text-[13px] text-red-400 font-medium">
+                {saveError}
               </span>
             </div>
           )}
@@ -499,7 +559,7 @@ export default function MyProfile() {
             />
           </div>
 
-          {/* ══ Personal Info ════════════════════════════════════ */}
+          {/* ══ Personal Info ══ */}
           {activeTab === "personal" && (
             <div className="sec-enter space-y-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -561,7 +621,6 @@ export default function MyProfile() {
                 </SectionCard>
               </div>
 
-              {/* Emergency contact — from backend */}
               {riderUser?.emergencyContact && (
                 <SectionCard
                   title="Emergency Contact"
@@ -606,7 +665,8 @@ export default function MyProfile() {
                   </span>
                   <button
                     onClick={handleSave}
-                    className="ml-auto flex items-center gap-1.5 text-[12px] font-semibold text-amber-400 border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-all"
+                    disabled={saving}
+                    className="ml-auto flex items-center gap-1.5 text-[12px] font-semibold text-amber-400 border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-all disabled:opacity-60"
                   >
                     <FiSave size={12} /> Save now
                   </button>
@@ -615,10 +675,9 @@ export default function MyProfile() {
             </div>
           )}
 
-          {/* ══ Stats ════════════════════════════════════════════ */}
+          {/* ══ Stats ══ */}
           {activeTab === "stats" && (
             <div className="sec-enter space-y-4">
-              {/* Placeholder notice */}
               <div className="flex items-center gap-3 bg-blue-600/10 border border-blue-500/20 rounded-xl px-4 py-3">
                 <FiAlertCircle
                   size={14}
@@ -718,7 +777,7 @@ export default function MyProfile() {
             </div>
           )}
 
-          {/* ══ Security ══════════════════════════════════════════ */}
+          {/* ══ Security ══ */}
           {activeTab === "security" && (
             <div className="sec-enter space-y-4">
               <div className="rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-600/10 to-blue-600/5 p-5">
